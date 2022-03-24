@@ -3,17 +3,39 @@
   windows_subsystem = "windows"
 )]
 
-use tauri::{Manager, SystemTray, SystemTrayEvent, Position, PhysicalPosition};
+use tauri::{
+  Manager,
+  Position,
+  PhysicalPosition,
+  TrayIcon,
+  SystemTray,
+  SystemTrayEvent
+};
 
 fn main() {
-  let tray = SystemTray::new();
-
   tauri::Builder::default()
-    .system_tray(tray)
+    .setup(|app| {
+      let window = app.get_window("main").unwrap();
+      let tray = app.tray_handle();
+
+      window.listen("recording", move |event| {
+        if event.payload() == Some("true") {
+          tray.set_icon(
+            TrayIcon::Raw(include_bytes!("../icons/tray-recording@2x.png").to_vec())
+          ).unwrap();
+        } else {
+          tray.set_icon(
+            TrayIcon::Raw(include_bytes!("../icons/tray@2x.png").to_vec())
+          ).unwrap();
+        }
+      });
+
+      Ok(())
+    })
+    .system_tray(SystemTray::new())
     .on_system_tray_event(|app, event| match event {
       SystemTrayEvent::LeftClick {
         position,
-        size: _,
         ..
       } => {
         let window = app.get_window("main").unwrap();

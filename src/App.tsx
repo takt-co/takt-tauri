@@ -1,6 +1,13 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { emit, listen } from '@tauri-apps/api/event'
 
 function App() {
+  const [recording, setRecording] = useState(false);
+
+  useEffect(() => {
+    emit("recording", recording);
+  }, [recording]);
+
   return (
     <div
       style={{
@@ -15,6 +22,10 @@ function App() {
       }}
     >
       <p>Takt</p>
+
+      <button onClick={() => {
+        setRecording(recording => !recording);
+      }}>{recording ? "stop" : "start"}</button>
     </div>
   );
 }
