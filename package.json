@@ -14,10 +14,16 @@
     "@types/node": "^16.7.13",
     "@types/react": "^17.0.20",
     "@types/react-dom": "^17.0.9",
+    "cross-var": "^1.1.0",
+    "dotenv": "^16.0.0",
+    "dotenv-cli": "^5.0.0",
+    "get-graphql-schema": "^2.1.2",
     "moment": "^2.29.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
+    "react-relay": "^13.2.0",
     "react-scripts": "5.0.0",
+    "relay-runtime": "^13.2.0",
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0"
   },
@@ -26,7 +32,24 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "generate-types": "relay-compiler",
+    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %API_AUTH_TOKEN%\" \"%GRAPHQL_URL%\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js"
+  },
+  "relay": {
+    "src": "./src/",
+    "schema": "./schema.graphql",
+    "language": "typescript",
+    "exclude": [
+      "**/node_modules/**",
+      "**/__mocks__/**",
+      "**/__generated__/**"
+    ]
+  },
+  "babel": {
+    "plugins": [
+      "relay"
+    ]
   },
   "eslintConfig": {
     "extends": [
@@ -48,6 +71,11 @@
   },
   "devDependencies": {
     "@tauri-apps/cli": "^1.0.0-rc.7",
-    "cross-env": "^7.0.3"
+    "@types/react-relay": "^13.0.1",
+    "@types/relay-runtime": "^13.0.2",
+    "babel-plugin-relay": "^13.2.0",
+    "cross-env": "^7.0.3",
+    "graphql": "^16.3.0",
+    "relay-compiler": "^13.2.0"
   }
 }
