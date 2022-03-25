@@ -55,8 +55,8 @@
     "windows": [
       {
         "title": "Takt",
-        "width": 320,
-        "height": 400,
+        "width": 380,
+        "height": 500,
         "resizable": false,
         "fullscreen": false,
         "decorations": false,
