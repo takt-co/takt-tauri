@@ -6,7 +6,8 @@ export const colors = {
   primary: "#0066cc" as HexColor,
   black: "#000000" as HexColor,
   white: "#ffffff" as HexColor,
-  offWhite: "#f9f9f9" as HexColor,
+  offWhite: "#dfe3e8" as HexColor,
+  gray: "#9c9c9c" as HexColor,
 }
 
 export const spacing = {
