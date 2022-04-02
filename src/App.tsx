@@ -1,18 +1,19 @@
-import React, { Suspense, useState } from 'react';
-import { Column, Row } from './components/Flex';
-import { colors } from './theme';
-import { AddIcon, Arrow as ArrowIcon, CalendarIcon } from './components/Icons';
+import React, { Suspense, useEffect, useState } from "react";
+import { Column, Row } from "./components/Flex";
+import { colors } from "./theme";
+import { AddIcon, Arrow as ArrowIcon, CalendarIcon } from "./components/Icons";
 import { Text } from "./components/Typography";
 import LogoSrc from "./assets/logo.png";
-import moment from 'moment';
-import { CircularProgress, Dialog, Link } from '@mui/material';
-import { RelayEnvironmentProvider, useLazyLoadQuery, useMutation } from 'react-relay';
-import RelayEnvironment from './RelayEnvironment';
-import { App_TimersQuery } from './__generated__/App_TimersQuery.graphql';
-import { ISO8601Date } from './types';
+import moment from "moment";
+import { CircularProgress, Dialog, Link } from "@mui/material";
+import { RelayEnvironmentProvider, useLazyLoadQuery, useMutation } from "react-relay";
+import RelayEnvironment from "./RelayEnvironment";
+import { App_TimersQuery } from "./__generated__/App_TimersQuery.graphql";
+import { ISO8601Date } from "./types";
 import { graphql } from "babel-plugin-relay/macro";
-import { AppStopRecordingMutation } from './__generated__/AppStopRecordingMutation.graphql';
-import { AppStartRecordingMutation } from './__generated__/AppStartRecordingMutation.graphql';
+import { emit } from "@tauri-apps/api/event";
+import { App_StopRecordingMutation } from "./__generated__/App_StopRecordingMutation.graphql";
+import { App_StartRecordingMutation } from "./__generated__/App_StartRecordingMutation.graphql";
 
 const secondsToClock = (seconds: number) => {
   const hours = Math.floor(seconds / 60 / 60);
@@ -84,6 +85,16 @@ const LoadingScreen = () => {
 const Timers = (props: {
   date: ISO8601Date;
 }) => {
+  const [timeNow, setTimeNow] = useState(moment());
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setTimeNow(moment());
+    }, 5000);
+
+    return () => { clearTimeout(timeout) }
+  }, [timeNow, setTimeNow]);
+
   const data = useLazyLoadQuery<App_TimersQuery>(graphql`
     query App_TimersQuery (
       $date: ISO8601Date!
@@ -99,6 +110,7 @@ const Timers = (props: {
             notes
             status
             seconds
+            lastActionAt
             task {
               id
               name
@@ -115,8 +127,12 @@ const Timers = (props: {
     date: props.date
   });
 
-  const [startRecording] = useMutation<AppStartRecordingMutation>(graphql`
-    mutation AppStartRecordingMutation (
+  useEffect(() => {
+    emit("recording", !!data.currentUser.recordingTimer);
+  }, [data.currentUser.recordingTimer]);
+
+  const [startRecording] = useMutation<App_StartRecordingMutation>(graphql`
+    mutation App_StartRecordingMutation (
       $timerId: ID!
     ) {
       startRecording(input: {
@@ -128,12 +144,17 @@ const Timers = (props: {
             id
           }
         }
+        timer {
+          id
+          seconds
+          lastActionAt
+        }
       }
     }
   `);
 
-  const [stopRecording] = useMutation<AppStopRecordingMutation>(graphql`
-    mutation AppStopRecordingMutation (
+  const [stopRecording] = useMutation<App_StopRecordingMutation>(graphql`
+    mutation App_StopRecordingMutation (
       $timerId: ID!
     ) {
       stopRecording(input: {
@@ -144,6 +165,11 @@ const Timers = (props: {
           recordingTimer {
             id
           }
+        }
+        timer {
+          id
+          seconds
+          lastActionAt
         }
       }
     }
@@ -167,8 +193,10 @@ const Timers = (props: {
 
       {data.currentUser.timers.nodes?.map(timer => {
         if (!timer) return null;
-        const clock = secondsToClock(timer.seconds);
+
         const recording = data.currentUser.recordingTimer?.id === timer.id;
+        const diff = recording ? timeNow.diff(moment(timer.lastActionAt), "seconds") : 0;
+        const clock = secondsToClock(timer.seconds + diff);
 
         return (
           <Row

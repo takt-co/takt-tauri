@@ -463,6 +463,7 @@ input StartRecordingInput {
 type StartRecordingPayload {
   """A unique identifier for the client performing the mutation."""
   clientMutationId: String
+  stoppedTimer: Timer
   timer: Timer!
   user: User!
 }
