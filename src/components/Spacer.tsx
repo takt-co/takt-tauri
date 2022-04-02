@@ -1,5 +1,17 @@
 import React, { DetailedHTMLProps, HTMLAttributes } from "react";
-import { spacing, Spacing } from "../theme";
+
+export const spacing = {
+  tiny: 8,
+  smaller: 12,
+  small: 18,
+  medium: 24,
+  large: 32,
+  larger: 48,
+  huge: 64,
+  gigantic: 96,
+};
+
+export type Spacing = keyof typeof spacing;
 
 type DivProps = DetailedHTMLProps<
   HTMLAttributes<HTMLDivElement>,

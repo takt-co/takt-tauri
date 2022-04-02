@@ -1,5 +1,5 @@
 import { CSSProperties, forwardRef, ReactNode } from "react";
-import { spacing, Spacing } from "../theme";
+import { spacing, Spacing } from "./Spacer";
 
 type FlexProps = {
   alignItems?: CSSProperties["alignItems"];

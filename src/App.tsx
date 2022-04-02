@@ -2,16 +2,32 @@ import React, { Suspense, useState } from 'react';
 import { Column, Row } from './components/Flex';
 import { colors } from './theme';
 import { AddIcon, Arrow as ArrowIcon, CalendarIcon } from './components/Icons';
+import { Text } from "./components/Typography";
 import LogoSrc from "./assets/logo.png";
 import moment from 'moment';
-import { Dialog } from '@mui/material';
-import { RelayEnvironmentProvider, useLazyLoadQuery } from 'react-relay';
+import { CircularProgress, Dialog, Link } from '@mui/material';
+import { RelayEnvironmentProvider, useLazyLoadQuery, useMutation } from 'react-relay';
 import RelayEnvironment from './RelayEnvironment';
 import { App_TimersQuery } from './__generated__/App_TimersQuery.graphql';
 import { ISO8601Date } from './types';
 import { graphql } from "babel-plugin-relay/macro";
+import { AppStopRecordingMutation } from './__generated__/AppStopRecordingMutation.graphql';
+import { AppStartRecordingMutation } from './__generated__/AppStartRecordingMutation.graphql';
 
-function App() {
+const secondsToClock = (seconds: number) => {
+  const hours = Math.floor(seconds / 60 / 60);
+  seconds = seconds - hours * 60 * 60;
+
+  let minutes = String(Math.floor(seconds / 60));
+  if (minutes.length === 1) minutes = `0${minutes}`;
+
+  let secondsStr = String(seconds - parseInt(minutes) * 60);
+  if (secondsStr.length === 1) secondsStr = `0${secondsStr}`;
+
+  return { hours: String(hours), minutes, seconds: secondsStr };
+};
+
+export const App = () => {
   const [date, setDate] = useState<ISO8601Date>(moment().toJSON());
   const [showingCalendar, setShowingCalendar] = useState(false);
 
@@ -27,12 +43,14 @@ function App() {
           }}
         />
 
-        <Content>
-          {/* TODO: loading screen */}
-          <Suspense fallback={() => <p>Loading</p>}>
+        <Column
+          grow={1}
+          style={{ background: colors.white }}
+        >
+          <Suspense fallback={() => (<LoadingScreen />)}>
             <Timers date={date} />
           </Suspense>
-        </Content>
+        </Column>
 
         <BottomBar />
 
@@ -50,6 +68,19 @@ function App() {
   );
 }
 
+const LoadingScreen = () => {
+  return (
+    <Column
+      fullWidth
+      fullHeight
+      alignItems="center"
+      justifyContent="center"
+    >
+      <CircularProgress />
+    </Column>
+  )
+}
+
 const Timers = (props: {
   date: ISO8601Date;
 }) => {
@@ -59,6 +90,9 @@ const Timers = (props: {
     ) {
       currentUser {
         id
+        recordingTimer {
+          id
+        }
         timers(endDate: $date, startDate: $date) {
           nodes {
             id
@@ -79,29 +113,128 @@ const Timers = (props: {
     }
   `, {
     date: props.date
-  })
+  });
+
+  const [startRecording] = useMutation<AppStartRecordingMutation>(graphql`
+    mutation AppStartRecordingMutation (
+      $timerId: ID!
+    ) {
+      startRecording(input: {
+        timerId: $timerId
+      }) {
+        user {
+          id
+          recordingTimer {
+            id
+          }
+        }
+      }
+    }
+  `);
+
+  const [stopRecording] = useMutation<AppStopRecordingMutation>(graphql`
+    mutation AppStopRecordingMutation (
+      $timerId: ID!
+    ) {
+      stopRecording(input: {
+        timerId: $timerId
+      }) {
+        user {
+          id
+          recordingTimer {
+            id
+          }
+        }
+      }
+    }
+  `);
 
   return (
     <>
-      {data.currentUser.timers.nodes?.map(timer => (
-        <Row
-          key={timer!.id}
-          justifyContent="space-between"
-          padding="small"
-          style={{
-            borderBottom: `1px solid ${colors.offWhite}`,
-          }}
-        >
-          <Column>
-            <p>{timer!.task.project.name}</p>
-            <p>{timer!.task.name}</p>
-          </Column>
-          <Row>
-            <p>7:32</p>
+      {data.currentUser.timers.nodes?.length === 0 && (
+        <Column fullHeight gap="smaller" justifyContent="center" alignItems="center">
+          <Text>No timers on this date</Text>
+          <Link
+            href="#"
+            onClick={() => {
+              // TODO: show form
+            }}
+          >
+            Add new
+          </Link>
+        </Column>
+      )}
+
+      {data.currentUser.timers.nodes?.map(timer => {
+        if (!timer) return null;
+        const clock = secondsToClock(timer.seconds);
+        const recording = data.currentUser.recordingTimer?.id === timer.id;
+
+        return (
+          <Row
+            key={timer.id}
+            justifyContent="space-between"
+            padding="small"
+            style={{
+              borderBottom: `1px solid ${colors.offWhite}`,
+            }}
+          >
+            <Column gap="tiny">
+              <Text strong>{timer.task.project.name}</Text>
+              <Text fontSize="detail">{timer.task.name}</Text>
+            </Column>
+            <Row alignItems="center" gap="smaller">
+              <Text fontSize="large">{clock.hours}:{clock.minutes}</Text>
+              <RecordButton
+                recording={recording}
+                onClick={() => {
+                  if (recording) {
+                    stopRecording({
+                      variables: { timerId: timer.id },
+                      optimisticResponse: {
+                        user: {
+                          id: data.currentUser.id,
+                          recordingTimer: null,
+                        }
+                      }
+                    })
+                  } else {
+                    startRecording({
+                      variables: { timerId: timer.id },
+                      optimisticResponse: {
+                        user: {
+                          id: data.currentUser.id,
+                          recordingTimer: { id: timer.id },
+                        }
+                      }
+                    })
+                  }
+                }}
+              />
+            </Row>
           </Row>
-        </Row>
-      ))}
+        )
+      })}
     </>
+  )
+}
+
+const RecordButton = (props: {
+  recording: boolean;
+  onClick: () => void;
+}) => {
+  return (
+    <span
+      onClick={props.onClick}
+      style={{
+        display: "block",
+        width: 16,
+        height: 16,
+        backgroundColor: props.recording ? colors.recording : colors.gray,
+        borderRadius: 100,
+        cursor: "pointer",
+      }}
+    />
   )
 }
 
@@ -160,7 +293,7 @@ const DateBar = (props: {
     : date.format("dddd, D MMMM YYYY");
 
   return (
-    <Row alignItems="center" justifyContent="space-between" padding="smallest" style={{ background: colors.offWhite, height: 46 }}>
+    <Row alignItems="center" justifyContent="space-between" padding="smaller" style={{ background: colors.offWhite, height: 46 }}>
       <ArrowIcon
         width={20}
         style={{
@@ -172,7 +305,7 @@ const DateBar = (props: {
         }}
       />
 
-      <p>{dateText}</p>
+      <Text>{dateText}</Text>
 
       <ArrowIcon
         width={20}
@@ -184,20 +317,6 @@ const DateBar = (props: {
     </Row>
   )
 };
-
-const Content = (props: {
-  children: React.ReactNode
-}) => {
-  return (
-    <Column
-      grow={1}
-      children={props.children}
-      style={{
-        background: colors.white,
-      }}
-    />
-  )
-}
 
 const BottomBar = () => {
   return (

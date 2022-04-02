@@ -8,7 +8,7 @@ export type JWT = NewType<string>;
 const sendRequest =
   (token: JWT, onNoAuth: () => void) =>
   async (params: { name: string; text?: string | null }, variables: Json) => {
-    const response = await fetch("https://api.takt.co/graphql", {
+    const response = await fetch(secrets.graphUrl, {
       method: "POST",
       headers: {
         Authorization: `Token ${token}`,
