@@ -1,7 +1,7 @@
 import { CSSProperties, forwardRef, ReactNode } from "react";
 import { spacing, Spacing } from "./Spacer";
 
-type FlexProps = {
+export type FlexProps = {
   alignItems?: CSSProperties["alignItems"];
   justifyContent?: CSSProperties["justifyContent"];
   children?: ReactNode;
@@ -18,6 +18,7 @@ type FlexProps = {
   shrink?: CSSProperties["flexShrink"];
   wrap?: CSSProperties["flexWrap"];
   grow?: CSSProperties["flexGrow"];
+  scrollable?: boolean;
 };
 
 export const Column = forwardRef<HTMLDivElement, FlexProps>(
@@ -38,6 +39,7 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
       style,
       wrap,
       grow,
+      scrollable,
       ...props
     }: FlexProps,
     ref,
@@ -58,6 +60,7 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
           gap: gap ? spacing[gap] : undefined,
           justifyContent,
           padding: padding ? spacing[padding] : undefined,
+          overflowY: scrollable ? "auto" : "hidden",
           ...(paddingHorizontal
             ? {
                 paddingLeft: spacing[paddingHorizontal],

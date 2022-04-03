@@ -73,3 +73,9 @@ export type DeepNonNull<T> = T extends primitive
   : T extends Array<infer U>
   ? Array<DeepNonNull<U>>
   : { readonly [P in keyof T]-?: DeepNonNull<T[P]> };
+
+type JsonPrimitive = number | null | string | boolean;
+type JsonObject = { [key: string]: Json };
+type JsonArray = Array<Json>;
+
+export type Json = JsonObject | JsonArray | JsonPrimitive;

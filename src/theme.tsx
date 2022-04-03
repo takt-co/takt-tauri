@@ -1,4 +1,4 @@
-import { NewType } from "./types";
+import { NewType } from "./Types";
 
 export type HexColor = NewType<string>;
 

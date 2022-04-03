@@ -1,7 +1,7 @@
 import { Environment, Network, RecordSource, Store } from "relay-runtime";
-import { Json } from "./Json";
+import { Json } from "./Types";
 import { secrets } from "./secrets";
-import { NewType } from "./types";
+import { NewType } from "./Types";
 
 export type JWT = NewType<string>;
 
