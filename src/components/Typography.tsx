@@ -26,6 +26,7 @@ export const Text = (props: TextProps) => {
       style={{
         fontSize: textFontSize ? fontSize[textFontSize] : fontSize.body,
         fontWeight: strong ? "bold" : "normal",
+        WebkitUserSelect: "none",
         ...style
       }}
       {...rest}

@@ -4,23 +4,22 @@ import { colors } from "./Theme";
 import { AddIcon, Arrow as ArrowIcon, CalendarIcon } from "./components/Icons";
 import { Text } from "./components/Typography";
 import LogoSrc from "./assets/logo.png";
-import moment from "moment";
+import moment, { Moment } from "moment";
 import { Button, CircularProgress, Dialog, FormControl, InputLabel, Link, MenuItem, Select, TextField } from "@mui/material";
 import { RelayEnvironmentProvider, useLazyLoadQuery, useMutation } from "react-relay";
 import RelayEnvironment from "./RelayEnvironment";
 import { App_TimersQuery } from "./__generated__/App_TimersQuery.graphql";
-import { ISO8601Date } from "./Types";
+import { ID } from "./Types";
 import { graphql } from "babel-plugin-relay/macro";
 import { emit } from "@tauri-apps/api/event";
 import { App_StopRecordingMutation } from "./__generated__/App_StopRecordingMutation.graphql";
 import { App_StartRecordingMutation } from "./__generated__/App_StartRecordingMutation.graphql";
 import { App_TimerFormQuery } from "./__generated__/App_TimerFormQuery.graphql";
 import { App_CreateTimerMutation, TimerAttributes } from "./__generated__/App_CreateTimerMutation.graphql";
+import { Spacer } from "./components/Spacer";
 
-const uniqueId = () =>
-  Math.floor((1 + Math.random()) * 0x10000)
-      .toString(16)
-      .substring(1)
+const dateFormFormat = "YYYY-MM-DD";
+type Timer = { id?: ID } & TimerAttributes;
 
 const secondsToClock = (seconds: number) => {
   const hours = Math.floor(seconds / 60 / 60);
@@ -40,30 +39,26 @@ const secondsToClock = (seconds: number) => {
 };
 
 type AppState = {
-  date: ISO8601Date,
-  fetchKey: string; // used to force refetch of data
+  date: Moment,
 } & ({
   tag: "viewingTimers",
 } | {
   tag: "addingTimer" | "editingTimer",
-  form: TimerAttributes,
+  form: Timer,
 });
 
 export const App = () => {
   const [state, setState] = useState<AppState>({
-    date: moment().toJSON(),
-    tag: "viewingTimers",
-    fetchKey: uniqueId(),
+    date: moment(),
+    tag: "viewingTimers"
   });
-
-  const [showingCalendar, setShowingCalendar] = useState(false);
 
   return (
     <RelayEnvironmentProvider environment={RelayEnvironment}>
-      <Column style={{ width: "100vw", height: "100vh", overflow: "hidden" }}>
+      <Column style={{ width: "100vw", height: "100vh", overflow: "hidden", borderRadius: 5 }}>
         <TopBar
           showCalendarButton={state.tag === "viewingTimers"}
-          onCalendarClick={() => { setShowingCalendar(true) }}
+          onCalendarClick={() => { }}
         />
 
         <Column
@@ -76,15 +71,21 @@ export const App = () => {
               <>
                 <DateBar
                   date={state.date}
-                  onDateChange={(date: moment.Moment) => {
-                    setState((prevState) => ({ ...prevState, date: date.toJSON() }))
+                  onDateChange={(date) => {
+                    setState((prevState) => ({ ...prevState, date }))
                   }}
                 />
 
                 <Suspense fallback={() => (<LoadingScreen />)}>
                   <Timers
                     date={state.date}
-                    fetchKey={state.fetchKey}
+                    onEdit={(timer) => {
+                      setState((prevState) => ({
+                        ...prevState,
+                        tag: "editingTimer",
+                        form: timer
+                      }))
+                    }}
                     onAddNew={() => {
                       setState((prevState) => ({
                         ...prevState,
@@ -92,7 +93,7 @@ export const App = () => {
                         form: {
                           taskId: "",
                           seconds: 0,
-                          date: prevState.date,
+                          date: prevState.date.format(dateFormFormat),
                           notes: "",
                         }
                       }))
@@ -115,7 +116,7 @@ export const App = () => {
                           form: {
                             taskId: "",
                             seconds: 0,
-                            date: prevState.date,
+                            date: prevState.date.format(dateFormFormat),
                             notes: "",
                           }
                         } : {
@@ -134,8 +135,7 @@ export const App = () => {
                   setState((prevState) => ({
                     ...prevState,
                     tag: "viewingTimers",
-                    date: timer.date,
-                    fetchKey: uniqueId(),
+                    date: moment(timer.date)
                   }))
                 }}
                 onCancel={() => {
@@ -147,16 +147,6 @@ export const App = () => {
             )}
           </Suspense>
         </Column>
-
-        <Dialog
-          open={showingCalendar}
-          onClose={() => { setShowingCalendar(false) }}
-          BackdropComponent={() => <Column />}
-        >
-          <Column>
-            {/* TODO: calendar picker */}
-          </Column>
-        </Dialog>
       </Column>
     </RelayEnvironmentProvider>
   );
@@ -176,8 +166,8 @@ const LoadingScreen = () => {
 }
 
 const Timers = (props: {
-  date: ISO8601Date;
-  fetchKey: string;
+  date: Moment;
+  onEdit: (timer: Timer) => void;
   onAddNew: () => void;
 }) => {
   const [timeNow, setTimeNow] = useState(moment());
@@ -206,6 +196,7 @@ const Timers = (props: {
             status
             seconds
             lastActionAt
+            date
             task {
               id
               name
@@ -219,9 +210,10 @@ const Timers = (props: {
       }
     }
   `, {
-    date: props.date
+    date: props.date.format(dateFormFormat)
   }, {
-    fetchKey: props.fetchKey
+    // TODO: only refetch after a create/update - fetchKey didn't work as anticipated
+    fetchPolicy: "store-and-network",
   });
 
   useEffect(() => {
@@ -289,7 +281,7 @@ const Timers = (props: {
   }
 
   return (
-    <Column fullHeight scrollable>
+    <Column fullHeight fullWidth scrollable>
       {data.currentUser.timers.nodes?.map(timer => {
         if (!timer) return null;
 
@@ -300,17 +292,54 @@ const Timers = (props: {
         return (
           <Row
             key={timer.id}
+            style={{ borderBottom: `1px solid ${colors.offWhite}` }}
             justifyContent="space-between"
+            alignItems="flex-start"
             padding="small"
-            style={{
-              borderBottom: `1px solid ${colors.offWhite}`,
-            }}
           >
-            <Column gap="tiny">
+            <Column alignItems="flex-start">
               <Text strong>{timer.task.project.name}</Text>
+              <Spacer size="tiny" />
               <Text fontSize="detail">{timer.task.name}</Text>
+              {timer.notes.length > 0 && (
+                <>
+                  <Spacer size="small" />
+                  <Column style={{ borderLeft: `1px solid ${colors.gray}`}} paddingHorizontal="tiny">
+                    <Text fontSize="detail" style={{ whiteSpace: "pre" }}>{timer.notes}</Text>
+                  </Column>
+                </>
+              )}
+              <Spacer size="small" />
+              <Row gap="tiny">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => {
+                    props.onEdit({
+                      id: timer.id,
+                      taskId: timer.task.id,
+                      // TODO: if currently recording, need to add time since last action
+                      seconds: timer.seconds,
+                      notes: timer.notes,
+                      date: timer.date,
+                    })
+                  }}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  size="small"
+                  onClick={() => {
+                    // TODO
+                  }}
+                >
+                  Delete
+                </Button>
+              </Row>
             </Column>
-            <Row alignItems="center" gap="smaller">
+            <Row alignItems="center" gap="smaller" paddingVertical="tiny">
               <Text fontSize="large">{clock.hours}:{clock.minutes}</Text>
               <RecordButton
                 recording={recording}
@@ -411,11 +440,10 @@ const TopBar = (props: {
 };
 
 const DateBar = (props: {
-  date: string,
-  onDateChange: (date: moment.Moment) => void;
+  date: Moment,
+  onDateChange: (date: Moment) => void;
 }) => {
-  const date = moment(props.date);
-
+  const { date } = props;
   const dateText = date.isSame(moment(), "day")
     ? "Today" : date.isSame(moment().add(1, "day"), "day")
     ? "Tomorrow" : date.isSame(moment().subtract(1, "day"), "day")
@@ -468,8 +496,8 @@ const BottomBar = (props: FlexProps) => {
 }
 
 const TimerForm = (props: {
-  timer: TimerAttributes;
-  afterSave: (timer: TimerAttributes) => void;
+  timer: Timer;
+  afterSave: (timer: Timer) => void;
   onCancel: () => void;
 }) => {
   const [internalTimer, setInternalTimer] = useState(props.timer);
@@ -516,6 +544,22 @@ const TimerForm = (props: {
     }
   `);
 
+  const [updateTimer] = useMutation(graphql`
+    mutation App_UpdateTimerMutation (
+      $timerId: ID!
+      $attributes: TimerAttributes!
+    ) {
+      updateTimer(input: {
+        timerId: $timerId,
+        attributes: $attributes
+      }) {
+        timer {
+          id
+        }
+      }
+    }
+  `)
+
   const projectTasks = data.currentUser.projects!.nodes!.flatMap(project => {
     return project!.tasks.nodes!.map(task => ({
       id: task!.id,
@@ -537,7 +581,7 @@ const TimerForm = (props: {
       />
 
       <FormControl fullWidth>
-        <InputLabel>Project Task</InputLabel>
+        <InputLabel>Project</InputLabel>
         <Select
           value={internalTimer.taskId}
           label="Project"
@@ -556,30 +600,39 @@ const TimerForm = (props: {
         fullWidth
         multiline
         rows={4}
+        value={internalTimer.notes}
+        onChange={(ev) => {
+          setInternalTimer((t) => ({ ...t, notes: ev.target.value }))
+        }}
       />
 
       <Row fullWidth justifyContent="center" gap="small">
         <Button
           variant="outlined"
           onClick={props.onCancel}
+          size="small"
         >
           Cancel
         </Button>
         <Button
           variant="contained"
+          disableElevation
+          size="small"
           color="primary"
           onClick={() => {
-            createTimer({
-              variables: {
-                attributes: internalTimer
-              },
-              onCompleted: () => {
-                props.afterSave(internalTimer);
-              },
-              onError: () => {
-                // TODO: handle errors
-              }
-            })
+            const { id: timerId, ...attributes } = internalTimer
+
+            if (timerId) {
+              updateTimer({
+                variables: { timerId, attributes },
+                onCompleted: () => { props.afterSave(internalTimer) },
+              })
+            } else {
+              createTimer({
+                variables: { attributes },
+                onCompleted: () => { props.afterSave(internalTimer) },
+              })
+            }
           }}
         >
           Save
