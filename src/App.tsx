@@ -4,8 +4,8 @@ import { colors } from "./Theme";
 import { AddIcon, Arrow as ArrowIcon, CalendarIcon } from "./components/Icons";
 import { Text } from "./components/Typography";
 import LogoSrc from "./assets/logo.png";
-import moment, { Moment } from "moment";
-import { Button, CircularProgress, Dialog, FormControl, InputLabel, Link, MenuItem, Select, TextField } from "@mui/material";
+import moment from "moment";
+import { CircularProgress, FormControl, InputLabel, Link, MenuItem, Select, TextField } from "@mui/material";
 import { RelayEnvironmentProvider, useLazyLoadQuery, useMutation } from "react-relay";
 import RelayEnvironment from "./RelayEnvironment";
 import { App_TimersQuery } from "./__generated__/App_TimersQuery.graphql";
@@ -17,9 +17,14 @@ import { App_StartRecordingMutation } from "./__generated__/App_StartRecordingMu
 import { App_TimerFormQuery } from "./__generated__/App_TimerFormQuery.graphql";
 import { App_CreateTimerMutation, TimerAttributes } from "./__generated__/App_CreateTimerMutation.graphql";
 import { Spacer } from "./components/Spacer";
+import { Button } from "./components/Button";
+import { useDebounced } from "./hooks/useDebounced";
 
-const dateFormFormat = "YYYY-MM-DD";
+const dateFormat = "YYYY-MM-DD";
 type Timer = { id?: ID } & TimerAttributes;
+
+// TODO: can the type force formatting? "YYYY-MM-DD"
+type DateString = string;
 
 const secondsToClock = (seconds: number) => {
   const hours = Math.floor(seconds / 60 / 60);
@@ -39,26 +44,30 @@ const secondsToClock = (seconds: number) => {
 };
 
 type AppState = {
-  date: Moment,
-} & ({
   tag: "viewingTimers",
 } | {
   tag: "addingTimer" | "editingTimer",
   form: Timer,
-});
+};
 
 export const App = () => {
+  const [date, setDate] = useState<DateString>(moment().format(dateFormat));
   const [state, setState] = useState<AppState>({
-    date: moment(),
     tag: "viewingTimers"
   });
+
+  useEffect(() => {
+    console.log("date changed", date);
+  }, [date]);
 
   return (
     <RelayEnvironmentProvider environment={RelayEnvironment}>
       <Column style={{ width: "100vw", height: "100vh", overflow: "hidden", borderRadius: 5 }}>
         <TopBar
           showCalendarButton={state.tag === "viewingTimers"}
-          onCalendarClick={() => { }}
+          onChangeDate={(date) => {
+            setDate(date);
+          }}
         />
 
         <Column
@@ -66,19 +75,17 @@ export const App = () => {
           fullHeight
           style={{ background: colors.white }}
         >
-          <Suspense fallback={() => (<LoadingScreen />)}>
+          <Suspense fallback={<LoadingScreen />}>
             {state.tag === "viewingTimers" ? (
               <>
                 <DateBar
-                  date={state.date}
-                  onDateChange={(date) => {
-                    setState((prevState) => ({ ...prevState, date }))
-                  }}
+                  date={date}
+                  onChangeDate={setDate}
                 />
 
-                <Suspense fallback={() => (<LoadingScreen />)}>
+                <Suspense fallback={<LoadingScreen />}>
                   <Timers
-                    date={state.date}
+                    date={date}
                     onEdit={(timer) => {
                       setState((prevState) => ({
                         ...prevState,
@@ -93,7 +100,7 @@ export const App = () => {
                         form: {
                           taskId: "",
                           seconds: 0,
-                          date: prevState.date.format(dateFormFormat),
+                          date,
                           notes: "",
                         }
                       }))
@@ -109,21 +116,15 @@ export const App = () => {
                       cursor: "pointer",
                     }}
                     onClick={() => {
-                      setState((prevState) => (
-                        prevState.tag === "viewingTimers" ? {
-                          ...prevState,
-                          tag: "addingTimer",
-                          form: {
-                            taskId: "",
-                            seconds: 0,
-                            date: prevState.date.format(dateFormFormat),
-                            notes: "",
-                          }
-                        } : {
-                          ...prevState,
-                          tag: "viewingTimers",
+                      setState({
+                        tag: "addingTimer",
+                        form: {
+                          taskId: "",
+                          seconds: 0,
+                          date,
+                          notes: "",
                         }
-                      ))
+                      })
                     }}
                   />
                 </BottomBar>
@@ -132,14 +133,11 @@ export const App = () => {
               <TimerForm
                 timer={state.form}
                 afterSave={(timer) => {
-                  setState((prevState) => ({
-                    ...prevState,
-                    tag: "viewingTimers",
-                    date: moment(timer.date)
-                  }))
+                  setDate(timer.date);
+                  setState({ tag: "viewingTimers" });
                 }}
                 onCancel={() => {
-                  setState((prevState) => ({ ...prevState, tag: "viewingTimers" }))
+                  setState({ tag: "viewingTimers" });
                 }}
               />
             ) : (
@@ -166,7 +164,7 @@ const LoadingScreen = () => {
 }
 
 const Timers = (props: {
-  date: Moment;
+  date: DateString;
   onEdit: (timer: Timer) => void;
   onAddNew: () => void;
 }) => {
@@ -210,7 +208,7 @@ const Timers = (props: {
       }
     }
   `, {
-    date: props.date.format(dateFormFormat)
+    date: props.date
   }, {
     // TODO: only refetch after a create/update - fetchKey didn't work as anticipated
     fetchPolicy: "store-and-network",
@@ -220,7 +218,7 @@ const Timers = (props: {
     emit("recording", !!data.currentUser.recordingTimer);
   }, [data.currentUser.recordingTimer]);
 
-  const [startRecording] = useMutation<App_StartRecordingMutation>(graphql`
+  const [startRecording, startRecordingInFlight] = useMutation<App_StartRecordingMutation>(graphql`
     mutation App_StartRecordingMutation (
       $timerId: ID!
     ) {
@@ -242,7 +240,7 @@ const Timers = (props: {
     }
   `);
 
-  const [stopRecording] = useMutation<App_StopRecordingMutation>(graphql`
+  const [stopRecording, stopRecordingInFlight] = useMutation<App_StopRecordingMutation>(graphql`
     mutation App_StopRecordingMutation (
       $timerId: ID!
     ) {
@@ -344,13 +342,24 @@ const Timers = (props: {
               <RecordButton
                 recording={recording}
                 onClick={() => {
+                  if (startRecordingInFlight || stopRecordingInFlight) {
+                    return;
+                  }
+
                   if (recording) {
                     stopRecording({
                       variables: { timerId: timer.id },
                       optimisticResponse: {
-                        user: {
-                          id: data.currentUser.id,
-                          recordingTimer: null,
+                        stopRecording: {
+                          timer: {
+                            id: timer.id,
+                            seconds: timer.seconds,
+                            lastActionAt: timer.lastActionAt,
+                          },
+                          user: {
+                            id: data.currentUser.id,
+                            recordingTimer: null,
+                          },
                         }
                       }
                     })
@@ -358,11 +367,18 @@ const Timers = (props: {
                     startRecording({
                       variables: { timerId: timer.id },
                       optimisticResponse: {
-                        user: {
-                          id: data.currentUser.id,
-                          recordingTimer: { id: timer.id },
+                        startRecording: {
+                          timer: {
+                            id: timer.id,
+                            seconds: timer.seconds,
+                            lastActionAt: timer.lastActionAt,
+                          },
+                          user: {
+                            id: data.currentUser.id,
+                            recordingTimer: null,
+                          },
                         }
-                      }
+                      },
                     })
                   }
                 }}
@@ -396,7 +412,7 @@ const RecordButton = (props: {
 
 const TopBar = (props: {
   showCalendarButton: boolean;
-  onCalendarClick: () => void;
+  onChangeDate: (date: DateString) => void;
 }) => {
   return (
     <Column>
@@ -423,6 +439,7 @@ const TopBar = (props: {
           height: 46,
           borderRadius: "5px 5px 0 0",
           marginTop: -1,
+          WebkitUserSelect: "none",
         }}
       >
         <img alt="Takt" src={LogoSrc} style={{ height: 20 }} />
@@ -430,7 +447,10 @@ const TopBar = (props: {
           <CalendarIcon
             height={20}
             fill={colors.white}
-            onClick={props.onCalendarClick}
+            onClick={() => {
+              const today = moment().startOf("day");
+              props.onChangeDate(today.format(dateFormat));
+            }}
             style={{ cursor: "pointer" }}
           />
         )}
@@ -440,15 +460,16 @@ const TopBar = (props: {
 };
 
 const DateBar = (props: {
-  date: Moment,
-  onDateChange: (date: Moment) => void;
+  date: DateString,
+  onChangeDate: (date: DateString) => void;
 }) => {
-  const { date } = props;
-  const dateText = date.isSame(moment(), "day")
-    ? "Today" : date.isSame(moment().add(1, "day"), "day")
-    ? "Tomorrow" : date.isSame(moment().subtract(1, "day"), "day")
-    ? "Yesterday"
-    : date.format("dddd, D MMMM YYYY");
+  // Preventing button spamming
+  const [internalDate, setInternalDate] = useState(props.date);
+  const debouncedDate = useDebounced(internalDate, 200);
+
+  useEffect(() => {
+    props.onChangeDate(debouncedDate);
+  }, [debouncedDate]);
 
   return (
     <Row alignItems="center" justifyContent="space-between" padding="smaller" style={{ background: colors.offWhite, height: 46 }}>
@@ -459,17 +480,23 @@ const DateBar = (props: {
           cursor: "pointer",
         }}
         onClick={() => {
-          props.onDateChange(date.subtract(1, "day"));
+          const date = moment(props.date, dateFormat);
+          date.startOf("day");
+          date.subtract(12, "hours");
+          setInternalDate(date.format(dateFormat));
         }}
       />
 
-      <Text>{dateText}</Text>
+      <Text>{moment(props.date).format("dddd, D MMMM YYYY")}</Text>
 
       <ArrowIcon
         width={20}
         style={{ cursor: "pointer" }}
         onClick={() => {
-          props.onDateChange(date.add(1, "day"));
+          const date = moment(props.date, dateFormat);
+          date.endOf("day");
+          date.add(12, "hours");
+          setInternalDate(date.format(dateFormat));
         }}
       />
     </Row>
@@ -530,7 +557,7 @@ const TimerForm = (props: {
     }
   `, {});
 
-  const [createTimer] = useMutation<App_CreateTimerMutation>(graphql`
+  const [createTimer, createTimerInFlight] = useMutation<App_CreateTimerMutation>(graphql`
     mutation App_CreateTimerMutation (
       $attributes: TimerAttributes!
     ) {
@@ -544,7 +571,7 @@ const TimerForm = (props: {
     }
   `);
 
-  const [updateTimer] = useMutation(graphql`
+  const [updateTimer, updateTimerInFlight] = useMutation(graphql`
     mutation App_UpdateTimerMutation (
       $timerId: ID!
       $attributes: TimerAttributes!
@@ -611,17 +638,18 @@ const TimerForm = (props: {
           variant="outlined"
           onClick={props.onCancel}
           size="small"
+          disabled={createTimerInFlight || updateTimerInFlight}
         >
           Cancel
         </Button>
         <Button
           variant="contained"
+          loading={createTimerInFlight || updateTimerInFlight}
           disableElevation
           size="small"
           color="primary"
           onClick={() => {
             const { id: timerId, ...attributes } = internalTimer
-
             if (timerId) {
               updateTimer({
                 variables: { timerId, attributes },

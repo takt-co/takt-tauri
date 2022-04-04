@@ -3,7 +3,7 @@ import React from "react"
 const fontSize = {
   large: 20,
   body: 16,
-  detail: 13,
+  detail: 14,
 }
 
 export type FontSize = keyof typeof fontSize;
