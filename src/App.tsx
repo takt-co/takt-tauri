@@ -16,7 +16,7 @@ import { App_StopRecordingMutation } from "./__generated__/App_StopRecordingMuta
 import { App_StartRecordingMutation } from "./__generated__/App_StartRecordingMutation.graphql";
 import { App_TimerFormQuery } from "./__generated__/App_TimerFormQuery.graphql";
 import { App_CreateTimerMutation, TimerAttributes } from "./__generated__/App_CreateTimerMutation.graphql";
-import { Spacer } from "./components/Spacer";
+import { Spacer, spacing } from "./components/Spacer";
 import { Button } from "./components/Button";
 import { useDebounced } from "./hooks/useDebounced";
 
@@ -121,12 +121,17 @@ export const App = () => {
                 </Suspense>
 
                 <BottomBar>
-                  <AddIcon
-                    width={18}
-                    fill={colors.gray}
-                    style={{
-                      cursor: "pointer",
-                    }}
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={
+                      <AddIcon
+                        width={12}
+                        height={12}
+                        fill={colors.primary}
+                        style={{ marginLeft: 4 }}
+                      />
+                    }
                     onClick={() => {
                       setState({
                         tag: "addingTimer",
@@ -138,7 +143,9 @@ export const App = () => {
                         }
                       })
                     }}
-                  />
+                  >
+                    Add timer
+                  </Button>
                 </BottomBar>
               </>
             ) : state.tag === "addingTimer" || state.tag === "editingTimer" ? (
@@ -278,14 +285,8 @@ const Timers = (props: {
 
   if (timers.length === 0) {
     return (
-      <Column fullHeight gap="smaller" justifyContent="center" alignItems="center">
+      <Column fullHeight justifyContent="center" alignItems="center">
         <Text>No timers on this date</Text>
-        <Link
-          href="#"
-          onClick={props.onAddNew}
-        >
-          Add new
-        </Link>
       </Column>
     )
   }
@@ -521,10 +522,9 @@ const BottomBar = (props: FlexProps) => {
       alignItems="center"
       justifyContent="flex-end"
       padding="smaller"
+      gap="smaller"
       style={{
         background: colors.white,
-        borderRadius: "0 0 5px 5px",
-        height: 45,
         borderTop: `1px solid ${colors.offWhite}`,
         ...style,
       }}
@@ -606,55 +606,57 @@ const TimerForm = (props: {
   })
 
   return (
-    <Column fullHeight padding="small" gap="small">
-      <Text fontSize="large" strong>{props.timer.id ? "Edit" : "Add"} timer</Text>
-      <TextField
-        fullWidth
-        type="date"
-        value={internalTimer.date}
-        onChange={(ev) => {
-          setInternalTimer((timer) => ({
-            ...timer, date: moment(ev.target.value).format("YYYY-MM-DD")
-          }))
-        }}
-      />
-
-      <FormControl fullWidth>
-        <InputLabel>Project</InputLabel>
-        <Select
-          value={internalTimer.taskId}
-          label="Project"
+    <Column fullHeight>
+      <Column fullHeight padding="small" gap="small">
+        <Text fontSize="large" strong>{props.timer.id ? "Edit" : "Add"} timer</Text>
+        <TextField
+          fullWidth
+          type="date"
+          value={internalTimer.date}
           onChange={(ev) => {
-            setInternalTimer((t) => ({ ...t, taskId: ev.target.value }))
-          }}
-        >
-          {projectTasks.map(t => (
-            <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <Row justifyContent="center">
-        <TimeInput
-          value={internalTimer.seconds ?? 0}
-          onChange={(seconds) => {
-            setInternalTimer((t) => ({ ...t, seconds }))
+            setInternalTimer((timer) => ({
+              ...timer, date: moment(ev.target.value).format("YYYY-MM-DD")
+            }))
           }}
         />
-      </Row>
 
-      <TextField
-        label="Notes"
-        fullWidth
-        multiline
-        rows={4}
-        value={internalTimer.notes}
-        onChange={(ev) => {
-          setInternalTimer((t) => ({ ...t, notes: ev.target.value }))
-        }}
-      />
+        <FormControl fullWidth>
+          <InputLabel>Project</InputLabel>
+          <Select
+            value={internalTimer.taskId}
+            label="Project"
+            onChange={(ev) => {
+              setInternalTimer((t) => ({ ...t, taskId: ev.target.value }))
+            }}
+          >
+            {projectTasks.map(t => (
+              <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
 
-      <Row fullWidth justifyContent="center" gap="small">
+        <Row justifyContent="center">
+          <TimeInput
+            value={internalTimer.seconds ?? 0}
+            onChange={(seconds) => {
+              setInternalTimer((t) => ({ ...t, seconds }))
+            }}
+          />
+        </Row>
+
+        <TextField
+          label="Notes"
+          fullWidth
+          multiline
+          rows={4}
+          value={internalTimer.notes}
+          onChange={(ev) => {
+            setInternalTimer((t) => ({ ...t, notes: ev.target.value }))
+          }}
+        />
+      </Column>
+
+      <BottomBar>
         <Button
           variant="outlined"
           onClick={props.onCancel}
@@ -686,7 +688,7 @@ const TimerForm = (props: {
         >
           Save
         </Button>
-      </Row>
+      </BottomBar>
     </Column>
   )
 }
