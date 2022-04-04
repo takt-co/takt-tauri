@@ -1,11 +1,16 @@
 # Takt tray app
-
 A React app wrapped in Tauri to create a desktop application.
 
-```sh
-# Dev
-$ yarn tauri dev
+## Getting started
+To begin, you'll need to make sure your local environment is setup to run Rust and Tauri.
+See their getting started for help: https://tauri.studio/docs/getting-started/prerequisites/
 
-# Production build
+## Running Locally
+```sh
+$ yarn tauri dev
+```
+
+# Create a new build
+```sh
 $ yarn tauri build
 ```
