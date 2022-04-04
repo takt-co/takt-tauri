@@ -7,6 +7,9 @@ See their getting started for help: https://tauri.studio/docs/getting-started/pr
 
 ## Running Locally
 ```sh
+# Update packages
+$ yarn install
+# Run Tauri and React app
 $ yarn tauri dev
 ```
 
