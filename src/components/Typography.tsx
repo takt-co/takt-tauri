@@ -1,12 +1,13 @@
 import React from "react"
 
-const fontSize = {
-  large: 20,
-  body: 16,
+export const fontSizes = {
   detail: 14,
+  body: 16,
+  large: 20,
+  xlarge: 28,
 }
 
-export type FontSize = keyof typeof fontSize;
+export type FontSize = keyof typeof fontSizes;
 
 type TextProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement> & {
   fontSize?: FontSize;
@@ -24,7 +25,7 @@ export const Text = (props: TextProps) => {
   return (
     <p
       style={{
-        fontSize: textFontSize ? fontSize[textFontSize] : fontSize.body,
+        fontSize: textFontSize ? fontSizes[textFontSize] : fontSizes.body,
         fontWeight: strong ? "bold" : "normal",
         WebkitUserSelect: "none",
         ...style

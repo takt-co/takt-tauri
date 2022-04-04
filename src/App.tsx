@@ -26,6 +26,12 @@ type Timer = { id?: ID } & TimerAttributes;
 // TODO: can the type force formatting? "YYYY-MM-DD"
 type DateString = string;
 
+type Clock = {
+  hours: string,
+  minutes: string,
+  seconds: string
+}
+
 const secondsToClock = (seconds: number) => {
   const hours = Math.floor(seconds / 60 / 60);
   seconds = seconds - hours * 60 * 60;
@@ -40,8 +46,14 @@ const secondsToClock = (seconds: number) => {
   let secondsStr = String(secs);
   if (secondsStr.length === 1) secondsStr = `0${secondsStr}`;
 
-  return { hours: String(hours), minutes, seconds: secondsStr };
+  return { hours: String(hours), minutes, seconds: secondsStr } as Clock;
 };
+
+const clockToSeconds = (clock: Clock) => {
+  const hours = parseInt(clock.hours) * 60 * 60;
+  const minutes = parseInt(clock.minutes) * 60;
+  return hours + minutes + parseInt(clock.seconds);
+}
 
 type AppState = {
   tag: "viewingTimers",
@@ -316,8 +328,7 @@ const Timers = (props: {
                     props.onEdit({
                       id: timer.id,
                       taskId: timer.task.id,
-                      // TODO: if currently recording, need to add time since last action
-                      seconds: timer.seconds,
+                      seconds: clockToSeconds(clock),
                       notes: timer.notes,
                       date: timer.date,
                     })
@@ -595,7 +606,8 @@ const TimerForm = (props: {
   })
 
   return (
-    <Column fullHeight alignItems="center" justifyContent="center" padding="small" gap="small">
+    <Column fullHeight padding="small" gap="small">
+      <Text fontSize="large" strong>{props.timer.id ? "Edit" : "Add"} timer</Text>
       <TextField
         fullWidth
         type="date"
@@ -621,6 +633,15 @@ const TimerForm = (props: {
           ))}
         </Select>
       </FormControl>
+
+      <Row justifyContent="center">
+        <TimeInput
+          value={internalTimer.seconds ?? 0}
+          onChange={(seconds) => {
+            setInternalTimer((t) => ({ ...t, seconds }))
+          }}
+        />
+      </Row>
 
       <TextField
         label="Notes"
@@ -667,6 +688,87 @@ const TimerForm = (props: {
         </Button>
       </Row>
     </Column>
+  )
+}
+
+const buildTimeOptions = (count: number) => {
+  return Array.from(Array(count).keys()).map((num) => {
+    let numStr = String(num);
+    if (numStr.length === 1) numStr = `0${numStr}`;
+    return { label: numStr, value: numStr };
+  });
+};
+
+const TimeInput = (props: {
+  value: number;
+  onChange: (seconds: number) => void;
+}) => {
+  const hourOptions = buildTimeOptions(24);
+  const minuteOptions = buildTimeOptions(60);
+
+  const clock = secondsToClock(props.value);
+
+  return (
+    <Row fullWidth justifyContent="space-between" alignItems="center" gap="small" paddingHorizontal="tiny">
+      <Button
+        variant="contained"
+        color="gray"
+        size="small"
+        fontSize="large"
+        onClick={() => {
+          let seconds = props.value - 60;
+          if (seconds < 0) seconds = 0;
+          props.onChange(seconds);
+        }}
+      >
+        -
+      </Button>
+      <FormControl fullWidth>
+        <InputLabel>Hrs</InputLabel>
+        <Select
+          size="small"
+          value={clock.hours.length === 1 ? `0${clock.hours}` : clock.hours}
+          label="Hrs"
+          onChange={(ev) => {
+            const seconds = clockToSeconds({ ...clock, hours: `${ev.target.value}` });
+            props.onChange(seconds)
+          }}
+        >
+          {hourOptions.map(hour => (
+            <MenuItem key={hour.value} value={hour.value}>{hour.label}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <FormControl fullWidth>
+        <InputLabel>Mins</InputLabel>
+        <Select
+          size="small"
+          value={clock.minutes}
+          label="Mins"
+          onChange={(ev) => {
+            const seconds = clockToSeconds({ ...clock, minutes: `${ev.target.value}` });
+            props.onChange(seconds)
+          }}
+        >
+          {minuteOptions.map(minute => (
+            <MenuItem key={minute.value} value={minute.value}>{minute.label}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+      <Button
+        variant="contained"
+        color="gray"
+        size="small"
+        fontSize="large"
+        onClick={() => {
+          let seconds = props.value + 60;
+          if (seconds > 86399) seconds = 86399; // 24 hrs in seconds (-1 second)
+          props.onChange(seconds);
+        }}
+      >
+        +
+      </Button>
+    </Row>
   )
 }
 

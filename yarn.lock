@@ -3960,6 +3960,11 @@ colord@^2.9.1:
   resolved "https://registry.npmjs.org/colord/-/colord-2.9.2.tgz"
   integrity sha512-Uqbg+J445nc1TKn4FoDPS6ZZqAvEDnwrH42yo8B40JSOgSLxMZ/gt3h4nmCtPLQeXhjJJkqBx7SCY35WnIixaQ==
 
+colord@^2.9.2:
+  version "2.9.2"
+  resolved "https://registry.yarnpkg.com/colord/-/colord-2.9.2.tgz#25e2bacbbaa65991422c07ea209e2089428effb1"
+  integrity sha512-Uqbg+J445nc1TKn4FoDPS6ZZqAvEDnwrH42yo8B40JSOgSLxMZ/gt3h4nmCtPLQeXhjJJkqBx7SCY35WnIixaQ==
+
 colorette@^2.0.10:
   version "2.0.16"
   resolved "https://registry.npmjs.org/colorette/-/colorette-2.0.16.tgz"
