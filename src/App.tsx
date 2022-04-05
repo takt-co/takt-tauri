@@ -1,7 +1,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Column, FlexProps, Row } from "./components/Flex";
-import { colors } from "./Theme";
-import { AddIcon, Arrow as ArrowIcon, CalendarIcon } from "./components/Icons";
+import { colors, darken } from "./Theme";
+import { AddIcon, SaveIcon, Arrow as ArrowIcon, CalendarIcon, MinusCircled, PlusCircled } from "./components/Icons";
 import { Text } from "./components/Typography";
 import LogoSrc from "./assets/logo.png";
 import moment from "moment";
@@ -121,6 +121,7 @@ export const App = () => {
                 </Suspense>
 
                 <BottomBar>
+                  <Spacer />
                   <Button
                     variant="outlined"
                     size="small"
@@ -129,7 +130,7 @@ export const App = () => {
                         width={12}
                         height={12}
                         fill={colors.primary}
-                        style={{ marginLeft: 4 }}
+                        style={{ marginLeft: 2 }}
                       />
                     }
                     onClick={() => {
@@ -338,7 +339,7 @@ const Timers = (props: {
                   Edit
                 </Button>
                 <Button
-                  variant="outlined"
+                  variant="text"
                   color="warning"
                   size="small"
                   onClick={() => {
@@ -520,7 +521,7 @@ const BottomBar = (props: FlexProps) => {
   return (
     <Row
       alignItems="center"
-      justifyContent="flex-end"
+      justifyContent="space-between"
       padding="smaller"
       gap="smaller"
       style={{
@@ -607,58 +608,67 @@ const TimerForm = (props: {
 
   return (
     <Column fullHeight>
-      <Column fullHeight padding="small" gap="small">
-        <Text fontSize="large" strong>{props.timer.id ? "Edit" : "Add"} timer</Text>
-        <TextField
-          fullWidth
-          type="date"
-          value={internalTimer.date}
-          onChange={(ev) => {
-            setInternalTimer((timer) => ({
-              ...timer, date: moment(ev.target.value).format("YYYY-MM-DD")
-            }))
-          }}
-        />
-
-        <FormControl fullWidth>
-          <InputLabel>Project</InputLabel>
-          <Select
-            value={internalTimer.taskId}
-            label="Project"
+      <Column fullHeight justifyContent="space-between">
+        <Column padding="small">
+          <Text fontSize="large" strong>
+            {props.timer.id ? "Edit" : "Add"} timer
+          </Text>
+        </Column>
+        <Column fullHeight justifyContent="space-between" padding="small">
+          <TextField
+            fullWidth
+            size="small"
+            label="Date"
+            type="date"
+            value={internalTimer.date}
             onChange={(ev) => {
-              setInternalTimer((t) => ({ ...t, taskId: ev.target.value }))
-            }}
-          >
-            {projectTasks.map(t => (
-              <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
-            ))}
-          </Select>
-        </FormControl>
-
-        <Row justifyContent="center">
-          <TimeInput
-            value={internalTimer.seconds ?? 0}
-            onChange={(seconds) => {
-              setInternalTimer((t) => ({ ...t, seconds }))
+              setInternalTimer((timer) => ({
+                ...timer, date: moment(ev.target.value).format("YYYY-MM-DD")
+              }))
             }}
           />
-        </Row>
 
-        <TextField
-          label="Notes"
-          fullWidth
-          multiline
-          rows={4}
-          value={internalTimer.notes}
-          onChange={(ev) => {
-            setInternalTimer((t) => ({ ...t, notes: ev.target.value }))
-          }}
-        />
+          <FormControl fullWidth>
+            <InputLabel>Project</InputLabel>
+            <Select
+              value={internalTimer.taskId}
+              size="small"
+              label="Project"
+              onChange={(ev) => {
+                setInternalTimer((t) => ({ ...t, taskId: ev.target.value }))
+              }}
+            >
+              {projectTasks.map(t => (
+                <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Row justifyContent="center">
+            <TimeInput
+              value={internalTimer.seconds ?? 0}
+              onChange={(seconds) => {
+                setInternalTimer((t) => ({ ...t, seconds }))
+              }}
+            />
+          </Row>
+
+          <TextField
+            label="Notes"
+            fullWidth
+            multiline
+            rows={5}
+            value={internalTimer.notes}
+            onChange={(ev) => {
+              setInternalTimer((t) => ({ ...t, notes: ev.target.value }))
+            }}
+          />
+        </Column>
       </Column>
 
       <BottomBar>
         <Button
-          variant="outlined"
+          variant="text"
           onClick={props.onCancel}
           size="small"
           disabled={createTimerInFlight || updateTimerInFlight}
@@ -669,6 +679,14 @@ const TimerForm = (props: {
           variant="contained"
           loading={createTimerInFlight || updateTimerInFlight}
           disableElevation
+          startIcon={
+            <SaveIcon
+              width={10}
+              height={10}
+              fill={colors.white}
+              style={{ marginLeft: 2 }}
+            />
+          }
           size="small"
           color="primary"
           onClick={() => {
@@ -686,7 +704,7 @@ const TimerForm = (props: {
             }
           }}
         >
-          Save
+          {props.timer.id ? "Update" : "Create"} timer
         </Button>
       </BottomBar>
     </Column>
@@ -713,8 +731,8 @@ const TimeInput = (props: {
   return (
     <Row fullWidth justifyContent="space-between" alignItems="center" gap="small" paddingHorizontal="tiny">
       <Button
-        variant="contained"
-        color="gray"
+        variant="text"
+        color="primary"
         size="small"
         fontSize="large"
         onClick={() => {
@@ -723,7 +741,7 @@ const TimeInput = (props: {
           props.onChange(seconds);
         }}
       >
-        -
+        <MinusCircled width={30} height={30} fill={colors.primary} />
       </Button>
       <FormControl fullWidth>
         <InputLabel>Hrs</InputLabel>
@@ -758,8 +776,8 @@ const TimeInput = (props: {
         </Select>
       </FormControl>
       <Button
-        variant="contained"
-        color="gray"
+        variant="text"
+        color="primary"
         size="small"
         fontSize="large"
         onClick={() => {
@@ -768,7 +786,7 @@ const TimeInput = (props: {
           props.onChange(seconds);
         }}
       >
-        +
+        <PlusCircled width={30} height={30} fill={colors.primary} />
       </Button>
     </Row>
   )

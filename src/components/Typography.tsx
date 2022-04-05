@@ -18,6 +18,7 @@ export const Text = (props: TextProps) => {
   const {
     style,
     strong,
+    color,
     fontSize: textFontSize,
     ...rest
   } = props;
@@ -28,6 +29,7 @@ export const Text = (props: TextProps) => {
         fontSize: textFontSize ? fontSizes[textFontSize] : fontSizes.body,
         fontWeight: strong ? "bold" : "normal",
         WebkitUserSelect: "none",
+        color: color,
         ...style
       }}
       {...rest}

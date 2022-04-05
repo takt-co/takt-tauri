@@ -27,9 +27,9 @@ export const Spacer = ({
 }: {
   axis?: "horizontal" | "vertical";
   flex?: number;
-  size: Spacing;
+  size?: Spacing;
 } & DivProps) => {
-  const pixels = spacing[size];
+  const pixels = spacing[size ?? "small"];
   const width = axis === "vertical" ? 1 : pixels;
   const height = axis === "horizontal" ? 1 : pixels;
   return (

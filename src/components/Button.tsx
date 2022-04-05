@@ -8,7 +8,7 @@ export const Button = (props: Omit<ButtonProps, "color"> & {
   color?: Color;
   fontSize?: FontSize;
 }) => {
-  const { loading, color, fontSize, ...rest } = props;
+  const { loading, color, fontSize, startIcon, ...rest } = props;
 
   let styles: SxProps<Theme> = {
     fontSize: fontSizes[fontSize ?? "detail"]
@@ -36,6 +36,13 @@ export const Button = (props: Omit<ButtonProps, "color"> & {
     }
   }
 
+  if (props.variant === "text") {
+    styles = {
+      ...styles,
+      color: colors[color ?? "primary"],
+    }
+  }
+
   return (
     <MaterialButton
       sx={styles}
@@ -50,7 +57,7 @@ export const Button = (props: Omit<ButtonProps, "color"> & {
               }
             }}
           />
-        ) : null
+        ) : props.startIcon
       }
       {...rest}
     />
