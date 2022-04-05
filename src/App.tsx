@@ -5,8 +5,6 @@ import { CalendarIcon } from "./components/Icons";
 import { Text } from "./components/Typography";
 import LogoSrc from "./assets/logo.png";
 import moment from "moment";
-import { RelayEnvironmentProvider } from "react-relay";
-import RelayEnvironment from "./RelayEnvironment";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { TimerForm } from "./components/TimerForm";
 import { DateString } from "./Types";
@@ -28,51 +26,49 @@ export const App = () => {
   });
 
   return (
-    <RelayEnvironmentProvider environment={RelayEnvironment}>
-      <Column style={{ width: "100vw", height: "100vh", overflow: "hidden", borderRadius: 5 }}>
-        <TopBar
-          showCalendarButton={state.tag === "viewingTimers"}
-          onChangeDate={(date) => {
-            setDate(date);
-          }}
-        />
+    <Column style={{ width: "100vw", height: "100vh", overflow: "hidden", borderRadius: 5 }}>
+      <TopBar
+        showCalendarButton={state.tag === "viewingTimers"}
+        onChangeDate={(date) => {
+          setDate(date);
+        }}
+      />
 
-        <Column
-          grow={1}
-          fullHeight
-          style={{ background: colors.white }}
-        >
-          <Suspense fallback={<LoadingScreen />}>
-            {state.tag === "viewingTimers" ? (
-              <TimersScreen
-                date={date}
-                setDate={setDate}
-                onAdd={() => {
-                  setState({ tag: "addingTimer" });
-                }}
-                onEdit={(timer) => {
-                  setState({ tag: "editingTimer", timer });
-                }}
-              />
-            ) : state.tag === "addingTimer" || state.tag === "editingTimer" ? (
-              <TimerForm
-                date={date}
-                timer={state.tag === "editingTimer" ? state.timer : null}
-                afterSave={(timer) => {
-                  setDate(timer.date);
-                  setState({ tag: "viewingTimers" });
-                }}
-                onCancel={() => {
-                  setState({ tag: "viewingTimers" });
-                }}
-              />
-            ) : (
-              <Text>Unexpected app state</Text>
-            )}
-          </Suspense>
-        </Column>
+      <Column
+        grow={1}
+        fullHeight
+        style={{ background: colors.white }}
+      >
+        <Suspense fallback={<LoadingScreen />}>
+          {state.tag === "viewingTimers" ? (
+            <TimersScreen
+              date={date}
+              setDate={setDate}
+              onAdd={() => {
+                setState({ tag: "addingTimer" });
+              }}
+              onEdit={(timer) => {
+                setState({ tag: "editingTimer", timer });
+              }}
+            />
+          ) : state.tag === "addingTimer" || state.tag === "editingTimer" ? (
+            <TimerForm
+              date={date}
+              timer={state.tag === "editingTimer" ? state.timer : null}
+              afterSave={(timer) => {
+                setDate(timer.date);
+                setState({ tag: "viewingTimers" });
+              }}
+              onCancel={() => {
+                setState({ tag: "viewingTimers" });
+              }}
+            />
+          ) : (
+            <Text>Unexpected app state</Text>
+          )}
+        </Suspense>
       </Column>
-    </RelayEnvironmentProvider>
+    </Column>
   );
 }
 
