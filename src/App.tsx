@@ -1,7 +1,7 @@
 import React, { Suspense, useEffect, useState } from "react";
 import { Column, FlexProps, Row } from "./components/Flex";
 import { colors, darken } from "./Theme";
-import { AddIcon, SaveIcon, Arrow as ArrowIcon, CalendarIcon, MinusCircled, PlusCircled } from "./components/Icons";
+import { AddIcon, SaveIcon, Arrow as ArrowIcon, CalendarIcon, MinusCircled, PlusCircled, TimerOffIcon } from "./components/Icons";
 import { Text } from "./components/Typography";
 import LogoSrc from "./assets/logo.png";
 import moment from "moment";
@@ -16,7 +16,7 @@ import { App_StopRecordingMutation } from "./__generated__/App_StopRecordingMuta
 import { App_StartRecordingMutation } from "./__generated__/App_StartRecordingMutation.graphql";
 import { App_TimerFormQuery } from "./__generated__/App_TimerFormQuery.graphql";
 import { App_CreateTimerMutation, TimerAttributes } from "./__generated__/App_CreateTimerMutation.graphql";
-import { Spacer, spacing } from "./components/Spacer";
+import { Spacer } from "./components/Spacer";
 import { Button } from "./components/Button";
 import { useDebounced } from "./hooks/useDebounced";
 
@@ -67,10 +67,6 @@ export const App = () => {
   const [state, setState] = useState<AppState>({
     tag: "viewingTimers"
   });
-
-  useEffect(() => {
-    console.log("date changed", date);
-  }, [date]);
 
   return (
     <RelayEnvironmentProvider environment={RelayEnvironment}>
@@ -286,8 +282,9 @@ const Timers = (props: {
 
   if (timers.length === 0) {
     return (
-      <Column fullHeight justifyContent="center" alignItems="center">
-        <Text>No timers on this date</Text>
+      <Column fullHeight justifyContent="center" alignItems="center" gap="small">
+        <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
+        <Text color="gray">No timers on this date</Text>
       </Column>
     )
   }
