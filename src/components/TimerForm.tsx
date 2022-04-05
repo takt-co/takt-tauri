@@ -14,14 +14,16 @@ import { colors } from "../Theme";
 import { TimerFormQuery } from "./__generated__/TimerFormQuery.graphql";
 import { TimerAttributes, TimerForm_CreateTimerMutation } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
 import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
-import { TimerCard_Timer$data } from "./__generated__/TimerCard_Timer.graphql";
+import { TimersScreen_Timer$data } from "./__generated__/TimersScreen_Timer.graphql";
+import { DateString } from "../Types";
 
 export const TimerForm = (props: {
-  timer: TimerCard_Timer$data | null;
-  afterSave: (timer: TimerCard_Timer$data) => void;
+  date: DateString;
+  timer: TimersScreen_Timer$data | null;
+  afterSave: (timer: TimersScreen_Timer$data) => void;
   onCancel: () => void;
 }) => {
-  const [internalTimer, setInternalTimer] = useState<TimerCard_Timer$data | null>(null);
+  const [internalTimer, setInternalTimer] = useState<TimersScreen_Timer$data | null>(null);
 
   useEffect(() => {
     setInternalTimer(props.timer ?? {
@@ -29,7 +31,7 @@ export const TimerForm = (props: {
       notes: "",
       seconds: 0,
       lastActionAt: moment().toISOString(),
-      date: "",
+      date: props.date,
       task: {
         id: "",
         name: "",
@@ -38,8 +40,8 @@ export const TimerForm = (props: {
           name: "",
         }
       }
-    } as TimerCard_Timer$data);
-  }, [props.timer]);
+    } as TimersScreen_Timer$data);
+  }, [props.timer, props.date]);
 
   const data = useLazyLoadQuery<TimerFormQuery>(graphql`
     query TimerFormQuery {
@@ -73,7 +75,7 @@ export const TimerForm = (props: {
         attributes: $attributes
       }) {
         timer {
-          ...TimerCard_Timer
+          ...TimersScreen_Timer
         }
       }
     }
@@ -89,7 +91,7 @@ export const TimerForm = (props: {
         attributes: $attributes
       }) {
         timer {
-          ...TimerCard_Timer
+          ...TimersScreen_Timer
         }
       }
     }
@@ -124,7 +126,7 @@ export const TimerForm = (props: {
             size="small"
             label="Date"
             type="date"
-            value={internalTimer?.date ?? "" as string}
+            value={internalTimer.date as string}
             onChange={(ev) => {
               setInternalTimer((timer) => ({
                 ...timer!, date: moment(ev.target.value).format("YYYY-MM-DD")
@@ -146,7 +148,7 @@ export const TimerForm = (props: {
               }}
             >
               {projectTasks.map(t => (
-                <MenuItem key={t.id} value={t.id}>{t.name}</MenuItem>
+                <MenuItem key={t.id} value={t.id}><strong>{t.project.name}</strong> - {t.name}</MenuItem>
               ))}
             </Select>
           </FormControl>

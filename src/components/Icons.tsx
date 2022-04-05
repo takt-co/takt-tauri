@@ -18,14 +18,6 @@ export const Arrow = (props: IconProps) => {
   )
 };
 
-// export const BinIcon = (props: IconProps) => {
-//   return (
-//     <svg viewBox="0 0 24 24" {...props}>
-//       <path d="M18,22H6V8H4v13.7C4,22.8,4.9,24,6,24h12c1.1,0,2-1.2,2-2.3V8h-2V22z M15,4V2H9v2H2v2h20V4H15z M9,10v10h2V10H9  z M13,10v10h2V10H13z" />
-//     </svg>
-//   );
-// };
-
 export const CalendarIcon = (props: IconProps) => {
   return (
     <svg viewBox="0 0 512 512" {...props}>
@@ -35,23 +27,6 @@ export const CalendarIcon = (props: IconProps) => {
     </svg>
   );
 };
-
-// export const ClearIcon = (props: IconProps) => {
-//   return (
-//     <svg viewBox="0 0 48 48" {...props}>
-//       <path d="M38 12.83l-2.83-2.83-11.17 11.17-11.17-11.17-2.83 2.83 11.17 11.17-11.17 11.17 2.83 2.83 11.17-11.17 11.17 11.17 2.83-2.83-11.17-11.17z" />
-//       <path d="M0 0h48v48h-48z" fill="none" />
-//     </svg>
-//   );
-// };
-
-// export const EditIcon = (props: IconProps) => {
-//   return (
-//     <svg viewBox="0 0 16 16" {...props}>
-//       <path d="M2.453,9.297C1.754,9.996,1,13.703,1,14c0,0.521,0.406,1,1,1c0.297,0,4.004-0.754,4.703-1.453l5.722-5.722l-4.25-4.25  L2.453,9.297z M12,1c-0.602,0-1.449,0.199-2.141,0.891L9.575,2.175l4.25,4.25l0.284-0.284C14.746,5.504,15,4.695,15,4  C15,2.343,13.656,1,12,1z" />
-//     </svg>
-//   );
-// };
 
 export const MinusCircled = (props: IconProps) => (
   <svg viewBox="0 0 32 32" {...props}>
@@ -77,14 +52,6 @@ export const PlusCircled = (props: IconProps) => (
     </g>
   </svg>
 )
-
-// export const TickIcon = (props: IconProps) => {
-//   return (
-//     <svg viewBox="0 0 64 64" {...props}>
-//       <path d="M21.33,57.82,0,36.53l5.87-5.87L21.33,46.09,58.13,9.36,64,15.23,21.33,57.82" />
-//     </svg>
-//   );
-// };
 
 export const SaveIcon = (props: IconProps) => (
   <svg viewBox="0 0 18 18" {...props}>
