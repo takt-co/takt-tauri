@@ -628,7 +628,7 @@ const TimerForm = (props: {
             }}
           />
 
-          <FormControl fullWidth>
+          <FormControl fullWidth size="small">
             <InputLabel>Project</InputLabel>
             <Select
               value={internalTimer.taskId}
