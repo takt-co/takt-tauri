@@ -6,7 +6,7 @@ import { Text } from "./components/Typography";
 import LogoSrc from "./assets/logo.png";
 import moment from "moment";
 import { CircularProgress, FormControl, InputLabel, Link, MenuItem, Select, TextField } from "@mui/material";
-import { RelayEnvironmentProvider, useLazyLoadQuery, useMutation } from "react-relay";
+import { RelayEnvironmentProvider, useFragment, useLazyLoadQuery, useMutation } from "react-relay";
 import RelayEnvironment from "./RelayEnvironment";
 import { App_TimersQuery } from "./__generated__/App_TimersQuery.graphql";
 import { ID } from "./Types";
@@ -19,6 +19,8 @@ import { App_CreateTimerMutation, TimerAttributes } from "./__generated__/App_Cr
 import { Spacer } from "./components/Spacer";
 import { Button } from "./components/Button";
 import { useDebounced } from "./hooks/useDebounced";
+import { App_TimerCard_Timer$data, App_TimerCard_Timer$key } from "./__generated__/App_TimerCard_Timer.graphql";
+import { App_UpdateTimerMutation } from "./__generated__/App_UpdateTimerMutation.graphql";
 
 const dateFormat = "YYYY-MM-DD";
 type Timer = { id?: ID } & TimerAttributes;
@@ -56,10 +58,10 @@ const clockToSeconds = (clock: Clock) => {
 }
 
 type AppState = {
-  tag: "viewingTimers",
+  tag: "viewingTimers" | "addingTimer",
 } | {
-  tag: "addingTimer" | "editingTimer",
-  form: Timer,
+  tag: "editingTimer",
+  timer: App_TimerCard_Timer$data,
 };
 
 export const App = () => {
@@ -95,23 +97,10 @@ export const App = () => {
                   <Timers
                     date={date}
                     onEdit={(timer) => {
-                      setState((prevState) => ({
-                        ...prevState,
-                        tag: "editingTimer",
-                        form: timer
-                      }))
+                      setState({ tag: "editingTimer", timer });
                     }}
                     onAddNew={() => {
-                      setState((prevState) => ({
-                        ...prevState,
-                        tag: "addingTimer",
-                        form: {
-                          taskId: "",
-                          seconds: 0,
-                          date,
-                          notes: "",
-                        }
-                      }))
+                      setState({ tag: "addingTimer" });
                     }}
                   />
                 </Suspense>
@@ -130,15 +119,7 @@ export const App = () => {
                       />
                     }
                     onClick={() => {
-                      setState({
-                        tag: "addingTimer",
-                        form: {
-                          taskId: "",
-                          seconds: 0,
-                          date,
-                          notes: "",
-                        }
-                      })
+                      setState({ tag: "addingTimer" })
                     }}
                   >
                     Add timer
@@ -147,7 +128,7 @@ export const App = () => {
               </>
             ) : state.tag === "addingTimer" || state.tag === "editingTimer" ? (
               <TimerForm
-                timer={state.form}
+                timer={state.tag === "editingTimer" ? state.timer : null}
                 afterSave={(timer) => {
                   setDate(timer.date);
                   setState({ tag: "viewingTimers" });
@@ -181,7 +162,7 @@ const LoadingScreen = () => {
 
 const Timers = (props: {
   date: DateString;
-  onEdit: (timer: Timer) => void;
+  onEdit: (timer: App_TimerCard_Timer$data) => void;
   onAddNew: () => void;
 }) => {
   const [timeNow, setTimeNow] = useState(moment());
@@ -206,19 +187,9 @@ const Timers = (props: {
         timers(endDate: $date, startDate: $date) {
           nodes {
             id
-            notes
-            status
             seconds
             lastActionAt
-            date
-            task {
-              id
-              name
-              project {
-                id
-                name
-              }
-            }
+            ...App_TimerCard_Timer
           }
         }
       }
@@ -234,6 +205,70 @@ const Timers = (props: {
     emit("recording", !!data.currentUser.recordingTimer);
   }, [data.currentUser.recordingTimer]);
 
+  const timers = data.currentUser.timers.nodes ?? [];
+
+  if (timers.length === 0) {
+    return (
+      <Column fullHeight justifyContent="center" alignItems="center" gap="small">
+        <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
+        <Text color="gray">No timers on this date</Text>
+      </Column>
+    )
+  }
+
+  return (
+    <Column fullHeight fullWidth scrollable>
+      {data.currentUser.timers.nodes?.map(timer => {
+        if (!timer) return;
+
+        const recording = timer.id === data.currentUser.recordingTimer?.id;
+        const diff = recording ? timeNow.diff(moment(timer.lastActionAt), "seconds") : 0;
+        const clock = secondsToClock(timer.seconds + diff);
+
+        return (
+          <TimerCard
+            key={timer.id}
+            timer={timer}
+            clock={clock}
+            currentUserId={data.currentUser.id}
+            recording={recording}
+            onEdit={props.onEdit}
+            onDelete={() => {}}
+          />
+        )
+      })}
+    </Column>
+  )
+}
+
+const TimerCard = (props: {
+  timer: App_TimerCard_Timer$key;
+  clock: Clock;
+  recording: boolean;
+  currentUserId: ID;
+  onEdit: (timer: App_TimerCard_Timer$data) => void;
+  onDelete: () => void;
+}) => {
+  const { clock, recording, currentUserId } = props;
+
+  const timer = useFragment(graphql`
+    fragment App_TimerCard_Timer on Timer {
+      id
+      notes
+      seconds
+      lastActionAt
+      date
+      task {
+        id
+        name
+        project {
+          id
+          name
+        }
+      }
+    }
+  `, props.timer);
+
   const [startRecording, startRecordingInFlight] = useMutation<App_StartRecordingMutation>(graphql`
     mutation App_StartRecordingMutation (
       $timerId: ID!
@@ -248,9 +283,7 @@ const Timers = (props: {
           }
         }
         timer {
-          id
-          seconds
-          lastActionAt
+          ...App_TimerCard_Timer
         }
       }
     }
@@ -270,134 +303,109 @@ const Timers = (props: {
           }
         }
         timer {
-          id
-          seconds
-          lastActionAt
+          ...App_TimerCard_Timer
         }
       }
     }
   `);
 
-  const timers = data.currentUser.timers.nodes ?? [];
-
-  if (timers.length === 0) {
-    return (
-      <Column fullHeight justifyContent="center" alignItems="center" gap="small">
-        <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
-        <Text color="gray">No timers on this date</Text>
-      </Column>
-    )
-  }
-
   return (
-    <Column fullHeight fullWidth scrollable>
-      {data.currentUser.timers.nodes?.map(timer => {
-        if (!timer) return null;
+    <Row
+      key={timer.id}
+      style={{ borderBottom: `1px solid ${colors.offWhite}` }}
+      justifyContent="space-between"
+      alignItems="flex-start"
+      padding="small"
+    >
+      <Column alignItems="flex-start" gap="small" fullWidth>
+        <Row fullWidth alignItems="center">
+          <Column fullWidth gap="tiny">
+            <Text strong>{timer.task.project.name}</Text>
+            <Text fontSize="detail">{timer.task.name}</Text>
+          </Column>
+          <Row alignItems="center" gap="smaller">
+            <Text fontSize="large">{clock.hours}:{clock.minutes}</Text>
+            <RecordButton
+              recording={recording}
+              onClick={() => {
+                if (startRecordingInFlight || stopRecordingInFlight) {
+                  return;
+                }
 
-        const recording = data.currentUser.recordingTimer?.id === timer.id;
-        const diff = recording ? timeNow.diff(moment(timer.lastActionAt), "seconds") : 0;
-        const clock = secondsToClock(timer.seconds + diff);
-
-        return (
-          <Row
-            key={timer.id}
-            style={{ borderBottom: `1px solid ${colors.offWhite}` }}
-            justifyContent="space-between"
-            alignItems="flex-start"
-            padding="small"
-          >
-            <Column alignItems="flex-start">
-              <Text strong>{timer.task.project.name}</Text>
-              <Spacer size="tiny" />
-              <Text fontSize="detail">{timer.task.name}</Text>
-              {timer.notes.length > 0 && (
-                <>
-                  <Spacer size="small" />
-                  <Column style={{ borderLeft: `1px solid ${colors.gray}`}} paddingHorizontal="tiny">
-                    <Text fontSize="detail" style={{ whiteSpace: "pre" }}>{timer.notes}</Text>
-                  </Column>
-                </>
-              )}
-              <Spacer size="small" />
-              <Row gap="tiny">
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => {
-                    props.onEdit({
-                      id: timer.id,
-                      taskId: timer.task.id,
-                      seconds: clockToSeconds(clock),
-                      notes: timer.notes,
-                      date: timer.date,
-                    })
-                  }}
-                >
-                  Edit
-                </Button>
-                <Button
-                  variant="text"
-                  color="warning"
-                  size="small"
-                  onClick={() => {
-                    // TODO
-                  }}
-                >
-                  Delete
-                </Button>
-              </Row>
-            </Column>
-            <Row alignItems="center" gap="smaller" paddingVertical="tiny">
-              <Text fontSize="large">{clock.hours}:{clock.minutes}</Text>
-              <RecordButton
-                recording={recording}
-                onClick={() => {
-                  if (startRecordingInFlight || stopRecordingInFlight) {
-                    return;
-                  }
-
-                  if (recording) {
-                    stopRecording({
-                      variables: { timerId: timer.id },
-                      optimisticResponse: {
-                        stopRecording: {
-                          timer: {
-                            id: timer.id,
-                            seconds: timer.seconds,
-                            lastActionAt: timer.lastActionAt,
-                          },
-                          user: {
-                            id: data.currentUser.id,
-                            recordingTimer: null,
-                          },
-                        }
+                if (recording) {
+                  stopRecording({
+                    variables: { timerId: timer.id },
+                    optimisticResponse: {
+                      stopRecording: {
+                        timer: {
+                          ...timer,
+                          seconds: timer.seconds,
+                          lastActionAt: moment().toISOString(),
+                        },
+                        user: {
+                          id: currentUserId,
+                          recordingTimer: null,
+                        },
                       }
-                    })
-                  } else {
-                    startRecording({
-                      variables: { timerId: timer.id },
-                      optimisticResponse: {
-                        startRecording: {
-                          timer: {
+                    }
+                  })
+                } else {
+                  startRecording({
+                    variables: { timerId: timer.id },
+                    optimisticResponse: {
+                      startRecording: {
+                        timer: {
+                          ...timer,
+                          seconds: timer.seconds,
+                          lastActionAt: timer.lastActionAt,
+                        },
+                        user: {
+                          id: currentUserId,
+                          recordingTimer: {
                             id: timer.id,
-                            seconds: timer.seconds,
-                            lastActionAt: timer.lastActionAt,
                           },
-                          user: {
-                            id: data.currentUser.id,
-                            recordingTimer: null,
-                          },
-                        }
-                      },
-                    })
-                  }
-                }}
-              />
-            </Row>
+                        },
+                      }
+                    },
+                  })
+                }
+              }}
+            />
           </Row>
-        )
-      })}
-    </Column>
+        </Row>
+
+        {timer.notes.length > 0 && (
+          <Column style={{ borderLeft: `1px solid ${colors.gray}`}} paddingHorizontal="tiny">
+            <Text
+              fontSize="detail"
+              style={{ whiteSpace: "pre-wrap", lineHeight: 1.5, color: colors.darkGray }}
+            >
+              {timer.notes}
+            </Text>
+          </Column>
+        )}
+
+        <Row gap="tiny">
+          <Button
+            variant="outlined"
+            size="small"
+            onClick={() => {
+              props.onEdit({ ...timer, seconds: clockToSeconds(clock) })
+            }}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="text"
+            color="warning"
+            size="small"
+            onClick={props.onDelete}
+          >
+            Delete
+          </Button>
+        </Row>
+      </Column>
+    </Row>
   )
 }
 
@@ -532,14 +540,28 @@ const BottomBar = (props: FlexProps) => {
 }
 
 const TimerForm = (props: {
-  timer: Timer;
-  afterSave: (timer: Timer) => void;
+  timer: App_TimerCard_Timer$data | null;
+  afterSave: (timer: App_TimerCard_Timer$data) => void;
   onCancel: () => void;
 }) => {
-  const [internalTimer, setInternalTimer] = useState(props.timer);
+  const [internalTimer, setInternalTimer] = useState<App_TimerCard_Timer$data | null>(null);
 
   useEffect(() => {
-    setInternalTimer(props.timer);
+    setInternalTimer(props.timer ?? {
+      id: "",
+      notes: "",
+      seconds: 0,
+      lastActionAt: moment().toISOString(),
+      date: "",
+      task: {
+        id: "",
+        name: "",
+        project: {
+          id: "",
+          name: "",
+        }
+      }
+    } as App_TimerCard_Timer$data);
   }, [props.timer]);
 
   const data = useLazyLoadQuery<App_TimerFormQuery>(graphql`
@@ -574,13 +596,13 @@ const TimerForm = (props: {
         attributes: $attributes
       }) {
         timer {
-          id
+          ...App_TimerCard_Timer
         }
       }
     }
   `);
 
-  const [updateTimer, updateTimerInFlight] = useMutation(graphql`
+  const [updateTimer, updateTimerInFlight] = useMutation<App_UpdateTimerMutation>(graphql`
     mutation App_UpdateTimerMutation (
       $timerId: ID!
       $attributes: TimerAttributes!
@@ -590,7 +612,7 @@ const TimerForm = (props: {
         attributes: $attributes
       }) {
         timer {
-          id
+          ...App_TimerCard_Timer
         }
       }
     }
@@ -599,16 +621,24 @@ const TimerForm = (props: {
   const projectTasks = data.currentUser.projects!.nodes!.flatMap(project => {
     return project!.tasks.nodes!.map(task => ({
       id: task!.id,
-      name: `${project!.name} - ${task!.name}`,
+      name: task!.name,
+      project: {
+        id: project!.id,
+        name: project!.name
+      }
     }))
   })
+
+  if (!internalTimer) {
+    return <LoadingScreen />
+  }
 
   return (
     <Column fullHeight>
       <Column fullHeight justifyContent="space-between">
         <Column padding="small">
           <Text fontSize="large" strong>
-            {props.timer.id ? "Edit" : "Add"} timer
+            {props.timer ? "Edit" : "Add"} timer
           </Text>
         </Column>
         <Column fullHeight justifyContent="space-between" padding="small">
@@ -617,10 +647,10 @@ const TimerForm = (props: {
             size="small"
             label="Date"
             type="date"
-            value={internalTimer.date}
+            value={internalTimer?.date ?? "" as string}
             onChange={(ev) => {
               setInternalTimer((timer) => ({
-                ...timer, date: moment(ev.target.value).format("YYYY-MM-DD")
+                ...timer!, date: moment(ev.target.value).format("YYYY-MM-DD")
               }))
             }}
           />
@@ -628,11 +658,14 @@ const TimerForm = (props: {
           <FormControl fullWidth size="small">
             <InputLabel>Project</InputLabel>
             <Select
-              value={internalTimer.taskId}
+              value={internalTimer.task.id}
               size="small"
               label="Project"
               onChange={(ev) => {
-                setInternalTimer((t) => ({ ...t, taskId: ev.target.value }))
+                const task = projectTasks.find(t => t.id === ev.target.value);
+                if (task) {
+                  setInternalTimer((timer) => ({ ...timer!, task }));
+                }
               }}
             >
               {projectTasks.map(t => (
@@ -645,7 +678,7 @@ const TimerForm = (props: {
             <TimeInput
               value={internalTimer.seconds ?? 0}
               onChange={(seconds) => {
-                setInternalTimer((t) => ({ ...t, seconds }))
+                setInternalTimer((timer) => ({ ...timer!, seconds }))
               }}
             />
           </Row>
@@ -657,7 +690,7 @@ const TimerForm = (props: {
             rows={5}
             value={internalTimer.notes}
             onChange={(ev) => {
-              setInternalTimer((t) => ({ ...t, notes: ev.target.value }))
+              setInternalTimer((timer) => ({ ...timer!, notes: ev.target.value }))
             }}
           />
         </Column>
@@ -687,21 +720,37 @@ const TimerForm = (props: {
           size="small"
           color="primary"
           onClick={() => {
-            const { id: timerId, ...attributes } = internalTimer
-            if (timerId) {
+            const attributes: TimerAttributes = {
+              taskId: internalTimer.task.id,
+              date: internalTimer.date,
+              notes: internalTimer.notes,
+              seconds: internalTimer.seconds,
+            }
+
+            if (props.timer) {
               updateTimer({
-                variables: { timerId, attributes },
-                onCompleted: () => { props.afterSave(internalTimer) },
+                variables: { timerId: props.timer.id, attributes },
+                optimisticResponse: {
+                  updateTimer: {
+                    timer: internalTimer!
+                  }
+                },
               })
             } else {
               createTimer({
                 variables: { attributes },
-                onCompleted: () => { props.afterSave(internalTimer) },
+                optimisticResponse: {
+                  createTimer: {
+                    timer: internalTimer!
+                  }
+                },
               })
             }
+
+            props.afterSave(internalTimer);
           }}
         >
-          {props.timer.id ? "Update" : "Create"} timer
+          {props.timer ? "Update" : "Create"} timer
         </Button>
       </BottomBar>
     </Column>
