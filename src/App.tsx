@@ -56,6 +56,7 @@ export const App = () => {
               date={date}
               timer={state.tag === "editingTimer" ? state.timer : null}
               afterSave={(timer) => {
+                // TODO: created timer not showing after create
                 setDate(timer.date);
                 setState({ tag: "viewingTimers" });
               }}

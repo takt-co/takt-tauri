@@ -19,6 +19,8 @@ import { TimersScreen_Timer$data, TimersScreen_Timer$key } from "./__generated__
 import { TimersScreenQuery } from "./__generated__/TimersScreenQuery.graphql";
 import { TimersScreen_StartRecordingMutation } from "./__generated__/TimersScreen_StartRecordingMutation.graphql";
 import { TimersScreen_StopRecordingMutation } from "./__generated__/TimersScreen_StopRecordingMutation.graphql";
+import { useDialog } from "./Dialog";
+import { TimersScreen_DeleteMutation } from "./__generated__/TimersScreen_DeleteMutation.graphql";
 
 export const TimersScreen = (props: {
   date: DateString;
@@ -114,6 +116,7 @@ const Timers = (props: {
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
 }) => {
+  const dialog = useDialog();
   const [timeNow, setTimeNow] = useState(moment());
 
   useEffect(() => {
@@ -150,6 +153,24 @@ const Timers = (props: {
     fetchPolicy: "store-and-network",
   });
 
+  const [deleteTimer, deleteTimerInFlight] = useMutation<TimersScreen_DeleteMutation>(graphql`
+    mutation TimersScreen_DeleteMutation (
+      $timerId: ID!
+    ) {
+      deleteTimer(input: {
+        timerId: $timerId
+      }) {
+        timer {
+          id
+          lastActionAt
+          status
+          seconds
+          ...TimersScreen_Timer
+        }
+      }
+    }
+  `);
+
   useEffect(() => {
     emit("recording", !!data.currentUser.recordingTimer);
   }, [data.currentUser.recordingTimer]);
@@ -182,7 +203,17 @@ const Timers = (props: {
             currentUserId={data.currentUser.id}
             recording={recording}
             onEdit={props.onEdit}
-            onDelete={() => {}}
+            onDelete={() => {
+              dialog.confirm({
+                title: "Delete timer",
+                body: "Are you sure you want to delete this timer?",
+                confirmColor: "warning",
+                confirmLabel: "Delete",
+                onConfirm: () => {
+                  window.alert("TODO");
+                }
+              });
+            }}
           />
         )
       })}
@@ -198,6 +229,7 @@ const TimerCard = (props: {
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onDelete: () => void;
 }) => {
+  const dialog = useDialog();
   const { clock, recording, currentUserId } = props;
 
   const timer = useFragment(graphql`
@@ -306,7 +338,7 @@ const TimerCard = (props: {
                         timer: {
                           ...timer,
                           seconds: timer.seconds,
-                          lastActionAt: timer.lastActionAt,
+                          lastActionAt: moment().toISOString(),
                         },
                         user: {
                           id: currentUserId,
@@ -348,7 +380,9 @@ const TimerCard = (props: {
             variant="text"
             color="warning"
             size="small"
-            onClick={props.onDelete}
+            onClick={() => {
+              props.onDelete();
+            }}
           >
             Delete
           </Button>
@@ -369,7 +403,7 @@ const RecordButton = (props: {
         display: "block",
         width: 16,
         height: 16,
-        backgroundColor: props.recording ? colors.recording : colors.gray,
+        backgroundColor: props.recording ? colors.warning : colors.gray,
         borderRadius: 100,
         cursor: "pointer",
       }}

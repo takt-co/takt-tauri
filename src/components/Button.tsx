@@ -1,7 +1,9 @@
 import React from "react"
 import { Button as MaterialButton, ButtonProps, CircularProgress, SxProps, Theme } from "@mui/material"
-import { Color, colors, darken, lighten } from "../Theme";
+import { Color, colors, darken } from "../Theme";
 import { FontSize, fontSizes } from "./Typography";
+
+export type ButtonVariant = "text" | "contained" | "outlined";
 
 export const Button = (props: Omit<ButtonProps, "color"> & {
   loading?: boolean;
