@@ -32,10 +32,6 @@ export const TimersScreen = (props: {
 }) => {
   const { date, setDate } = props;
 
-  useEffect(() => {
-    console.log("TimersScreen date updated:", date);
-  }, [date]);
-
   return (
     <Column fullWidth fullHeight style={{ display: props.visible ? "flex" : "none"}}>
       <DateBar
@@ -130,8 +126,7 @@ const Timers = (props: {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setTimeNow(moment());
-    }, 5000);
-
+    }, 1000);
     return () => { clearTimeout(timeout) }
   }, [timeNow, setTimeNow]);
 
@@ -214,7 +209,8 @@ const Timers = (props: {
         if (!timer) return null;
 
         const recording = timer.id === data.currentUser.recordingTimer?.id;
-        const diff = recording ? timeNow.diff(moment(timer.lastActionAt), "seconds") : 0;
+        let diff = recording ? moment().diff(moment(timer.lastActionAt), "seconds") : 0;
+        if (diff < 0) diff = 0;
         const clock = secondsToClock(timer.seconds + diff);
 
         return (
@@ -223,6 +219,7 @@ const Timers = (props: {
             timer={timer}
             clock={clock}
             currentUserId={data.currentUser.id}
+            currentRecordingId={data.currentUser.recordingTimer?.id}
             recording={recording}
             onEdit={props.onEdit}
             onDelete={() => {
@@ -266,10 +263,11 @@ const TimerCard = (props: {
   clock: Clock;
   recording: boolean;
   currentUserId: ID;
+  currentRecordingId?: ID;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onDelete: (timer: TimersScreen_Timer$data) => void;
 }) => {
-  const { clock, recording, currentUserId } = props;
+  const { clock, recording, currentUserId, currentRecordingId } = props;
 
   const timer = useFragment(graphql`
     fragment TimersScreen_Timer on Timer {
@@ -305,6 +303,10 @@ const TimerCard = (props: {
         }
         timer {
           ...TimersScreen_Timer
+        }
+        stoppedTimer {
+          id
+          status
         }
       }
     }
@@ -345,7 +347,9 @@ const TimerCard = (props: {
             <Text fontSize="detail">{timer.task.name}</Text>
           </Column>
           <Row alignItems="center" gap="smaller">
-            <Text fontSize="large">{clock.hours}:{clock.minutes}</Text>
+            <Row alignItems="flex-end">
+              <Text fontSize="large">{clock.hours}:{clock.minutes}</Text>
+            </Row>
             <RecordButton
               recording={recording}
               onClick={() => {
@@ -361,6 +365,7 @@ const TimerCard = (props: {
                         timer: {
                           ...timer,
                           seconds: timer.seconds,
+                          status: "paused",
                           lastActionAt: moment().toISOString(),
                         },
                         user: {
@@ -377,9 +382,14 @@ const TimerCard = (props: {
                       startRecording: {
                         timer: {
                           ...timer,
+                          status: "recording",
                           seconds: timer.seconds,
                           lastActionAt: moment().toISOString(),
                         },
+                        stoppedTimer: currentRecordingId ? {
+                          id: currentRecordingId,
+                          status: "paused",
+                        } : null,
                         user: {
                           id: currentUserId,
                           recordingTimer: {

@@ -51,15 +51,19 @@ export const TimerForm = (props: {
       currentUser {
         id
         projects {
-          id
-          name
-          client {
+          nodes {
             id
             name
-          }
-          tasks {
-            id
-            name
+            client {
+              id
+              name
+            }
+            tasks {
+              nodes {
+                id
+                name
+              }
+            }
           }
         }
       }
@@ -101,16 +105,18 @@ export const TimerForm = (props: {
     }
   `)
 
-  const projectTasks = data.currentUser.projects!!.flatMap(project => {
-    return project!.tasks!.map(task => ({
-      id: task!.id,
-      name: task!.name,
-      project: {
-        id: project!.id,
-        name: project!.name
-      }
-    }))
-  })
+  const projectTasks = (data.currentUser.projects.nodes ?? []).flatMap(project => (
+    project?.tasks.nodes ?? []).map(task => (
+      project && task ? {
+        id: task.id,
+        name: task.name,
+        project: {
+          id: project.id,
+          name: project.name
+        }
+      } : null
+    )
+  ))
 
   if (!internalTimer) {
     return <LoadingScreen />
@@ -146,15 +152,15 @@ export const TimerForm = (props: {
               size="small"
               label="Project"
               onChange={(ev) => {
-                const task = projectTasks.find(t => t.id === ev.target.value);
+                const task = projectTasks.find(t => t && t.id === ev.target.value);
                 if (task) {
                   setInternalTimer((timer) => ({ ...timer!, task }));
                 }
               }}
             >
-              {projectTasks.map(t => (
+              {projectTasks.map(t => t ? (
                 <MenuItem key={t.id} value={t.id}><strong>{t.project.name}</strong> - {t.name}</MenuItem>
-              ))}
+              ) : null)}
             </Select>
           </FormControl>
 
@@ -216,7 +222,7 @@ export const TimerForm = (props: {
                 variables: { timerId: props.timer.id, attributes },
                 optimisticResponse: {
                   updateTimer: {
-                    timer: internalTimer!
+                    timer: internalTimer
                   }
                 },
                 onCompleted: () => {

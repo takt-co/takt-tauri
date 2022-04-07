@@ -1,6 +1,7 @@
 import React from "react"
 
 export const fontSizes = {
+  small: 12,
   detail: 14,
   body: 16,
   large: 20,

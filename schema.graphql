@@ -34,8 +34,36 @@ type Client implements Node {
   createdAt: ISO8601DateTime!
   id: ID!
   name: String!
-  projects: [Project!]!
-  timers: [Timer!]!
+  projects(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+  ): ProjectConnection!
+  timers(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+  ): TimerConnection!
   updatedAt: ISO8601DateTime!
 }
 
@@ -260,8 +288,38 @@ type Project implements Node {
   id: ID!
   logo: Upload
   name: String!
-  tasks: [Task!]!
-  timers(startDate: ISO8601Date!, endDate: ISO8601Date!): [Timer!]!
+  tasks(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+  ): TaskConnection!
+  timers(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+    startDate: ISO8601Date!
+    endDate: ISO8601Date!
+  ): TimerConnection!
   updatedAt: ISO8601DateTime!
   userIds: [ID!]!
   users(
@@ -432,7 +490,21 @@ type Task implements Node {
   name: String!
   project: Project!
   status: String!
-  timers: [Timer!]!
+  timers(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+  ): TimerConnection!
   updatedAt: ISO8601DateTime!
 }
 
@@ -462,7 +534,21 @@ type TaskEdge {
 }
 
 type Team implements Node {
-  clients: [Client!]!
+  clients(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+  ): ClientConnection!
   createdAt: ISO8601DateTime!
   id: ID!
   name: String!
@@ -583,7 +669,21 @@ type User implements Node {
   jobTitle: String
   lastName: String!
   permissions: UserPermissions!
-  projects: [Project!]!
+  projects(
+    """Returns the elements in the list that come after the specified cursor."""
+    after: String
+
+    """
+    Returns the elements in the list that come before the specified cursor.
+    """
+    before: String
+
+    """Returns the first _n_ elements from the list."""
+    first: Int
+
+    """Returns the last _n_ elements from the list."""
+    last: Int
+  ): ProjectConnection!
   recordingTimer: Timer
   role: String!
   status: String!
