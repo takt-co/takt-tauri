@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { Column, Row } from "./components/Flex";
 import { colors } from "./Theme";
 import { CalendarIcon } from "./components/Icons";
@@ -7,7 +7,7 @@ import LogoSrc from "./assets/logo.png";
 import moment from "moment";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { TimerForm } from "./components/TimerForm";
-import { DateString } from "./Types";
+import { DateString, ID } from "./Types";
 import { TimersScreen } from "./components/TimersScreen";
 import { dateFormat } from "./config";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
@@ -20,6 +20,7 @@ type AppState = {
 };
 
 export const App = () => {
+  const [timersConnectionId, setTimersConnectionId] = useState<ID>("");
   const [date, setDate] = useState<DateString>(moment().format(dateFormat));
   const [state, setState] = useState<AppState>({
     tag: "viewingTimers"
@@ -29,9 +30,7 @@ export const App = () => {
     <Column style={{ width: "100vw", height: "100vh", overflow: "hidden", borderRadius: 5 }}>
       <TopBar
         showCalendarButton={state.tag === "viewingTimers"}
-        onChangeDate={(date) => {
-          setDate(date);
-        }}
+        onChangeDate={setDate}
       />
 
       <Column
@@ -40,23 +39,26 @@ export const App = () => {
         style={{ background: colors.white }}
       >
         <Suspense fallback={<LoadingScreen />}>
-          {state.tag === "viewingTimers" ? (
-            <TimersScreen
-              date={date}
-              setDate={setDate}
-              onAdd={() => {
-                setState({ tag: "addingTimer" });
-              }}
-              onEdit={(timer) => {
-                setState({ tag: "editingTimer", timer });
-              }}
-            />
-          ) : state.tag === "addingTimer" || state.tag === "editingTimer" ? (
+          <TimersScreen
+            visible={state.tag === "viewingTimers"}
+            date={date}
+            onConnectionIdUpdate={setTimersConnectionId}
+            setDate={setDate}
+            onAdd={() => {
+              setState({ tag: "addingTimer" });
+            }}
+            onEdit={(timer) => {
+              setState({ tag: "editingTimer", timer });
+            }}
+          />
+
+          {state.tag === "addingTimer" || state.tag === "editingTimer" ? (
             <TimerForm
               date={date}
+              setDate={setDate}
+              connectionId={timersConnectionId}
               timer={state.tag === "editingTimer" ? state.timer : null}
               afterSave={(timer) => {
-                // TODO: created timer not showing after create
                 setDate(timer.date);
                 setState({ tag: "viewingTimers" });
               }}
@@ -64,7 +66,9 @@ export const App = () => {
                 setState({ tag: "viewingTimers" });
               }}
             />
-          ) : (
+          ) : state.tag === "viewingTimers" ? (
+            null // handled by setting the visible prop on TimersScreen
+          ) :  (
             <Text>Unexpected app state</Text>
           )}
         </Suspense>
@@ -111,7 +115,8 @@ const TopBar = (props: {
             height={20}
             fill={colors.white}
             onClick={() => {
-              const today = moment().startOf("day");
+              const today = moment();
+              today.startOf("day");
               props.onChangeDate(today.format(dateFormat));
             }}
             style={{ cursor: "pointer" }}

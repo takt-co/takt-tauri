@@ -9,8 +9,9 @@ import React, {
 import { omit } from "lodash";
 import { Button, ButtonVariant } from "./Button";
 import { ID } from "../Types";
-import { Dialog as MaterialDialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
-import { Color } from "../Theme";
+import { Backdrop, Dialog as MaterialDialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import { Color, colors } from "../Theme";
+import { Column } from "./Flex";
 
 type DialogContextType = {
   alert: (config: {
@@ -112,16 +113,28 @@ export function DialogProvider(props: { children: ReactNode }) {
           {
             id,
             render: ({ confirming, closing }: RenderDialogProps) => {
+              const handleClose = () => {
+                if (confirming) {
+                  return;
+                }
+                removeDialog(id);
+                onCancel?.();
+              }
               return (
                 <MaterialDialog
                   key={id}
-                  onClose={() => {
-                    if (confirming) {
-                      return;
-                    }
-                    removeDialog(id);
-                    onCancel?.();
-                  }}
+                  BackdropComponent={() =>
+                    <Backdrop
+                      sx={{
+                        backgroundColor: "rgba(0,0,0,0.3)",
+                        marginTop: "9px",
+                        borderRadius: "5px",
+                      }}
+                      open={!closing}
+                      onClick={handleClose}
+                    />
+                  }
+                  onClose={handleClose}
                   open={!closing}
                 >
                   <DialogTitle>{title}</DialogTitle>
@@ -129,10 +142,7 @@ export function DialogProvider(props: { children: ReactNode }) {
                   <DialogActions>
                     <Button
                       disabled={confirming}
-                      onClick={() => {
-                        removeDialog(id);
-                        onCancel?.();
-                      }}
+                      onClick={handleClose}
                     >
                       {cancelLabel ?? "Cancel"}
                     </Button>
@@ -176,6 +186,7 @@ export function DialogProvider(props: { children: ReactNode }) {
   return (
     <DialogContext.Provider value={value}>
       {props.children}
+
       {dialogs.map((dialog) =>
         dialog.render({
           confirming: confirmingDialogs[dialog.id],

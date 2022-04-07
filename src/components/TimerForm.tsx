@@ -15,13 +15,15 @@ import { TimerFormQuery } from "./__generated__/TimerFormQuery.graphql";
 import { TimerAttributes, TimerForm_CreateTimerMutation } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
 import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
 import { TimersScreen_Timer$data } from "./__generated__/TimersScreen_Timer.graphql";
-import { DateString } from "../Types";
+import { DateString, ID } from "../Types";
 
 export const TimerForm = (props: {
   date: DateString;
+  setDate: (date: DateString) => void;
   timer: TimersScreen_Timer$data | null;
   afterSave: (timer: TimersScreen_Timer$data) => void;
   onCancel: () => void;
+  connectionId: ID;
 }) => {
   const [internalTimer, setInternalTimer] = useState<TimersScreen_Timer$data | null>(null);
 
@@ -30,6 +32,7 @@ export const TimerForm = (props: {
       id: "",
       notes: "",
       seconds: 0,
+      status: "active",
       lastActionAt: moment().toISOString(),
       date: props.date,
       task: {
@@ -48,19 +51,15 @@ export const TimerForm = (props: {
       currentUser {
         id
         projects {
-          nodes {
+          id
+          name
+          client {
             id
             name
-            client {
-              id
-              name
-            }
-            tasks {
-              nodes {
-                id
-                name
-              }
-            }
+          }
+          tasks {
+            id
+            name
           }
         }
       }
@@ -70,12 +69,17 @@ export const TimerForm = (props: {
   const [createTimer, createTimerInFlight] = useMutation<TimerForm_CreateTimerMutation>(graphql`
     mutation TimerForm_CreateTimerMutation (
       $attributes: TimerAttributes!
+      $connections: [ID!]!
     ) {
       createTimer(input: {
         attributes: $attributes
       }) {
-        timer {
-          ...TimersScreen_Timer
+        timer @appendEdge(connections: $connections) {
+          cursor
+          node {
+            id
+            ...TimersScreen_Timer
+          }
         }
       }
     }
@@ -97,8 +101,8 @@ export const TimerForm = (props: {
     }
   `)
 
-  const projectTasks = data.currentUser.projects!.nodes!.flatMap(project => {
-    return project!.tasks.nodes!.map(task => ({
+  const projectTasks = data.currentUser.projects!!.flatMap(project => {
+    return project!.tasks!.map(task => ({
       id: task!.id,
       name: task!.name,
       project: {
@@ -128,9 +132,10 @@ export const TimerForm = (props: {
             type="date"
             value={internalTimer.date as string}
             onChange={(ev) => {
-              setInternalTimer((timer) => ({
-                ...timer!, date: moment(ev.target.value).format("YYYY-MM-DD")
-              }))
+              const date = moment(ev.target.value).format("YYYY-MM-DD");
+              console.log("call set date");
+              props.setDate(date);
+              setInternalTimer((timer) => (timer ? { ...timer, date } : null))
             }}
           />
 
@@ -214,19 +219,21 @@ export const TimerForm = (props: {
                     timer: internalTimer!
                   }
                 },
+                onCompleted: () => {
+                  props.afterSave(internalTimer);
+                }
               })
             } else {
               createTimer({
-                variables: { attributes },
-                optimisticResponse: {
-                  createTimer: {
-                    timer: internalTimer!
-                  }
+                variables: {
+                  attributes,
+                  connections: [props.connectionId],
                 },
+                onCompleted: () => {
+                  props.afterSave(internalTimer);
+                }
               })
             }
-
-            props.afterSave(internalTimer);
           }}
         >
           {props.timer ? "Update" : "Create"} timer

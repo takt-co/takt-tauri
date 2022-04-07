@@ -23,15 +23,21 @@ import { useDialog } from "./Dialog";
 import { TimersScreen_DeleteMutation } from "./__generated__/TimersScreen_DeleteMutation.graphql";
 
 export const TimersScreen = (props: {
+  visible: boolean;
   date: DateString;
   setDate: (date: DateString) => void;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
+  onConnectionIdUpdate: (id: ID) => void;
 }) => {
   const { date, setDate } = props;
 
+  useEffect(() => {
+    console.log("TimersScreen date updated:", date);
+  }, [date]);
+
   return (
-    <Column fullWidth fullHeight>
+    <Column fullWidth fullHeight style={{ display: props.visible ? "flex" : "none"}}>
       <DateBar
         date={date}
         onChangeDate={setDate}
@@ -42,6 +48,7 @@ export const TimersScreen = (props: {
           date={date}
           onEdit={props.onEdit}
           onAdd={props.onAdd}
+          onConnectionIdUpdate={props.onConnectionIdUpdate}
         />
       </Suspense>
 
@@ -115,6 +122,7 @@ const Timers = (props: {
   date: DateString;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
+  onConnectionIdUpdate: (id: ID) => void;
 }) => {
   const dialog = useDialog();
   const [timeNow, setTimeNow] = useState(moment());
@@ -136,24 +144,31 @@ const Timers = (props: {
         recordingTimer {
           id
         }
-        timers(endDate: $date, startDate: $date) {
-          nodes {
-            id
-            seconds
-            lastActionAt
-            ...TimersScreen_Timer
+        timers(endDate: $date, startDate: $date, first: 100)
+          @connection(key: "TimersScreen__timers") {
+          __id
+          edges {
+            cursor
+            node {
+              id
+              seconds
+              status
+              lastActionAt
+              ...TimersScreen_Timer
+            }
           }
         }
       }
     }
   `, {
     date: props.date
-  }, {
-    // TODO: only refetch after a create/update - fetchKey didn't work as anticipated
-    fetchPolicy: "store-and-network",
   });
 
-  const [deleteTimer, deleteTimerInFlight] = useMutation<TimersScreen_DeleteMutation>(graphql`
+  useEffect(() => {
+    props.onConnectionIdUpdate(data.currentUser.timers.__id)
+  }, [data.currentUser.timers.__id])
+
+  const [deleteTimer] = useMutation<TimersScreen_DeleteMutation>(graphql`
     mutation TimersScreen_DeleteMutation (
       $timerId: ID!
     ) {
@@ -165,7 +180,12 @@ const Timers = (props: {
           lastActionAt
           status
           seconds
-          ...TimersScreen_Timer
+          user {
+            id
+            recordingTimer {
+              id
+            }
+          }
         }
       }
     }
@@ -175,7 +195,9 @@ const Timers = (props: {
     emit("recording", !!data.currentUser.recordingTimer);
   }, [data.currentUser.recordingTimer]);
 
-  const timers = data.currentUser.timers.nodes ?? [];
+  const timers = (data.currentUser.timers.edges ?? [])
+    .filter(e => e?.node && e?.node.status !== "deleted")
+    .map(e => e?.node);
 
   if (timers.length === 0) {
     return (
@@ -188,8 +210,8 @@ const Timers = (props: {
 
   return (
     <Column fullHeight fullWidth scrollable>
-      {data.currentUser.timers.nodes?.map(timer => {
-        if (!timer) return;
+      {timers.map(timer => {
+        if (!timer) return null;
 
         const recording = timer.id === data.currentUser.recordingTimer?.id;
         const diff = recording ? timeNow.diff(moment(timer.lastActionAt), "seconds") : 0;
@@ -210,7 +232,25 @@ const Timers = (props: {
                 confirmColor: "warning",
                 confirmLabel: "Delete",
                 onConfirm: () => {
-                  window.alert("TODO");
+                  deleteTimer({
+                    variables: { timerId: timer.id },
+                    optimisticResponse: {
+                      deleteTimer: {
+                        timer: {
+                          id: timer.id,
+                          seconds: timer.seconds,
+                          status: "deleted", // TODO: this should be an enum on the API
+                          lastActionAt: moment().toISOString(),
+                          user: {
+                            id: data.currentUser.id,
+                            recordingTimer: data.currentUser.recordingTimer?.id === timer.id
+                              ? null
+                              : data.currentUser.recordingTimer,
+                          },
+                        },
+                      }
+                    }
+                  })
                 }
               });
             }}
@@ -227,9 +267,8 @@ const TimerCard = (props: {
   recording: boolean;
   currentUserId: ID;
   onEdit: (timer: TimersScreen_Timer$data) => void;
-  onDelete: () => void;
+  onDelete: (timer: TimersScreen_Timer$data) => void;
 }) => {
-  const dialog = useDialog();
   const { clock, recording, currentUserId } = props;
 
   const timer = useFragment(graphql`
@@ -237,6 +276,7 @@ const TimerCard = (props: {
       id
       notes
       seconds
+      status
       lastActionAt
       date
       task {
@@ -381,7 +421,7 @@ const TimerCard = (props: {
             color="warning"
             size="small"
             onClick={() => {
-              props.onDelete();
+              props.onDelete(timer);
             }}
           >
             Delete
