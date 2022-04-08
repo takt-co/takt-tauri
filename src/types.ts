@@ -82,3 +82,4 @@ export type Json = JsonObject | JsonArray | JsonPrimitive;
 
 // TODO: can the type force formatting? "YYYY-MM-DD"
 export type DateString = string;
+export type SecureToken = NewType<string>;

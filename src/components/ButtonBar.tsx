@@ -3,7 +3,8 @@ import { colors } from "../Theme";
 import { FlexProps, Row } from "./Flex";
 
 export const ButtonBar = (props: FlexProps) => {
-  const { style, ...rest } = props;
+  const { style, ref, ...rest } = props;
+
   return (
     <Row
       alignItems="center"

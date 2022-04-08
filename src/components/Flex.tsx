@@ -1,13 +1,16 @@
-import { CSSProperties, forwardRef, ReactNode } from "react";
+import { CSSProperties, forwardRef, ReactNode, useState } from "react";
 import { Color, colors } from "../Theme";
 import { spacing, Spacing } from "./Spacer";
 
-export type FlexProps = {
+type DivProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>
+
+export type FlexProps = DivProps & {
   alignItems?: CSSProperties["alignItems"];
   justifyContent?: CSSProperties["justifyContent"];
   children?: ReactNode;
   className?: string;
   style?: CSSProperties;
+  hoverStyle?: CSSProperties;
   fullWidth?: boolean;
   fullHeight?: boolean;
   gap?: Spacing;
@@ -19,6 +22,7 @@ export type FlexProps = {
   backgroundColor?: Color;
   rounded?: boolean;
   hidden?: boolean;
+  forwardRef?: React.ForwardedRef<HTMLDivElement>;
 };
 
 export const Column = forwardRef<HTMLDivElement, FlexProps>(
@@ -37,18 +41,29 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
       paddingHorizontal,
       paddingVertical,
       style,
+      hoverStyle,
       rounded,
       hidden,
+      forwardRef,
       ...props
     }: FlexProps,
     ref,
   ) => {
+    const [hovering, setHovering] = useState(false);
+    const trackingHover = Boolean(hoverStyle);
+
     return (
       <div
         children={children}
         className={className}
+        onMouseOverCapture={trackingHover ? (ev) => {
+          setHovering(true);
+        } : undefined}
+        onMouseOutCapture={trackingHover ? () => {
+          setHovering(false);
+        } : undefined}
         onClick={onClick}
-        ref={ref}
+        ref={forwardRef ?? ref}
         style={{
           margin: 0,
           alignItems,
@@ -74,6 +89,7 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
           width: fullWidth ? "100%" : undefined,
           height: fullHeight ? "100%" : undefined,
           ...style,
+          ...(hovering ? hoverStyle : {})
         }}
         {...props}
       />
@@ -82,9 +98,10 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
 );
 
 export const Row = forwardRef<HTMLDivElement, FlexProps>(
-  ({ style, ...props }, ref) => {
+  // localRef if the ref passed from DivProps type
+  ({ style, ref: localRef, ...props }, ref) => {
     return <Column
-      ref={ref}
+      forwardRef={ref}
       {...props}
       style={{ ...style, flexDirection: "row" }}
     />

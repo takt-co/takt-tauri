@@ -3,13 +3,14 @@ import {
   ReactNode,
   useContext,
   useEffect,
+  useMemo,
   useState,
 } from "react";
-import { NewType } from "../Types";
+import { SecureToken } from "../Types";
 import axios, { AxiosInstance } from "axios";
 import { config } from "../config";
-
-type SecureToken = NewType<string>;
+import { useLazyLoadQuery } from "react-relay";
+import { graphql } from "babel-plugin-relay/macro";
 
 type Authenticated = {
   tag: "authenticated";
@@ -86,7 +87,6 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
               resolve(false);
             }
           }).catch(() => {
-            console.log("err");
             resolve(false);
           })
       })

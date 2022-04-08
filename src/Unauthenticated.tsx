@@ -1,16 +1,16 @@
 import React, { useState } from "react";
-import { useAuthentication } from "../providers/Authentication";
-import { Column, Row } from "./Flex";
-import { TopBar } from "./TopBar";
-import { Text } from "./Typography";
+import { useAuthentication } from "./providers/Authentication";
+import { Column, Row } from "./components/Flex";
+import { TopBar } from "./components/TopBar";
+import { Text } from "./components/Typography";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
-import { Button } from "./Button";
-import LogoSrc from "../assets/logo.png";
-import { LoginIcon, PasswordHidden, PasswordShowing } from "./Icons";
-import { Spacer } from "./Spacer";
-import { colors } from "../Theme";
+import { Button } from "./components/Button";
+import LogoSrc from "./assets/logo.png";
+import { LoginIcon, PasswordHidden, PasswordShowing } from "./components/Icons";
+import { Spacer } from "./components/Spacer";
+import { colors } from "./Theme";
 
-export const AuthScreen = () => {
+export const Unauthenticated = () => {
   const authentication = useAuthentication();
   if (authentication.tag !== "unauthenticated") {
     throw new Error("Rendered AuthScreen while already authenticated");

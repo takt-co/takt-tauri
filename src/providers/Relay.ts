@@ -1,10 +1,8 @@
 import { Environment, Network, RecordSource, Store } from "relay-runtime";
-import { Json } from "../Types";
-import { secrets } from "../secrets";
+import { Json, SecureToken } from "../Types";
 import { NewType } from "../Types";
 import { random } from "lodash";
-
-export type JWT = NewType<string>;
+import { config } from "../config";
 
 const delay = (durationMilliseconds: number): Promise<void> => {
   return new Promise((resolve) => {
@@ -13,13 +11,13 @@ const delay = (durationMilliseconds: number): Promise<void> => {
 };
 
 const sendRequest =
-  (token: JWT, onNoAuth: () => void) =>
+  (token: SecureToken, onNoAuth: () => void) =>
   async (params: { name: string; text?: string | null }, variables: Json) => {
     if (process.env.NODE_ENV === "development") {
       await delay(random(200, 1000));
     }
 
-    const response = await fetch(secrets.graphUrl, {
+    const response = await fetch(`${config.apiBaseUrl}/graphql`, {
       method: "POST",
       headers: {
         Authorization: `Token ${token}`,
@@ -47,7 +45,10 @@ const sendRequest =
     return json;
   };
 
-export default new Environment({
-  network: Network.create(sendRequest(secrets.authToken as JWT, () => {})),
-  store: new Store(new RecordSource()),
-});
+export const createRelayEnvironment = (token: SecureToken) => {
+  return new Environment({
+    network: Network.create(sendRequest(token, () => {})),
+    store: new Store(new RecordSource()),
+  });
+};
+

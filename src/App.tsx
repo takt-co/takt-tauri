@@ -10,10 +10,12 @@ import { TimersScreen } from "./components/TimersScreen";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
 import { config } from "./config";
 import { TopBar } from "./components/TopBar";
-import { CalendarIcon, SettingsIcon } from "./components/Icons";
-import LogoSrc from "./assets/logo.png";
-import { IconButton } from "@mui/material";
+import { CalendarIcon, CrossIcon, SettingsIcon } from "./components/Icons";
+import { Avatar, IconButton, Tooltip } from "@mui/material";
 import { SettingsScreen } from "./components/SettingsScreen";
+import { useLazyLoadQuery } from "react-relay";
+import { graphql } from "babel-plugin-relay/macro";
+import { AppQuery } from "./__generated__/AppQuery.graphql";
 
 type AppState = {
   tag: "viewingTimers" | "addingTimer" | "viewingSettings",
@@ -22,45 +24,68 @@ type AppState = {
   timer: TimersScreen_Timer$data,
 };
 
-export const App = () => {
+export const App = (props: {
+  clearCache: () => void;
+}) => {
   const [timersConnectionId, setTimersConnectionId] = useState<ID>("");
   const [date, setDate] = useState<DateString>(moment().format(config.dateFormat));
   const [state, setState] = useState<AppState>({
     tag: "viewingTimers"
   });
 
+  const { currentUser } = useLazyLoadQuery<AppQuery>(graphql`
+    query AppQuery {
+      currentUser {
+        id
+        displayName
+        avatar {
+          url
+        }
+      }
+    }
+  `, {});
+
   return (
     <Column style={{ height: "calc(100vh - 10px)", overflow: "hidden", borderRadius: 5 }}>
       <TopBar
         left={(
-          <Row paddingHorizontal="smaller">
-            <img alt="Takt" src={LogoSrc} style={{ height: 20 }} />
+          <Row paddingHorizontal="smaller" alignItems="center" gap="tiny">
+            <Avatar
+              variant="rounded"
+              alt={currentUser.displayName}
+              src={currentUser.avatar?.url}
+              sx={{ width: 28, height: 28, bgcolor: colors.darkPrimary }}
+            />
           </Row>
         )}
-        right={(
-          <Row paddingHorizontal="tiny">
-            {state.tag === "viewingTimers" && (
-              <IconButton onClick={() => {
-                const today = moment();
-                today.startOf("day");
-                setDate(today.format(config.dateFormat));
-              }}>
-                <CalendarIcon
-                  height={20}
-                  fill={colors.white}
-                />
-              </IconButton>
-            )}
-
-            <IconButton onClick={() => {
-              setState((prevState) => ({
-                tag: prevState.tag === "viewingSettings" ? "viewingTimers" : "viewingSettings"
-              }))
-            }}>
-              <SettingsIcon height={20} fill={colors.white} />
-            </IconButton>
-          </Row>
-        )}
+        right={
+          state.tag === "viewingTimers" ? (
+            <Row paddingHorizontal="tiny">
+              <Tooltip placement="top" key="Today" title="Jump to today" arrow>
+                <IconButton onClick={() => {
+                  const today = moment();
+                  today.startOf("day");
+                  setDate(today.format(config.dateFormat));
+                }}>
+                  <CalendarIcon height={20} fill={colors.white} />
+                </IconButton>
+              </Tooltip>
+              <Tooltip placement="top" key="Settings" title="Settings" arrow>
+                <IconButton onClick={() => { setState({ tag: "viewingSettings" }) }}>
+                  <SettingsIcon height={20} fill={colors.white} />
+                </IconButton>
+              </Tooltip>
+            </Row>
+          ) : state.tag === "viewingSettings" ? (
+            <Row paddingHorizontal="tiny">
+              <Tooltip placement="top" key="Close settings" title="Close settings" arrow>
+                <IconButton onClick={() => { setState({ tag: "viewingTimers" }) }}>
+                  <CrossIcon height={20} fill={colors.white} />
+                </IconButton>
+              </Tooltip>
+            </Row>
+          ) : undefined
+        }
       />
 
       <Suspense fallback={<LoadingScreen />}>
@@ -93,7 +118,7 @@ export const App = () => {
             }}
           />
         ) : state.tag === "viewingSettings" ? (
-          <SettingsScreen />
+          <SettingsScreen clearCache={props.clearCache} />
         ) : state.tag === "viewingTimers" ? (
           null // handled by setting the visible prop on TimersScreen
         ) : (
