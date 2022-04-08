@@ -24,7 +24,7 @@ export const TopBar = (props: {
       <Row
         justifyContent="space-between"
         alignItems="center"
-        padding="smaller"
+        paddingVertical="smaller"
         backgroundColor="primary"
         style={{
           height: 46,

@@ -1,5 +1,5 @@
 import React, { Suspense, useState } from "react";
-import { Column } from "./components/Flex";
+import { Column, Row } from "./components/Flex";
 import { colors } from "./Theme";
 import { Text } from "./components/Typography";
 import moment from "moment";
@@ -10,11 +10,13 @@ import { TimersScreen } from "./components/TimersScreen";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
 import { config } from "./config";
 import { TopBar } from "./components/TopBar";
-import { CalendarIcon } from "./components/Icons";
+import { CalendarIcon, SettingsIcon } from "./components/Icons";
 import LogoSrc from "./assets/logo.png";
+import { IconButton } from "@mui/material";
+import { SettingsScreen } from "./components/SettingsScreen";
 
 type AppState = {
-  tag: "viewingTimers" | "addingTimer",
+  tag: "viewingTimers" | "addingTimer" | "viewingSettings",
 } | {
   tag: "editingTimer",
   timer: TimersScreen_Timer$data,
@@ -31,20 +33,34 @@ export const App = () => {
     <Column style={{ height: "calc(100vh - 10px)", overflow: "hidden", borderRadius: 5 }}>
       <TopBar
         left={(
-          <img alt="Takt" src={LogoSrc} style={{ height: 20 }} />
+          <Row paddingHorizontal="smaller">
+            <img alt="Takt" src={LogoSrc} style={{ height: 20 }} />
+          </Row>
         )}
-        right={state.tag === "viewingTimers" ? (
-          <CalendarIcon
-            height={20}
-            fill={colors.white}
-            onClick={() => {
-              const today = moment();
-              today.startOf("day");
-              setDate(today.format(config.dateFormat));
-            }}
-            style={{ cursor: "pointer" }}
-          />
-        ) : undefined}
+        right={(
+          <Row paddingHorizontal="tiny">
+            {state.tag === "viewingTimers" && (
+              <IconButton onClick={() => {
+                const today = moment();
+                today.startOf("day");
+                setDate(today.format(config.dateFormat));
+              }}>
+                <CalendarIcon
+                  height={20}
+                  fill={colors.white}
+                />
+              </IconButton>
+            )}
+
+            <IconButton onClick={() => {
+              setState((prevState) => ({
+                tag: prevState.tag === "viewingSettings" ? "viewingTimers" : "viewingSettings"
+              }))
+            }}>
+              <SettingsIcon height={20} fill={colors.white} />
+            </IconButton>
+          </Row>
+        )}
       />
 
       <Suspense fallback={<LoadingScreen />}>
@@ -76,10 +92,15 @@ export const App = () => {
               setState({ tag: "viewingTimers" });
             }}
           />
+        ) : state.tag === "viewingSettings" ? (
+          <SettingsScreen />
         ) : state.tag === "viewingTimers" ? (
           null // handled by setting the visible prop on TimersScreen
-        ) :  (
-          <Text>Unexpected app state</Text>
+        ) : (
+          // TODO: error reporting!
+          <Column fullHeight backgroundColor="white" alignItems="center" justifyContent="center">
+            <Text>Error: Unexpected app state</Text>
+          </Column>
         )}
       </Suspense>
     </Column>

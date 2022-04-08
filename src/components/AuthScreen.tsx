@@ -12,14 +12,13 @@ import { colors } from "../Theme";
 
 export const AuthScreen = () => {
   const authentication = useAuthentication();
+  if (authentication.tag !== "unauthenticated") {
+    throw new Error("Rendered AuthScreen while already authenticated");
+  }
+
   const [showingPassword, setShowingPassword] = useState(false);
   const [loginDetails, setLoginDetails] = useState({ username: "", password: "" });
   const [inFlight, setInFlight] = useState(false);
-
-  if (authentication.tag !== "unauthenticated") {
-    // TODO: blow up - log error
-    return null;
-  }
 
   return (
     <Column
@@ -73,14 +72,8 @@ export const AuthScreen = () => {
             )}
             onClick={() => {
               setInFlight(true);
-              authentication.login(loginDetails).then((success) => {
+              authentication.login(loginDetails).then(() => {
                 setInFlight(false);
-                if (!success) {
-                  // Login failed
-                  window.alert("fail");
-                } else {
-                  window.alert("success");
-                }
               });
             }}
           >

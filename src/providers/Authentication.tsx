@@ -110,14 +110,4 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
   );
 };
 
-export const useAuthentication = () => {
-  return useContext(AuthenticationContext);
-};
-
-export const useAuthenticate = (): Unauthenticated => {
-  const context = useContext(AuthenticationContext);
-  if (context.tag === "authenticated") {
-    throw new Error("Used useAuthenticate whilst already logged in");
-  }
-  return context as Unauthenticated;
-};
+export const useAuthentication = () => useContext(AuthenticationContext);
