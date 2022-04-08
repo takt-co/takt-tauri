@@ -1,7 +1,7 @@
 import moment from "moment";
 import React, { Suspense, useEffect, useState } from "react";
 import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
-import { dateFormat } from "../config";
+import { config } from "../config";
 import { useDebounced } from "../hooks/useDebounced";
 import { colors, darken } from "../Theme";
 import { DateString, ID } from "../Types";
@@ -19,11 +19,10 @@ import { TimersScreen_Timer$data, TimersScreen_Timer$key } from "./__generated__
 import { TimersScreenQuery } from "./__generated__/TimersScreenQuery.graphql";
 import { TimersScreen_StartRecordingMutation } from "./__generated__/TimersScreen_StartRecordingMutation.graphql";
 import { TimersScreen_StopRecordingMutation } from "./__generated__/TimersScreen_StopRecordingMutation.graphql";
-import { useDialog } from "./Dialog";
+import { useDialog } from "../providers/Dialog";
 import { TimersScreen_DeleteMutation } from "./__generated__/TimersScreen_DeleteMutation.graphql";
 
 export const TimersScreen = (props: {
-  visible: boolean;
   date: DateString;
   setDate: (date: DateString) => void;
   onEdit: (timer: TimersScreen_Timer$data) => void;
@@ -33,23 +32,24 @@ export const TimersScreen = (props: {
   const { date, setDate } = props;
 
   return (
-    <Column fullWidth fullHeight style={{ display: props.visible ? "flex" : "none"}}>
+    <Column fullWidth fullHeight>
       <DateBar
         date={date}
         onChangeDate={setDate}
       />
 
-      <Suspense fallback={<LoadingScreen />}>
-        <Timers
-          date={date}
-          onEdit={props.onEdit}
-          onAdd={props.onAdd}
-          onConnectionIdUpdate={props.onConnectionIdUpdate}
-        />
-      </Suspense>
+      <Column fullHeight style={{ height: 353, minHeight: 353, maxHeight: 353, overflowY: "scroll" }} backgroundColor="white">
+        <Suspense fallback={<LoadingScreen />}>
+          <Timers
+            date={date}
+            onEdit={props.onEdit}
+            onAdd={props.onAdd}
+            onConnectionIdUpdate={props.onConnectionIdUpdate}
+          />
+        </Suspense>
+      </Column>
 
-      <ButtonBar>
-        <Spacer />
+      <ButtonBar justifyContent="flex-end">
         <Button
           variant="outlined"
           size="small"
@@ -83,7 +83,7 @@ const DateBar = (props: {
   }, [debouncedDate]);
 
   return (
-    <Row alignItems="center" justifyContent="space-between" padding="smaller" style={{ background: colors.offWhite, height: 46 }}>
+    <Row alignItems="center" justifyContent="space-between" padding="smaller" backgroundColor="offWhite" style={{ height: 46 }}>
       <Arrow
         width={20}
         style={{
@@ -91,10 +91,10 @@ const DateBar = (props: {
           cursor: "pointer",
         }}
         onClick={() => {
-          const date = moment(props.date, dateFormat);
+          const date = moment(props.date, config.dateFormat);
           date.startOf("day");
           date.subtract(12, "hours");
-          setInternalDate(date.format(dateFormat));
+          setInternalDate(date.format(config.dateFormat));
         }}
       />
 
@@ -104,10 +104,10 @@ const DateBar = (props: {
         width={20}
         style={{ cursor: "pointer" }}
         onClick={() => {
-          const date = moment(props.date, dateFormat);
+          const date = moment(props.date, config.dateFormat);
           date.endOf("day");
           date.add(12, "hours");
-          setInternalDate(date.format(dateFormat));
+          setInternalDate(date.format(config.dateFormat));
         }}
       />
     </Row>
@@ -196,7 +196,7 @@ const Timers = (props: {
 
   if (timers.length === 0) {
     return (
-      <Column fullHeight justifyContent="center" alignItems="center" gap="small">
+      <Column fullHeight justifyContent="center" alignItems="center" gap="small" backgroundColor="white">
         <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
         <Text color="gray">No timers on this date</Text>
       </Column>
@@ -204,7 +204,7 @@ const Timers = (props: {
   }
 
   return (
-    <Column fullHeight fullWidth scrollable>
+    <Column>
       {timers.map(timer => {
         if (!timer) return null;
 

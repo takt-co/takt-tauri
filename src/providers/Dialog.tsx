@@ -7,11 +7,11 @@ import React, {
   useState,
 } from "react";
 import { omit } from "lodash";
-import { Button, ButtonVariant } from "./Button";
+import { Button, ButtonVariant } from "../components/Button";
 import { ID } from "../Types";
 import { Backdrop, Dialog as MaterialDialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
 import { Color, colors } from "../Theme";
-import { Column } from "./Flex";
+import { Column } from "../components/Flex";
 
 type DialogContextType = {
   alert: (config: {

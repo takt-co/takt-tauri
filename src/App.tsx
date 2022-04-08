@@ -1,16 +1,17 @@
-import React, { Suspense, useEffect, useState } from "react";
-import { Column, Row } from "./components/Flex";
+import React, { Suspense, useState } from "react";
+import { Column } from "./components/Flex";
 import { colors } from "./Theme";
-import { CalendarIcon } from "./components/Icons";
 import { Text } from "./components/Typography";
-import LogoSrc from "./assets/logo.png";
 import moment from "moment";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { TimerForm } from "./components/TimerForm";
 import { DateString, ID } from "./Types";
 import { TimersScreen } from "./components/TimersScreen";
-import { dateFormat } from "./config";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
+import { config } from "./config";
+import { TopBar } from "./components/TopBar";
+import { CalendarIcon } from "./components/Icons";
+import LogoSrc from "./assets/logo.png";
 
 type AppState = {
   tag: "viewingTimers" | "addingTimer",
@@ -21,26 +22,34 @@ type AppState = {
 
 export const App = () => {
   const [timersConnectionId, setTimersConnectionId] = useState<ID>("");
-  const [date, setDate] = useState<DateString>(moment().format(dateFormat));
+  const [date, setDate] = useState<DateString>(moment().format(config.dateFormat));
   const [state, setState] = useState<AppState>({
     tag: "viewingTimers"
   });
 
   return (
-    <Column style={{ width: "100vw", height: "100vh", overflow: "hidden", borderRadius: 5 }}>
+    <Column style={{ height: "calc(100vh - 10px)", overflow: "hidden", borderRadius: 5 }}>
       <TopBar
-        showCalendarButton={state.tag === "viewingTimers"}
-        onChangeDate={setDate}
+        left={(
+          <img alt="Takt" src={LogoSrc} style={{ height: 20 }} />
+        )}
+        right={state.tag === "viewingTimers" ? (
+          <CalendarIcon
+            height={20}
+            fill={colors.white}
+            onClick={() => {
+              const today = moment();
+              today.startOf("day");
+              setDate(today.format(config.dateFormat));
+            }}
+            style={{ cursor: "pointer" }}
+          />
+        ) : undefined}
       />
 
-      <Column
-        grow={1}
-        fullHeight
-        style={{ background: colors.white }}
-      >
-        <Suspense fallback={<LoadingScreen />}>
+      <Suspense fallback={<LoadingScreen />}>
+        <Column fullHeight hidden={state.tag !== "viewingTimers"}>
           <TimersScreen
-            visible={state.tag === "viewingTimers"}
             date={date}
             onConnectionIdUpdate={setTimersConnectionId}
             setDate={setDate}
@@ -51,80 +60,30 @@ export const App = () => {
               setState({ tag: "editingTimer", timer });
             }}
           />
+        </Column>
 
-          {state.tag === "addingTimer" || state.tag === "editingTimer" ? (
-            <TimerForm
-              date={date}
-              setDate={setDate}
-              connectionId={timersConnectionId}
-              timer={state.tag === "editingTimer" ? state.timer : null}
-              afterSave={(timer) => {
-                setDate(timer.date);
-                setState({ tag: "viewingTimers" });
-              }}
-              onCancel={() => {
-                setState({ tag: "viewingTimers" });
-              }}
-            />
-          ) : state.tag === "viewingTimers" ? (
-            null // handled by setting the visible prop on TimersScreen
-          ) :  (
-            <Text>Unexpected app state</Text>
-          )}
-        </Suspense>
-      </Column>
+        {state.tag === "addingTimer" || state.tag === "editingTimer" ? (
+          <TimerForm
+            date={date}
+            setDate={setDate}
+            connectionId={timersConnectionId}
+            timer={state.tag === "editingTimer" ? state.timer : null}
+            afterSave={(timer) => {
+              setDate(timer.date);
+              setState({ tag: "viewingTimers" });
+            }}
+            onCancel={() => {
+              setState({ tag: "viewingTimers" });
+            }}
+          />
+        ) : state.tag === "viewingTimers" ? (
+          null // handled by setting the visible prop on TimersScreen
+        ) :  (
+          <Text>Unexpected app state</Text>
+        )}
+      </Suspense>
     </Column>
   );
 }
-
-const TopBar = (props: {
-  showCalendarButton: boolean;
-  onChangeDate: (date: DateString) => void;
-}) => {
-  return (
-    <Column>
-      <Row alignItems="center" justifyContent="center">
-        <div
-          style={{
-            display: "inline-block",
-            width: 0,
-            height: 0,
-            borderLeft: "10px solid transparent",
-            borderRight: "10px solid transparent",
-            borderBottom: `10px solid ${colors.primary}`,
-            borderRadius: 5,
-          }}
-        />
-      </Row>
-
-      <Row
-        justifyContent="space-between"
-        alignItems="center"
-        padding="smaller"
-        style={{
-          background: colors.primary,
-          height: 46,
-          borderRadius: "5px 5px 0 0",
-          marginTop: -1,
-          WebkitUserSelect: "none",
-        }}
-      >
-        <img alt="Takt" src={LogoSrc} style={{ height: 20 }} />
-        {props.showCalendarButton && (
-          <CalendarIcon
-            height={20}
-            fill={colors.white}
-            onClick={() => {
-              const today = moment();
-              today.startOf("day");
-              props.onChangeDate(today.format(dateFormat));
-            }}
-            style={{ cursor: "pointer" }}
-          />
-        )}
-      </Row>
-    </Column>
-  );
-};
 
 export default App;

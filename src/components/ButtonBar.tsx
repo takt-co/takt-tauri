@@ -10,8 +10,8 @@ export const ButtonBar = (props: FlexProps) => {
       justifyContent="space-between"
       padding="smaller"
       gap="smaller"
+      backgroundColor="white"
       style={{
-        background: colors.white,
         borderTop: `1px solid ${colors.offWhite}`,
         ...style,
       }}

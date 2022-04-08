@@ -9,6 +9,7 @@ export const LoadingScreen = () => {
       fullHeight
       alignItems="center"
       justifyContent="center"
+      backgroundColor="white"
     >
       <CircularProgress />
     </Column>

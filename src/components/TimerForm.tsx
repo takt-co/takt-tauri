@@ -16,6 +16,7 @@ import { TimerAttributes, TimerForm_CreateTimerMutation } from "./__generated__/
 import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
 import { TimersScreen_Timer$data } from "./__generated__/TimersScreen_Timer.graphql";
 import { DateString, ID } from "../Types";
+import { Spacer } from "./Spacer";
 
 export const TimerForm = (props: {
   date: DateString;
@@ -123,14 +124,15 @@ export const TimerForm = (props: {
   }
 
   return (
-    <Column fullHeight>
-      <Column fullHeight justifyContent="space-between">
-        <Column padding="small">
-          <Text fontSize="large" strong>
-            {props.timer ? "Edit" : "Add"} timer
-          </Text>
-        </Column>
-        <Column fullHeight justifyContent="space-between" padding="small">
+    <Column fullHeight backgroundColor="white">
+      <Column fullHeight justifyContent="space-around" padding="small">
+        <Text fontSize="large" strong>
+          {props.timer ? "Edit" : "Add"} timer
+        </Text>
+
+        <Spacer size="medium" vertical />
+
+        <Column fullHeight justifyContent="space-between">
           <TextField
             fullWidth
             size="small"
@@ -196,15 +198,14 @@ export const TimerForm = (props: {
           Cancel
         </Button>
         <Button
-          variant="contained"
+          variant="outlined"
           loading={createTimerInFlight || updateTimerInFlight}
           disableElevation
           startIcon={
             <SaveIcon
-              width={10}
-              height={10}
-              fill={colors.white}
-              style={{ marginLeft: 2 }}
+              width={12}
+              height={12}
+              fill={colors.primary}
             />
           }
           size="small"

@@ -20,18 +20,20 @@ type DivProps = DetailedHTMLProps<
 
 export const Spacer = ({
   size,
-  axis,
+  vertical,
+  horizontal,
   flex,
   style,
   ...props
 }: {
-  axis?: "horizontal" | "vertical";
+  vertical?: boolean;
+  horizontal?: boolean;
   flex?: number;
   size?: Spacing;
 } & DivProps) => {
   const pixels = spacing[size ?? "small"];
-  const width = axis === "vertical" ? 1 : pixels;
-  const height = axis === "horizontal" ? 1 : pixels;
+  const width = vertical ? 1 : pixels;
+  const height = horizontal ? 1 : pixels;
   return (
     <span
       style={{

@@ -31,6 +31,8 @@ export const Text = (props: TextProps) => {
         fontWeight: strong ? "bold" : "normal",
         WebkitUserSelect: "none",
         color: color,
+        margin: style?.margin ?? 0,
+        padding: style?.padding ?? 0,
         ...style
       }}
       {...rest}
