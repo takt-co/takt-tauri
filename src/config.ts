@@ -2,7 +2,7 @@ export const isDevelopment = process.env.NODE_ENV === "development";
 
 const production = {
   dateFormat: "YYYY-MM-DD",
-  apiBaseUrl: "https://api.takt.co",
+  apiBaseUrl: "https://takt-rails.herokuapp.com",
   isDevelopment,
 };
 

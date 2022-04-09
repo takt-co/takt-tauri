@@ -1,4 +1,5 @@
 # Takt tray app
+[![Build Status](https://takt.semaphoreci.com/badges/takt-tauri/branches/master.svg?style=shields&key=8ededc6a-36b1-4d2b-ae97-90716424378d)]
 A React app wrapped in Tauri to create a desktop application.
 
 ## Getting started
