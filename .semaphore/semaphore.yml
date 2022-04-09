@@ -14,4 +14,4 @@ blocks:
             - checkout
             - cd src
             - yarn install
-            - yarn test
+            - yarn test --passWithNoTests
