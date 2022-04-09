@@ -12,8 +12,8 @@ import { SaveIcon, MinusCircled, PlusCircled } from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
 import { colors } from "../Theme";
 import { TimerFormQuery } from "./__generated__/TimerFormQuery.graphql";
-import { TimerAttributes, TimerForm_CreateTimerMutation } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
-import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
+import { CreateTimerAttributes, TimerForm_CreateTimerMutation } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
+import { TimerForm_UpdateTimerMutation, UpdateTimerAttributes } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
 import { TimersScreen_Timer$data } from "./__generated__/TimersScreen_Timer.graphql";
 import { DateString, ID } from "../Types";
 import { Spacer } from "./Spacer";
@@ -33,16 +33,11 @@ export const TimerForm = (props: {
       id: "",
       notes: "",
       seconds: 0,
-      status: "active",
-      lastActionAt: moment().toISOString(),
+      status: "paused",
       date: props.date,
-      task: {
+      project: {
         id: "",
         name: "",
-        project: {
-          id: "",
-          name: "",
-        }
       }
     } as TimersScreen_Timer$data);
   }, [props.timer, props.date]);
@@ -65,7 +60,7 @@ export const TimerForm = (props: {
 
   const [createTimer, createTimerInFlight] = useMutation<TimerForm_CreateTimerMutation>(graphql`
     mutation TimerForm_CreateTimerMutation (
-      $attributes: TimerAttributes!
+      $attributes: CreateTimerAttributes!
       $connections: [ID!]!
     ) {
       createTimer(input: {
@@ -85,7 +80,7 @@ export const TimerForm = (props: {
   const [updateTimer, updateTimerInFlight] = useMutation<TimerForm_UpdateTimerMutation>(graphql`
     mutation TimerForm_UpdateTimerMutation (
       $timerId: ID!
-      $attributes: TimerAttributes!
+      $attributes: UpdateTimerAttributes!
     ) {
       updateTimer(input: {
         timerId: $timerId,
@@ -98,18 +93,7 @@ export const TimerForm = (props: {
     }
   `)
 
-  const projectTasks = (data.currentUser.projects.nodes ?? []).flatMap(project => (
-    project?.tasks.nodes ?? []).map(task => (
-      project && task ? {
-        id: task.id,
-        name: task.name,
-        project: {
-          id: project.id,
-          name: project.name
-        }
-      } : null
-    )
-  ))
+  const projects = data.currentUser.account.projects.nodes ?? [];
 
   if (!internalTimer) {
     return <LoadingScreen />
@@ -142,18 +126,18 @@ export const TimerForm = (props: {
           <FormControl fullWidth size="small">
             <InputLabel>Project</InputLabel>
             <Select
-              value={internalTimer.task.id}
+              value={internalTimer.project.id}
               size="small"
               label="Project"
               onChange={(ev) => {
-                const task = projectTasks.find(t => t && t.id === ev.target.value);
-                if (task) {
-                  setInternalTimer((timer) => ({ ...timer!, task }));
+                const project = projects.find(p => p?.id === ev.target.value);
+                if (project) {
+                  setInternalTimer((timer) => ({ ...timer!, project }));
                 }
               }}
             >
-              {projectTasks.map(t => t ? (
-                <MenuItem key={t.id} value={t.id}><strong>{t.project.name}</strong> - {t.name}</MenuItem>
+              {projects.map(p => p ? (
+                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
               ) : null)}
             </Select>
           </FormControl>
@@ -203,14 +187,14 @@ export const TimerForm = (props: {
           size="small"
           color="primary"
           onClick={() => {
-            const attributes: TimerAttributes = {
-              taskId: internalTimer.task.id,
-              date: internalTimer.date,
-              notes: internalTimer.notes,
-              seconds: internalTimer.seconds,
-            }
-
             if (props.timer) {
+              const attributes: UpdateTimerAttributes = {
+                projectId: internalTimer.project.id,
+                date: internalTimer.date,
+                notes: internalTimer.notes,
+                seconds: internalTimer.seconds,
+              }
+
               updateTimer({
                 variables: { timerId: props.timer.id, attributes },
                 optimisticResponse: {
@@ -223,6 +207,13 @@ export const TimerForm = (props: {
                 }
               })
             } else {
+              const attributes: CreateTimerAttributes = {
+                projectId: internalTimer.project.id,
+                date: internalTimer.date,
+                notes: internalTimer.notes,
+                seconds: internalTimer.seconds,
+              }
+
               createTimer({
                 variables: {
                   attributes,

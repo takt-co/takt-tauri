@@ -18,7 +18,7 @@ import { TimersScreenQuery } from "./__generated__/TimersScreenQuery.graphql";
 import { TimersScreen_StartRecordingMutation } from "./__generated__/TimersScreen_StartRecordingMutation.graphql";
 import { TimersScreen_StopRecordingMutation } from "./__generated__/TimersScreen_StopRecordingMutation.graphql";
 import { useDialog } from "../providers/Dialog";
-import { TimersScreen_DeleteMutation } from "./__generated__/TimersScreen_DeleteMutation.graphql";
+import { TimersScreen_ArchiveMutation } from "./__generated__/TimersScreen_ArchiveMutation.graphql";
 
 export const TimersScreen = (props: {
   date: DateString;
@@ -169,18 +169,17 @@ const Timers = (props: {
     props.onTimersCountChange(data.currentUser.timers.edges?.length ?? 0)
   }, [data.currentUser.timers.edges])
 
-  const [deleteTimer] = useMutation<TimersScreen_DeleteMutation>(graphql`
-    mutation TimersScreen_DeleteMutation (
+  const [archiveTimer] = useMutation<TimersScreen_ArchiveMutation>(graphql`
+    mutation TimersScreen_ArchiveMutation (
       $timerId: ID!
     ) {
-      deleteTimer(input: {
+      archiveTimer(input: {
         timerId: $timerId
       }) {
         timer {
           id
-          lastActionAt
           status
-          seconds
+          updatedAt
           user {
             id
             recordingTimer {
@@ -197,7 +196,7 @@ const Timers = (props: {
   }, [data.currentUser.recordingTimer]);
 
   const timers = (data.currentUser.timers.edges ?? [])
-    .filter(e => e?.node && e?.node.status !== "deleted")
+    .filter(e => e?.node && e?.node.status !== "archived")
     .map(e => e?.node);
 
   if (timers.length === 0) {
@@ -210,7 +209,7 @@ const Timers = (props: {
         if (!timer) return null;
 
         const recording = timer.id === data.currentUser.recordingTimer?.id;
-        let diff = recording ? moment().diff(moment(timer.lastActionAt), "seconds") : 0;
+        let diff = recording ? moment().diff(moment(timer.updatedAt), "seconds") : 0;
         if (diff < 0) diff = 0;
         const clock = secondsToClock(timer.seconds + diff);
 
@@ -230,10 +229,10 @@ const Timers = (props: {
                 confirmColor: "warning",
                 confirmLabel: "Delete",
                 onConfirm: () => {
-                  deleteTimer({
+                  archiveTimer({
                     variables: { timerId: timer.id },
                     optimisticResponse: {
-                      deleteTimer: {
+                      archiveTimer: {
                         timer: {
                           id: timer.id,
                           seconds: timer.seconds,
@@ -307,18 +306,19 @@ const TimerCard = (props: {
       startRecording(input: {
         timerId: $timerId
       }) {
-        user {
-          id
-          recordingTimer {
-            id
-          }
-        }
         timer {
           ...TimersScreen_Timer
+          user {
+            id
+            recordingTimer {
+              id
+            }
+          }
         }
-        stoppedTimer {
+        pausedTimer {
           id
           status
+          seconds
         }
       }
     }
@@ -331,14 +331,14 @@ const TimerCard = (props: {
       stopRecording(input: {
         timerId: $timerId
       }) {
-        user {
-          id
-          recordingTimer {
-            id
-          }
-        }
         timer {
           ...TimersScreen_Timer
+          user {
+            id
+            recordingTimer {
+              id
+            }
+          }
         }
       }
     }
@@ -355,8 +355,8 @@ const TimerCard = (props: {
       <Column alignItems="flex-start" gap="small" fullWidth>
         <Row fullWidth alignItems="center">
           <Column fullWidth gap="tiny">
-            <Text strong>{timer.task.project.name}</Text>
-            <Text fontSize="detail">{timer.task.name}</Text>
+            <Text strong>{timer.project.name}</Text>
+            <Text fontSize="detail">No tags</Text>
           </Column>
           <Row alignItems="center" gap="smaller">
             <Row alignItems="flex-end">

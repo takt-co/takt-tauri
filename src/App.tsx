@@ -49,8 +49,7 @@ export const App = (props: {
         left={(
           <Row paddingHorizontal="smaller" alignItems="center" gap="tiny">
             <Avatar
-              alt={currentUser.displayName}
-              src={currentUser.avatar?.url}
+              alt={currentUser.name}
               sx={{ width: 28, height: 28, bgcolor: colors.darkPrimary }}
             />
           </Row>
