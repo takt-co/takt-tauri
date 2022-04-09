@@ -1,5 +1,5 @@
-import moment from "moment";
 import React, { Suspense, useEffect, useState } from "react";
+import moment from "moment";
 import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
 import { config } from "../config";
 import { colors, darken } from "../Theme";
@@ -8,7 +8,7 @@ import { Button } from "./Button";
 import { ButtonBar } from "./ButtonBar";
 import { Column, Row } from "./Flex";
 import { AddIcon, Arrow, TimerOffIcon } from "./Icons";
-import { LoadingScreen } from "./LoadingScreen";
+import { EmptyWarmdown, LoadingScreen } from "./LoadingScreen";
 import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
 import { emit } from "@tauri-apps/api/event";
@@ -29,6 +29,7 @@ export const TimersScreen = (props: {
   onTimersCountChange: (count: number) => void;
 }) => {
   const { date, setDate } = props;
+  const [timersCount, setTimersCount] = useState(0);
 
   return (
     <Column fullWidth fullHeight>
@@ -54,7 +55,7 @@ export const TimersScreen = (props: {
         <Suspense fallback={
           <LoadingScreen
             message="Fetching timers"
-            Warmdown={TimersEmptyState}
+            Warmdown={timersCount === 0 ? TimersEmptyState : EmptyWarmdown}
           />
         }>
           <Timers
@@ -62,7 +63,11 @@ export const TimersScreen = (props: {
             onEdit={props.onEdit}
             onAdd={props.onAdd}
             onConnectionIdUpdate={props.onConnectionIdUpdate}
-            onTimersCountChange={props.onTimersCountChange}
+            onTimersCountChange={(count) => {
+              // TODO: create context provider to easily access and manage this data
+              setTimersCount(count);
+              props.onTimersCountChange(count);
+            }}
           />
         </Suspense>
       </Column>
