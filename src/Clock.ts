@@ -7,6 +7,8 @@ export type Clock = {
 export const secondsToClock = (seconds: number) => {
   if (seconds === 0) {
     return { hours: "0", minutes: "00", seconds: "00", }
+
+
   }
 
   const hours = Math.floor(seconds / 60 / 60);
