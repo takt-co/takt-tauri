@@ -10,16 +10,15 @@ import { omit } from "lodash";
 import { Button, ButtonVariant } from "../components/Button";
 import { ID } from "../Types";
 import { Backdrop, Dialog as MaterialDialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
-import { Color, colors } from "../Theme";
-import { Column } from "../components/Flex";
+import { Color } from "../Theme";
 
 type DialogContextType = {
-  alert: (config: {
+  alert: (_config: {
     title: string;
     body?: ReactNode;
     onOk?: () => void;
   }) => void;
-  confirm: (config: {
+  confirm: (_config: {
     title: string;
     body: ReactNode;
     cancelLabel?: string;
@@ -35,10 +34,10 @@ type RenderDialogProps = { confirming: boolean; closing: boolean };
 
 type Dialog = {
   id: ID;
-  render: (props: RenderDialogProps) => ReactNode;
+  render: (_props: RenderDialogProps) => ReactNode;
 };
 
-const DialogContext = createContext<DialogContextType>(null!);
+const DialogContext = createContext<DialogContextType | null>(null);
 
 export function DialogProvider(props: { children: ReactNode }) {
   const [dialogs, setDialogs] = useState<Array<Dialog>>([]);
@@ -119,7 +118,7 @@ export function DialogProvider(props: { children: ReactNode }) {
                 }
                 removeDialog(id);
                 onCancel?.();
-              }
+              };
               return (
                 <MaterialDialog
                   key={id}

@@ -1,4 +1,4 @@
-import { CSSProperties, forwardRef, ReactNode, useState } from "react";
+import React, { CSSProperties, forwardRef, ReactNode, useState } from "react";
 import { Color, colors } from "../Theme";
 import { spacing, Spacing } from "./Spacer";
 
@@ -54,9 +54,8 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
 
     return (
       <div
-        children={children}
         className={className}
-        onMouseOverCapture={trackingHover ? (ev) => {
+        onMouseOverCapture={trackingHover ? () => {
           setHovering(true);
         } : undefined}
         onMouseOutCapture={trackingHover ? () => {
@@ -76,15 +75,15 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
           borderRadius: rounded ? 5 : 0,
           ...(paddingHorizontal
             ? {
-                paddingLeft: spacing[paddingHorizontal],
-                paddingRight: spacing[paddingHorizontal],
-              }
+              paddingLeft: spacing[paddingHorizontal],
+              paddingRight: spacing[paddingHorizontal],
+            }
             : {}),
           ...(paddingVertical
             ? {
-                paddingBottom: spacing[paddingVertical],
-                paddingTop: spacing[paddingVertical],
-              }
+              paddingBottom: spacing[paddingVertical],
+              paddingTop: spacing[paddingVertical],
+            }
             : {}),
           width: fullWidth ? "100%" : undefined,
           height: fullHeight ? "100%" : undefined,
@@ -92,17 +91,28 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
           ...(hovering ? hoverStyle : {})
         }}
         {...props}
-      />
+      >
+        {children}
+      </div>
     );
   },
 );
+Column.displayName = "Column";
 
-export const Row = forwardRef<HTMLDivElement, FlexProps>(
-  ({ style, ref: omittedRef, ...props }, ref) => {
+export const Row = forwardRef<HTMLDivElement, FlexProps & {
+  ref: React.LegacyRef<HTMLDivElement> | undefined
+}>(
+  ({
+    style,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    ref: omitted,
+    ...props
+  }, ref) => {
     return <Column
       forwardRef={ref}
       {...props}
       style={{ ...style, flexDirection: "row" }}
-    />
+    />;
   },
 );
+Row.displayName = "Row";

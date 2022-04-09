@@ -2,21 +2,22 @@ import React from "react";
 import { colors } from "../Theme";
 import { FlexProps, Row } from "./Flex";
 
-export const ButtonBar = (props: FlexProps) => {
-  const { style, ref, ...rest } = props;
-
-  return (
-    <Row
-      alignItems="center"
-      justifyContent="space-between"
-      padding="smaller"
-      gap="smaller"
-      backgroundColor="white"
-      style={{
-        borderTop: `1px solid ${colors.offWhite}`,
-        ...style,
-      }}
-      {...rest}
-    />
-  )
-}
+export const ButtonBar = ({
+  style,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  ref,
+  ...rest
+}: FlexProps) => (
+  <Row
+    alignItems="center"
+    justifyContent="space-between"
+    padding="smaller"
+    gap="smaller"
+    backgroundColor="white"
+    style={{
+      borderTop: `1px solid ${colors.offWhite}`,
+      ...style,
+    }}
+    {...rest}
+  />
+);

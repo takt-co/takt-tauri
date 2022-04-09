@@ -1,12 +1,12 @@
-import React, { useState } from "react"
-import { colors } from "../Theme"
-import { Column, Row } from "./Flex"
-import { CleanUpIcon, IconProps, LoginIcon, PowerIcon } from "./Icons"
-import { Text } from "./Typography"
-import { Spacer } from "./Spacer"
-import { useAuthentication } from "../providers/Authentication"
-import { process } from "@tauri-apps/api"
-import { config } from "../config"
+import React, { useState } from "react";
+import { colors } from "../Theme";
+import { Column, Row } from "./Flex";
+import { CleanUpIcon, IconProps, LoginIcon, PowerIcon } from "./Icons";
+import { Text } from "./Typography";
+import { Spacer } from "./Spacer";
+import { useAuthentication } from "../providers/Authentication";
+import { process } from "@tauri-apps/api";
+import { config } from "../config";
 
 export const SettingsScreen = (props: {
   clearCache: () => void;
@@ -51,17 +51,17 @@ export const SettingsScreen = (props: {
               } else {
                 process.exit();
               }
-             }}
+            }}
           />
           <Spacer size="small" />
         </Column>
       </Column>
     </Column>
-  )
-}
+  );
+};
 
 const Setting = (props: {
-  label: String;
+  label: string;
   Icon: React.FunctionComponent<IconProps>;
   onClick: () => void;
   iconProps?: IconProps;

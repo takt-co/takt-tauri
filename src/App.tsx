@@ -67,7 +67,7 @@ export const App = (props: {
                 </IconButton>
               </Tooltip>
               <Tooltip placement="top" key="Settings" title="Settings" arrow>
-                <IconButton onClick={() => { setState({ tag: "viewingSettings" }) }}>
+                <IconButton onClick={() => { setState({ tag: "viewingSettings" }); }}>
                   <SettingsIcon height={20} fill={colors.white} />
                 </IconButton>
               </Tooltip>
@@ -75,7 +75,7 @@ export const App = (props: {
           ) : state.tag === "viewingSettings" ? (
             <Row paddingHorizontal="tiny">
               <Tooltip placement="top" key="Close settings" title="Close settings" arrow>
-                <IconButton onClick={() => { setState({ tag: "viewingTimers" }) }}>
+                <IconButton onClick={() => { setState({ tag: "viewingTimers" }); }}>
                   <CrossIcon height={20} fill={colors.white} />
                 </IconButton>
               </Tooltip>
@@ -136,6 +136,6 @@ export const App = (props: {
       )}
     </Column>
   );
-}
+};
 
 export default App;

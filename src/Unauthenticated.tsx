@@ -50,7 +50,7 @@ export const Unauthenticated = () => {
           autoCapitalize="false"
           value={loginDetails.username}
           sx={{ root: { borderRadius: 0 } }}
-          onChange={(ev) => { setLoginDetails(deets => ({ ...deets, username: ev.target.value })) }}
+          onChange={(ev) => { setLoginDetails(deets => ({ ...deets, username: ev.target.value })); }}
         />
         <TextField
           label="Password"
@@ -58,12 +58,12 @@ export const Unauthenticated = () => {
           type={showingPassword ? "text" : "password"}
           value={loginDetails.password}
           sx={{ root: { borderRadius: 0 } }}
-          onChange={(ev) => { setLoginDetails(deets => ({ ...deets, password: ev.target.value })) }}
+          onChange={(ev) => { setLoginDetails(deets => ({ ...deets, password: ev.target.value })); }}
           fullWidth
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={() => { setShowingPassword(a => !a)}}>
+                <IconButton onClick={() => { setShowingPassword(a => !a);}}>
                   {showingPassword ? (
                     <PasswordShowing width={20} />
                   ) : (
@@ -93,5 +93,5 @@ export const Unauthenticated = () => {
         </Row>
       </Column>
     </Column>
-  )
-}
+  );
+};

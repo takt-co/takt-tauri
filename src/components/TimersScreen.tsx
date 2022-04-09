@@ -37,15 +37,15 @@ export const TimersScreen = (props: {
         date={date}
         onPrev={() => {
           const prevDate = moment(props.date, config.dateFormat);
-            prevDate.startOf("day");
-            prevDate.subtract(12, "hours");
+          prevDate.startOf("day");
+          prevDate.subtract(12, "hours");
 
           setDate(prevDate.format(config.dateFormat));
         }}
         onNext={() => {
           const nextDate = moment(props.date, config.dateFormat);
-            nextDate.endOf("day");
-            nextDate.add(12, "hours");
+          nextDate.endOf("day");
+          nextDate.add(12, "hours");
 
           setDate(nextDate.format(config.dateFormat));
         }}
@@ -90,8 +90,8 @@ export const TimersScreen = (props: {
         </Button>
       </ButtonBar>
     </Column>
-  )
-}
+  );
+};
 
 const DateBar = (props: {
   date: DateString,
@@ -112,7 +112,7 @@ const DateBar = (props: {
         onClick={props.onNext}
       />
     </Row>
-  )
+  );
 };
 
 const Timers = (props: {
@@ -129,7 +129,7 @@ const Timers = (props: {
     const timeout = setTimeout(() => {
       setTimeNow(moment());
     }, 1000);
-    return () => { clearTimeout(timeout) }
+    return () => { clearTimeout(timeout); };
   }, [timeNow, setTimeNow]);
 
   const data = useLazyLoadQuery<TimersScreenQuery>(graphql`
@@ -162,12 +162,12 @@ const Timers = (props: {
   });
 
   useEffect(() => {
-    props.onConnectionIdUpdate(data.currentUser.timers.__id)
+    props.onConnectionIdUpdate(data.currentUser.timers.__id);
   }, [data.currentUser.timers.__id]);
 
   useEffect(() => {
-    props.onTimersCountChange(data.currentUser.timers.edges?.length ?? 0)
-  }, [data.currentUser.timers.edges])
+    props.onTimersCountChange(data.currentUser.timers.edges?.length ?? 0);
+  }, [data.currentUser.timers.edges]);
 
   const [archiveTimer] = useMutation<TimersScreen_ArchiveMutation>(graphql`
     mutation TimersScreen_ArchiveMutation (
@@ -200,7 +200,7 @@ const Timers = (props: {
     .map(e => e?.node);
 
   if (timers.length === 0) {
-    return <TimersEmptyState />
+    return <TimersEmptyState />;
   }
 
   return (
@@ -247,16 +247,16 @@ const Timers = (props: {
                         },
                       }
                     }
-                  })
+                  });
                 }
               });
             }}
           />
-        )
+        );
       })}
     </Column>
-  )
-}
+  );
+};
 
 export const TimersEmptyState = () => {
   return (
@@ -270,8 +270,8 @@ export const TimersEmptyState = () => {
       <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
       <Text color="gray">No timers on this date</Text>
     </Column>
-  )
-}
+  );
+};
 
 const TimerCard = (props: {
   timer: TimersScreen_Timer$key;
@@ -386,7 +386,7 @@ const TimerCard = (props: {
                         },
                       }
                     }
-                  })
+                  });
                 } else {
                   startRecording({
                     variables: { timerId: timer.id },
@@ -410,7 +410,7 @@ const TimerCard = (props: {
                         },
                       }
                     },
-                  })
+                  });
                 }
               }}
             />
@@ -433,7 +433,7 @@ const TimerCard = (props: {
             variant="outlined"
             size="small"
             onClick={() => {
-              props.onEdit({ ...timer, seconds: clockToSeconds(clock) })
+              props.onEdit({ ...timer, seconds: clockToSeconds(clock) });
             }}
           >
             Edit
@@ -451,8 +451,8 @@ const TimerCard = (props: {
         </Row>
       </Column>
     </Row>
-  )
-}
+  );
+};
 
 const RecordButton = (props: {
   recording: boolean;
@@ -470,5 +470,5 @@ const RecordButton = (props: {
         cursor: "pointer",
       }}
     />
-  )
-}
+  );
+};

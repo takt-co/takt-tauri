@@ -1,4 +1,4 @@
-import {
+import React, {
   createContext,
   ReactNode,
   useContext,
@@ -55,9 +55,9 @@ const verifySecureToken: (token: SecureToken | null) => Promise<SecureToken | nu
       resolve(token);
     }).catch(() => {
       resolve(null);
-    })
+    });
   });
-}
+};
 
 export const AuthenticationProvider = (props: { children: ReactNode }) => {
   const [state, setState] = useState<AuthenticationState>({ tag: "loading" });
@@ -71,7 +71,7 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
     };
 
     const login: (loginDetails: LoginDetails) => Promise<boolean> = async (loginDetails) => {
-      return new Promise(async (resolve) => {
+      return new Promise((resolve) => {
         api().post("/authorise", loginDetails)
           .then(resp => {
             const { secureToken } = resp.data;
@@ -85,8 +85,8 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
             }
           }).catch(() => {
             resolve(false);
-          })
-      })
+          });
+      });
     };
 
     verifySecureToken(currentToken).then(verifiedToken => {
@@ -94,7 +94,7 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
         localStorage.setItem(tokenStorageKey, verifiedToken);
         setState({ tag: "authenticated", secureToken: verifiedToken, logout });
       } else {
-        setState({ tag: "unauthenticated", login })
+        setState({ tag: "unauthenticated", login });
       }
       return;
     });

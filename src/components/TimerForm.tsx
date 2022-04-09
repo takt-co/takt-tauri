@@ -1,5 +1,5 @@
-import moment from "moment";
 import React, { useEffect, useState } from "react";
+import moment from "moment";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { LoadingScreen } from "./LoadingScreen";
@@ -91,12 +91,12 @@ export const TimerForm = (props: {
         }
       }
     }
-  `)
+  `);
 
   const projects = data.currentUser.account.projects.nodes ?? [];
 
   if (!internalTimer) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
   return (
@@ -119,7 +119,7 @@ export const TimerForm = (props: {
               const date = moment(ev.target.value).format("YYYY-MM-DD");
               console.log("call set date");
               props.setDate(date);
-              setInternalTimer((timer) => (timer ? { ...timer, date } : null))
+              setInternalTimer((timer) => (timer ? { ...timer, date } : null));
             }}
           />
 
@@ -132,7 +132,7 @@ export const TimerForm = (props: {
               onChange={(ev) => {
                 const project = projects.find(p => p?.id === ev.target.value);
                 if (project) {
-                  setInternalTimer((timer) => ({ ...timer!, project }));
+                  setInternalTimer((timer) => timer ? { ...timer, project } : null);
                 }
               }}
             >
@@ -146,7 +146,7 @@ export const TimerForm = (props: {
             <TimeInput
               value={internalTimer.seconds ?? 0}
               onChange={(seconds) => {
-                setInternalTimer((timer) => ({ ...timer!, seconds }))
+                setInternalTimer((timer) => timer ? { ...timer, seconds } : null);
               }}
             />
           </Row>
@@ -158,7 +158,7 @@ export const TimerForm = (props: {
             rows={5}
             value={internalTimer.notes}
             onChange={(ev) => {
-              setInternalTimer((timer) => ({ ...timer!, notes: ev.target.value }))
+              setInternalTimer((timer) => timer ? { ...timer, notes: ev.target.value } : null);
             }}
           />
         </Column>
@@ -193,7 +193,7 @@ export const TimerForm = (props: {
                 date: internalTimer.date,
                 notes: internalTimer.notes,
                 seconds: internalTimer.seconds,
-              }
+              };
 
               updateTimer({
                 variables: { timerId: props.timer.id, attributes },
@@ -205,14 +205,14 @@ export const TimerForm = (props: {
                 onCompleted: () => {
                   props.afterSave(internalTimer);
                 }
-              })
+              });
             } else {
               const attributes: CreateTimerAttributes = {
                 projectId: internalTimer.project.id,
                 date: internalTimer.date,
                 notes: internalTimer.notes,
                 seconds: internalTimer.seconds,
-              }
+              };
 
               createTimer({
                 variables: {
@@ -222,7 +222,7 @@ export const TimerForm = (props: {
                 onCompleted: () => {
                   props.afterSave(internalTimer);
                 }
-              })
+              });
             }
           }}
         >
@@ -230,8 +230,8 @@ export const TimerForm = (props: {
         </Button>
       </ButtonBar>
     </Column>
-  )
-}
+  );
+};
 
 const buildTimeOptions = (count: number) => {
   return Array.from(Array(count).keys()).map((num) => {
@@ -272,7 +272,7 @@ const TimeInput = (props: {
           label="Hrs"
           onChange={(ev) => {
             const seconds = clockToSeconds({ ...clock, hours: `${ev.target.value}` });
-            props.onChange(seconds)
+            props.onChange(seconds);
           }}
         >
           {hourOptions.map(hour => (
@@ -288,7 +288,7 @@ const TimeInput = (props: {
           label="Mins"
           onChange={(ev) => {
             const seconds = clockToSeconds({ ...clock, minutes: `${ev.target.value}` });
-            props.onChange(seconds)
+            props.onChange(seconds);
           }}
         >
           {minuteOptions.map(minute => (
@@ -310,5 +310,5 @@ const TimeInput = (props: {
         <PlusCircled width={30} height={30} fill={colors.primary} />
       </Button>
     </Row>
-  )
-}
+  );
+};

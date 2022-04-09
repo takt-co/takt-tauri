@@ -1,27 +1,27 @@
-import React, { Suspense, useMemo, useState } from 'react';
-import ReactDOM from 'react-dom';
-import { RelayEnvironmentProvider } from 'react-relay';
-import { DialogProvider } from './providers/Dialog';
-import { AuthenticationProvider, useAuthentication } from './providers/Authentication';
-import { createRelayEnvironment } from './providers/Relay';
-import { LoadingScreen } from './components/LoadingScreen';
-import { Unauthenticated } from './Unauthenticated';
-import App from './App';
-import { Column } from './components/Flex';
-import { TopBar } from './components/TopBar';
+import React, { Suspense, useMemo, useState } from "react";
+import ReactDOM from "react-dom";
+import { RelayEnvironmentProvider } from "react-relay";
+import { DialogProvider } from "./providers/Dialog";
+import { AuthenticationProvider, useAuthentication } from "./providers/Authentication";
+import { createRelayEnvironment } from "./providers/Relay";
+import { LoadingScreen } from "./components/LoadingScreen";
+import { Unauthenticated } from "./Unauthenticated";
+import App from "./App";
+import { Column } from "./components/Flex";
+import { TopBar } from "./components/TopBar";
 
 const Takt = () => {
   const authentication = useAuthentication();
 
   switch(authentication.tag) {
-    case "loading":
-      return <LoadingScreen />
-    case "unauthenticated":
-      return <Unauthenticated />
-    case "authenticated":
-      return <Authenticated />
-    default:
-      throw new Error("Unexpected authentication state");
+  case "loading":
+    return <LoadingScreen />;
+  case "unauthenticated":
+    return <Unauthenticated />;
+  case "authenticated":
+    return <Authenticated />;
+  default:
+    throw new Error("Unexpected authentication state");
   }
 };
 
@@ -34,7 +34,7 @@ const Authenticated = () => {
   const [environmentKey, setEnvironmentKey] = useState(0);
   const environment = useMemo(() => (
     createRelayEnvironment(authentication.secureToken)
-  ), [authentication.secureToken, environmentKey])
+  ), [authentication.secureToken, environmentKey]);
 
   return (
     <RelayEnvironmentProvider environment={environment}>
@@ -54,8 +54,8 @@ const Authenticated = () => {
         </DialogProvider>
       </Suspense>
     </RelayEnvironmentProvider>
-  )
-}
+  );
+};
 
 ReactDOM.render(
   <React.StrictMode>
@@ -63,5 +63,5 @@ ReactDOM.render(
       <Takt />
     </AuthenticationProvider>
   </React.StrictMode>,
-  document.getElementById('root')
+  document.getElementById("root")
 );
