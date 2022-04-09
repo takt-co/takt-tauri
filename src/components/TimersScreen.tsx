@@ -50,7 +50,12 @@ export const TimersScreen = (props: {
       />
 
       <Column fullHeight style={{ height: "calc(100vh - 170px)", overflow: "auth" }} backgroundColor="white">
-        <Suspense fallback={<LoadingScreen message="Fetching timers" />}>
+        <Suspense fallback={
+          <LoadingScreen
+            message="Fetching timers"
+            Warmdown={TimersEmptyState}
+          />
+        }>
           <Timers
             date={date}
             onEdit={props.onEdit}
@@ -184,18 +189,7 @@ const Timers = (props: {
     .map(e => e?.node);
 
   if (timers.length === 0) {
-    return (
-      <Column
-        fullHeight
-        justifyContent="center"
-        alignItems="center"
-        gap="small"
-        backgroundColor="white"
-      >
-        <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
-        <Text color="gray">No timers on this date</Text>
-      </Column>
-    )
+    return <TimersEmptyState />
   }
 
   return (
@@ -249,6 +243,21 @@ const Timers = (props: {
           />
         )
       })}
+    </Column>
+  )
+}
+
+export const TimersEmptyState = () => {
+  return (
+    <Column
+      fullHeight
+      justifyContent="center"
+      alignItems="center"
+      gap="small"
+      backgroundColor="white"
+    >
+      <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
+      <Text color="gray">No timers on this date</Text>
     </Column>
   )
 }

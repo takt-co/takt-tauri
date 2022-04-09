@@ -5,7 +5,7 @@ import { Text } from "./components/Typography";
 import moment from "moment";
 import { TimerForm } from "./components/TimerForm";
 import { DateString, ID } from "./Types";
-import { TimersScreen } from "./components/TimersScreen";
+import { TimersEmptyState, TimersScreen } from "./components/TimersScreen";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
 import { config } from "./config";
 import { TopBar } from "./components/TopBar";
@@ -88,7 +88,14 @@ export const App = (props: {
       />
 
       <Column fullHeight backgroundColor="white" hidden={state.tag !== "viewingTimers"}>
-        <Suspense fallback={<LoadingScreen message="Fetching timers" />}>
+        <Suspense
+          fallback={
+            <LoadingScreen
+              message="Fetching timers"
+              Warmdown={TimersEmptyState}
+            />
+          }
+        >
           <TimersScreen
             date={date}
             onConnectionIdUpdate={setTimersConnectionId}

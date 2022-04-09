@@ -7,24 +7,25 @@ import { useIsMounted } from "../hooks/useIsMounted";
 
 export const LoadingScreen = (props: {
   message?: string;
+  Warmdown?: () => JSX.Element;
 }) => {
   const isMounted = useIsMounted();
-  const [hidden, setHidden] = useState(true);
+  const [warmingDown, setWarmingDown] = useState(Boolean(props.Warmdown));
 
-  // Using a short timeout before showing the loading content
-  // this is in an attempt to smooth out transitions when getting quick responses
   useEffect(() => {
+    if (!warmingDown) return;
+
     const timeout = setTimeout(() => {
       if (isMounted.current) {
-        setHidden(false);
+        setWarmingDown(false);
       }
-    }, 100);
+    }, 300);
 
     return () => { clearTimeout(timeout) };
   });
 
-  if (hidden) {
-    return <Column fullHeight fullWidth backgroundColor="white" />;
+  if (warmingDown && props.Warmdown) {
+    return <props.Warmdown />
   }
 
   return (
