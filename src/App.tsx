@@ -17,65 +17,91 @@ import { graphql } from "babel-plugin-relay/macro";
 import { AppQuery } from "./__generated__/AppQuery.graphql";
 import { EmptyWarmdown, LoadingScreen } from "./components/LoadingScreen";
 
-type AppState = {
-  tag: "viewingTimers" | "addingTimer" | "viewingSettings",
-} | {
-  tag: "editingTimer",
-  timer: TimersScreen_Timer$data,
-};
+type AppState =
+  | {
+      tag: "viewingTimers" | "addingTimer" | "viewingSettings";
+    }
+  | {
+      tag: "editingTimer";
+      timer: TimersScreen_Timer$data;
+    };
 
-export const App = (props: {
-  clearCache: () => void;
-}) => {
+export const App = (props: { clearCache: () => void }) => {
   const [timersConnectionId, setTimersConnectionId] = useState<ID>("");
   const [timersCount, setTimersCount] = useState(0);
-  const [date, setDate] = useState<DateString>(moment().format(config.dateFormat));
+  const [date, setDate] = useState<DateString>(
+    moment().format(config.dateFormat)
+  );
   const [state, setState] = useState<AppState>({
-    tag: "viewingTimers"
+    tag: "viewingTimers",
   });
 
-  const { currentUser } = useLazyLoadQuery<AppQuery>(graphql`
-    query AppQuery {
-      currentUser {
-        id
-        name
+  const { currentUser } = useLazyLoadQuery<AppQuery>(
+    graphql`
+      query AppQuery {
+        currentUser {
+          id
+          name
+        }
       }
-    }
-  `, {});
+    `,
+    {}
+  );
 
   return (
-    <Column style={{ height: "calc(100vh - 10px)", overflow: "hidden", borderRadius: 5 }}>
+    <Column
+      style={{
+        height: "calc(100vh - 10px)",
+        overflow: "hidden",
+        borderRadius: 5,
+      }}
+    >
       <TopBar
-        left={(
+        left={
           <Row paddingHorizontal="smaller" alignItems="center" gap="tiny">
             <Avatar
               alt={currentUser.name}
               sx={{ width: 28, height: 28, bgcolor: colors.darkPrimary }}
             />
           </Row>
-        )}
+        }
         right={
           state.tag === "viewingTimers" ? (
             <Row paddingHorizontal="tiny">
               <Tooltip placement="top" key="Today" title="Jump to today" arrow>
-                <IconButton onClick={() => {
-                  const today = moment();
-                  today.startOf("day");
-                  setDate(today.format(config.dateFormat));
-                }}>
+                <IconButton
+                  onClick={() => {
+                    const today = moment();
+                    today.startOf("day");
+                    setDate(today.format(config.dateFormat));
+                  }}
+                >
                   <CalendarIcon height={20} fill={colors.white} />
                 </IconButton>
               </Tooltip>
               <Tooltip placement="top" key="Settings" title="Settings" arrow>
-                <IconButton onClick={() => { setState({ tag: "viewingSettings" }); }}>
+                <IconButton
+                  onClick={() => {
+                    setState({ tag: "viewingSettings" });
+                  }}
+                >
                   <SettingsIcon height={20} fill={colors.white} />
                 </IconButton>
               </Tooltip>
             </Row>
           ) : state.tag === "viewingSettings" ? (
             <Row paddingHorizontal="tiny">
-              <Tooltip placement="top" key="Close settings" title="Close settings" arrow>
-                <IconButton onClick={() => { setState({ tag: "viewingTimers" }); }}>
+              <Tooltip
+                placement="top"
+                key="Close settings"
+                title="Close settings"
+                arrow
+              >
+                <IconButton
+                  onClick={() => {
+                    setState({ tag: "viewingTimers" });
+                  }}
+                >
                   <CrossIcon height={20} fill={colors.white} />
                 </IconButton>
               </Tooltip>
@@ -84,7 +110,11 @@ export const App = (props: {
         }
       />
 
-      <Column fullHeight backgroundColor="white" hidden={state.tag !== "viewingTimers"}>
+      <Column
+        fullHeight
+        backgroundColor="white"
+        hidden={state.tag !== "viewingTimers"}
+      >
         <Suspense
           fallback={
             <LoadingScreen
@@ -126,11 +156,14 @@ export const App = (props: {
         </Suspense>
       ) : state.tag === "viewingSettings" ? (
         <SettingsScreen clearCache={props.clearCache} />
-      ) : state.tag === "viewingTimers" ? (
-        null // handled by setting the visible prop on TimersScreen
-      ) : (
+      ) : state.tag === "viewingTimers" ? null : ( // handled by setting the visible prop on TimersScreen
         // TODO: error reporting!
-        <Column fullHeight backgroundColor="white" alignItems="center" justifyContent="center">
+        <Column
+          fullHeight
+          backgroundColor="white"
+          alignItems="center"
+          justifyContent="center"
+        >
           <Text>Error: Unexpected app state</Text>
         </Column>
       )}

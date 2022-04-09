@@ -2,7 +2,10 @@ import React, { Suspense, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import { RelayEnvironmentProvider } from "react-relay";
 import { DialogProvider } from "./providers/Dialog";
-import { AuthenticationProvider, useAuthentication } from "./providers/Authentication";
+import {
+  AuthenticationProvider,
+  useAuthentication,
+} from "./providers/Authentication";
 import { createRelayEnvironment } from "./providers/Relay";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { Unauthenticated } from "./Unauthenticated";
@@ -13,15 +16,15 @@ import { TopBar } from "./components/TopBar";
 const Takt = () => {
   const authentication = useAuthentication();
 
-  switch(authentication.tag) {
-  case "loading":
-    return <LoadingScreen />;
-  case "unauthenticated":
-    return <Unauthenticated />;
-  case "authenticated":
-    return <Authenticated />;
-  default:
-    throw new Error("Unexpected authentication state");
+  switch (authentication.tag) {
+    case "loading":
+      return <LoadingScreen />;
+    case "unauthenticated":
+      return <Unauthenticated />;
+    case "authenticated":
+      return <Authenticated />;
+    default:
+      throw new Error("Unexpected authentication state");
   }
 };
 
@@ -32,23 +35,32 @@ const Authenticated = () => {
   }
 
   const [environmentKey, setEnvironmentKey] = useState(0);
-  const environment = useMemo(() => (
-    createRelayEnvironment(authentication.secureToken)
-  ), [authentication.secureToken, environmentKey]);
+  const environment = useMemo(
+    () => createRelayEnvironment(authentication.secureToken),
+    [authentication.secureToken, environmentKey]
+  );
 
   return (
     <RelayEnvironmentProvider environment={environment}>
-      <Suspense fallback={(
-        <Column style={{ height: "calc(100vh - 10px)", overflow: "hidden", borderRadius: 5 }}>
-          <TopBar />
-          <LoadingScreen message="Loading user" />
-        </Column>
-      )}>
+      <Suspense
+        fallback={
+          <Column
+            style={{
+              height: "calc(100vh - 10px)",
+              overflow: "hidden",
+              borderRadius: 5,
+            }}
+          >
+            <TopBar />
+            <LoadingScreen message="Loading user" />
+          </Column>
+        }
+      >
         <DialogProvider>
           <App
             clearCache={() => {
               // Incrementing this key will force the environment to be recreated
-              setEnvironmentKey(key => key + 1);
+              setEnvironmentKey((key) => key + 1);
             }}
           />
         </DialogProvider>

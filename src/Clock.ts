@@ -1,18 +1,19 @@
 export type Clock = {
-  hours: string,
-  minutes: string,
-  seconds: string
-}
+  hours: string;
+  minutes: string;
+  seconds: string;
+};
 
 export const secondsToClock = (seconds: number) => {
   if (seconds === 0) {
-    return { hours: "0", minutes: "00", seconds: "00", }
+    return { hours: "0", minutes: "00", seconds: "00"
 
 
+  };
   }
 
   const hours = Math.floor(seconds / 60 / 60);
-  seconds = seconds - (hours * 60 * 60);
+  seconds = seconds - hours * 60 * 60;
 
   let mins = Math.floor(seconds / 60);
   if (mins < 0) mins = 0;

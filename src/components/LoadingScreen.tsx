@@ -25,7 +25,9 @@ export const LoadingScreen = (props: {
       }
     }, 100);
 
-    return () => { clearTimeout(timeout); };
+    return () => {
+      clearTimeout(timeout);
+    };
   });
 
   if (warmingDown && props.Warmdown) {
@@ -41,10 +43,12 @@ export const LoadingScreen = (props: {
       backgroundColor="white"
       gap="small"
     >
-      <CircularProgress thickness={5} size={30} sx={{ circle: { stroke: colors.gray } }} />
-      {props.message && (
-        <Text color="gray">{props.message}</Text>
-      )}
+      <CircularProgress
+        thickness={5}
+        size={30}
+        sx={{ circle: { stroke: colors.gray } }}
+      />
+      {props.message && <Text color="gray">{props.message}</Text>}
     </Column>
   );
 };

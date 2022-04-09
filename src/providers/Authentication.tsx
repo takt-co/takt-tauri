@@ -17,17 +17,14 @@ type Authenticated = {
   logout: () => Promise<void>;
 };
 
-export type LoginDetails = { username: string, password: string };
+export type LoginDetails = { username: string; password: string };
 
 type Unauthenticated = {
   tag: "unauthenticated";
   login: (loginDetails: LoginDetails) => Promise<boolean>;
 };
 
-type AuthenticationState =
-  | { tag: "loading" }
-  | Authenticated
-  | Unauthenticated;
+type AuthenticationState = { tag: "loading" } | Authenticated | Unauthenticated;
 
 const AuthenticationContext = createContext<AuthenticationState>({
   tag: "loading",
@@ -45,17 +42,22 @@ const api = (token?: string): AxiosInstance => {
   });
 };
 
-const verifySecureToken: (token: SecureToken | null) => Promise<SecureToken | null> = async (token) => {
+const verifySecureToken: (
+  token: SecureToken | null
+) => Promise<SecureToken | null> = async (token) => {
   return new Promise((resolve) => {
     if (!token) {
       return resolve(null);
     }
 
-    api(token).get("/verify").then(() => {
-      resolve(token);
-    }).catch(() => {
-      resolve(null);
-    });
+    api(token)
+      .get("/verify")
+      .then(() => {
+        resolve(token);
+      })
+      .catch(() => {
+        resolve(null);
+      });
   });
 };
 
@@ -63,17 +65,22 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
   const [state, setState] = useState<AuthenticationState>({ tag: "loading" });
 
   useEffect(() => {
-    const currentToken = localStorage.getItem(tokenStorageKey) as SecureToken | null;
+    const currentToken = localStorage.getItem(
+      tokenStorageKey
+    ) as SecureToken | null;
 
     const logout = async () => {
       localStorage.clear();
       setState({ tag: "unauthenticated", login });
     };
 
-    const login: (loginDetails: LoginDetails) => Promise<boolean> = async (loginDetails) => {
+    const login: (loginDetails: LoginDetails) => Promise<boolean> = async (
+      loginDetails
+    ) => {
       return new Promise((resolve) => {
-        api().post("/authorise", loginDetails)
-          .then(resp => {
+        api()
+          .post("/authorise", loginDetails)
+          .then((resp) => {
             const { secureToken } = resp.data;
 
             if (secureToken) {
@@ -83,13 +90,14 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
             } else {
               resolve(false);
             }
-          }).catch(() => {
+          })
+          .catch(() => {
             resolve(false);
           });
       });
     };
 
-    verifySecureToken(currentToken).then(verifiedToken => {
+    verifySecureToken(currentToken).then((verifiedToken) => {
       if (verifiedToken) {
         localStorage.setItem(tokenStorageKey, verifiedToken);
         setState({ tag: "authenticated", secureToken: verifiedToken, logout });

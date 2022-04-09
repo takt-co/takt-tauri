@@ -1,19 +1,27 @@
 import React from "react";
-import { Button as MaterialButton, ButtonProps, CircularProgress, SxProps, Theme } from "@mui/material";
+import {
+  Button as MaterialButton,
+  ButtonProps,
+  CircularProgress,
+  SxProps,
+  Theme,
+} from "@mui/material";
 import { Color, colors, darken } from "../Theme";
 import { FontSize, fontSizes } from "./Typography";
 
 export type ButtonVariant = "text" | "contained" | "outlined";
 
-export const Button = (props: Omit<ButtonProps, "color"> & {
-  loading?: boolean;
-  color?: Color;
-  fontSize?: FontSize;
-}) => {
+export const Button = (
+  props: Omit<ButtonProps, "color"> & {
+    loading?: boolean;
+    color?: Color;
+    fontSize?: FontSize;
+  }
+) => {
   const { loading, color, fontSize, startIcon, variant, ...rest } = props;
 
   let styles: SxProps<Theme> = {
-    fontSize: fontSizes[fontSize ?? "detail"]
+    fontSize: fontSizes[fontSize ?? "detail"],
   };
 
   if (variant === "contained") {
@@ -22,7 +30,7 @@ export const Button = (props: Omit<ButtonProps, "color"> & {
       backgroundColor: colors[color ?? "primary"],
       "&:hover": {
         backgroundColor: darken(color ?? "primary", 0.1),
-      }
+      },
     };
   }
 
@@ -34,7 +42,7 @@ export const Button = (props: Omit<ButtonProps, "color"> & {
       "&:hover": {
         borderColor: darken(color ?? "primary", 0.1),
         backgroundColor: colors.white,
-      }
+      },
     };
   }
 
@@ -56,10 +64,12 @@ export const Button = (props: Omit<ButtonProps, "color"> & {
               svg: {
                 color: variant === "contained" ? colors.white : colors.primary,
                 width: 12,
-              }
+              },
             }}
           />
-        ) : startIcon
+        ) : (
+          startIcon
+        )
       }
       {...rest}
     />

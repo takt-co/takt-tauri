@@ -11,7 +11,10 @@ export const fontSizes = {
 
 export type FontSize = keyof typeof fontSizes;
 
-type TextProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement> & {
+type TextProps = React.DetailedHTMLProps<
+  React.HTMLAttributes<HTMLParagraphElement>,
+  HTMLParagraphElement
+> & {
   style?: CSSProperties;
   color?: HexColor;
   fontSize?: FontSize;
@@ -19,13 +22,7 @@ type TextProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLParagraphEleme
 };
 
 export const Text = (props: TextProps) => {
-  const {
-    style,
-    strong,
-    color,
-    fontSize: textFontSize,
-    ...rest
-  } = props;
+  const { style, strong, color, fontSize: textFontSize, ...rest } = props;
 
   return (
     <p
@@ -36,7 +33,7 @@ export const Text = (props: TextProps) => {
         color: color,
         margin: style?.margin ?? 0,
         padding: style?.padding ?? 0,
-        ...style
+        ...style,
       }}
       {...rest}
     />

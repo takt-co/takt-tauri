@@ -9,7 +9,13 @@ import React, {
 import { omit } from "lodash";
 import { Button, ButtonVariant } from "../components/Button";
 import { ID } from "../Types";
-import { Backdrop, Dialog as MaterialDialog, DialogActions, DialogContent, DialogTitle } from "@mui/material";
+import {
+  Backdrop,
+  Dialog as MaterialDialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+} from "@mui/material";
 import { Color } from "../Theme";
 
 type DialogContextType = {
@@ -45,7 +51,7 @@ export function DialogProvider(props: { children: ReactNode }) {
     [key: string]: true;
   }>({});
   const [closingDialogs, setClosingDialogs] = useState<{ [key: string]: true }>(
-    {},
+    {}
   );
   const removeDialog = useCallback((id: ID) => {
     setClosingDialogs((closingDialogs) => ({
@@ -122,7 +128,7 @@ export function DialogProvider(props: { children: ReactNode }) {
               return (
                 <MaterialDialog
                   key={id}
-                  BackdropComponent={() =>
+                  BackdropComponent={() => (
                     <Backdrop
                       sx={{
                         backgroundColor: "rgba(0,0,0,0.3)",
@@ -132,17 +138,14 @@ export function DialogProvider(props: { children: ReactNode }) {
                       open={!closing}
                       onClick={handleClose}
                     />
-                  }
+                  )}
                   onClose={handleClose}
                   open={!closing}
                 >
                   <DialogTitle>{title}</DialogTitle>
                   <DialogContent>{body}</DialogContent>
                   <DialogActions>
-                    <Button
-                      disabled={confirming}
-                      onClick={handleClose}
-                    >
+                    <Button disabled={confirming} onClick={handleClose}>
                       {cancelLabel ?? "Cancel"}
                     </Button>
                     <Button
@@ -161,7 +164,7 @@ export function DialogProvider(props: { children: ReactNode }) {
                           }));
                           (result as Promise<void>).then(() => {
                             setConfirmingDialogs((confirming) =>
-                              omit(confirming, id),
+                              omit(confirming, id)
                             );
                             removeDialog(id);
                           });
@@ -190,7 +193,7 @@ export function DialogProvider(props: { children: ReactNode }) {
         dialog.render({
           confirming: confirmingDialogs[dialog.id],
           closing: closingDialogs[dialog.id],
-        }),
+        })
       )}
     </DialogContext.Provider>
   );
@@ -200,7 +203,7 @@ export function useDialog() {
   const context = useContext(DialogContext);
   if (context == null) {
     throw new Error(
-      "Used useDialog outside of a component tree warpped in a DialogProvider",
+      "Used useDialog outside of a component tree warpped in a DialogProvider"
     );
   }
   return context;
