@@ -1,5 +1,5 @@
-# Takt tray app
-[![Build Status](https://takt.semaphoreci.com/badges/takt-tauri/branches/master.svg?style=shields&key=8ededc6a-36b1-4d2b-ae97-90716424378d)]
+# Takt Tauri and React
+[![Build Status](https://takt.semaphoreci.com/badges/takt-tauri/branches/master.svg?style=shields&key=8ededc6a-36b1-4d2b-ae97-90716424378d)](https://takt.semaphoreci.com/projects/takt-tauri)
 A React app wrapped in Tauri to create a desktop application.
 
 ## Getting started
@@ -18,7 +18,7 @@ $ yarn fetch-schema
 $ yarn generate-types
 ```
 
-Note: API is expected to be running on port `3030`
+Note: API is expected to be running on port `3001`
 
 # Create a new build
 ```sh
