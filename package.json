@@ -23,7 +23,7 @@
     "dotenv-cli": "^5.0.0",
     "eslint-plugin-react": "^7.29.4",
     "get-graphql-schema": "^2.1.2",
-    "husky": "^7.0.4",
+    "husky": ">=6",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
     "prettier": "^2.6.2",
@@ -42,7 +42,8 @@
     "eject": "react-scripts eject",
     "tauri": "tauri",
     "generate-types": "relay-compiler",
-    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"%FETCH_SCHEMA_URL%\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js"
+    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"%FETCH_SCHEMA_URL%\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js",
+    "prepare": "husky install"
   },
   "relay": {
     "src": "./src/",
@@ -86,14 +87,11 @@
     "cross-env": "^7.0.3",
     "eslint": "^8.13.0",
     "graphql": "^16.3.0",
+    "lint-staged": ">=10",
     "relay-compiler": "^13.2.0"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "lint-staged"
-    }
-  },
   "lint-staged": {
-    "*.{js,ts,tsx,json,md}": "prettier src --write"
+    "*.{js,ts,tsx,json,md}": "prettier src --write",
+    "*.js": "eslint --cache --fix"
   }
 }
