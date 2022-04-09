@@ -2,7 +2,6 @@ import moment from "moment";
 import React, { Suspense, useEffect, useState } from "react";
 import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
 import { config } from "../config";
-import { useDebounced } from "../hooks/useDebounced";
 import { colors, darken } from "../Theme";
 import { DateString, ID } from "../Types";
 import { Button } from "./Button";
@@ -10,7 +9,6 @@ import { ButtonBar } from "./ButtonBar";
 import { Column, Row } from "./Flex";
 import { AddIcon, Arrow, TimerOffIcon } from "./Icons";
 import { LoadingScreen } from "./LoadingScreen";
-import { Spacer } from "./Spacer";
 import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
 import { emit } from "@tauri-apps/api/event";
@@ -35,10 +33,23 @@ export const TimersScreen = (props: {
     <Column fullWidth fullHeight>
       <DateBar
         date={date}
-        onChangeDate={setDate}
+        onPrev={() => {
+          const prevDate = moment(props.date, config.dateFormat);
+            prevDate.startOf("day");
+            prevDate.subtract(12, "hours");
+
+          setDate(prevDate.format(config.dateFormat));
+        }}
+        onNext={() => {
+          const nextDate = moment(props.date, config.dateFormat);
+            nextDate.endOf("day");
+            nextDate.add(12, "hours");
+
+          setDate(nextDate.format(config.dateFormat));
+        }}
       />
 
-      <Column fullHeight style={{ height: "calc(100vh - 170px)", overflowY: "scroll" }} backgroundColor="white">
+      <Column fullHeight style={{ height: "calc(100vh - 170px)", overflow: "auth" }} backgroundColor="white">
         <Suspense fallback={<LoadingScreen message="Fetching timers" />}>
           <Timers
             date={date}
@@ -72,43 +83,21 @@ export const TimersScreen = (props: {
 
 const DateBar = (props: {
   date: DateString,
-  onChangeDate: (date: DateString) => void;
+  onPrev: () => void,
+  onNext: () => void,
 }) => {
-  // Preventing button spamming
-  const [internalDate, setInternalDate] = useState(props.date);
-  const debouncedDate = useDebounced(internalDate, 200);
-
-  useEffect(() => {
-    props.onChangeDate(debouncedDate);
-  }, [debouncedDate]);
-
   return (
     <Row alignItems="center" justifyContent="space-between" padding="smaller" backgroundColor="offWhite" style={{ height: 46 }}>
       <Arrow
         width={20}
-        style={{
-          transform: "rotate(180deg)",
-          cursor: "pointer",
-        }}
-        onClick={() => {
-          const date = moment(props.date, config.dateFormat);
-          date.startOf("day");
-          date.subtract(12, "hours");
-          setInternalDate(date.format(config.dateFormat));
-        }}
+        style={{ transform: "rotate(180deg)", cursor: "pointer" }}
+        onClick={props.onPrev}
       />
-
       <Text>{moment(props.date).format("dddd, D MMMM YYYY")}</Text>
-
       <Arrow
         width={20}
         style={{ cursor: "pointer" }}
-        onClick={() => {
-          const date = moment(props.date, config.dateFormat);
-          date.endOf("day");
-          date.add(12, "hours");
-          setInternalDate(date.format(config.dateFormat));
-        }}
+        onClick={props.onNext}
       />
     </Row>
   )
@@ -196,7 +185,13 @@ const Timers = (props: {
 
   if (timers.length === 0) {
     return (
-      <Column fullHeight justifyContent="center" alignItems="center" gap="small" backgroundColor="white">
+      <Column
+        fullHeight
+        justifyContent="center"
+        alignItems="center"
+        gap="small"
+        backgroundColor="white"
+      >
         <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
         <Text color="gray">No timers on this date</Text>
       </Column>
@@ -204,7 +199,7 @@ const Timers = (props: {
   }
 
   return (
-    <Column>
+    <Column fullHeight>
       {timers.map(timer => {
         if (!timer) return null;
 
@@ -236,7 +231,7 @@ const Timers = (props: {
                         timer: {
                           id: timer.id,
                           seconds: timer.seconds,
-                          status: "deleted", // TODO: this should be an enum on the API
+                          status: "deleted",
                           lastActionAt: moment().toISOString(),
                           user: {
                             id: data.currentUser.id,
@@ -364,7 +359,7 @@ const TimerCard = (props: {
                       stopRecording: {
                         timer: {
                           ...timer,
-                          seconds: timer.seconds,
+                          seconds: clockToSeconds(clock),
                           status: "paused",
                           lastActionAt: moment().toISOString(),
                         },
