@@ -5,6 +5,10 @@ import { colors } from "../Theme";
 import { Text } from "./Typography";
 import { useIsMounted } from "../hooks/useIsMounted";
 
+export const EmptyWarmdown = () => {
+  return <></>;
+}
+
 export const LoadingScreen = (props: {
   message?: string;
   Warmdown?: () => JSX.Element;
@@ -19,7 +23,7 @@ export const LoadingScreen = (props: {
       if (isMounted.current) {
         setWarmingDown(false);
       }
-    }, 300);
+    }, 100);
 
     return () => { clearTimeout(timeout) };
   });

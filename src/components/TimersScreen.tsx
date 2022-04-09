@@ -26,6 +26,7 @@ export const TimersScreen = (props: {
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
   onConnectionIdUpdate: (id: ID) => void;
+  onTimersCountChange: (count: number) => void;
 }) => {
   const { date, setDate } = props;
 
@@ -49,7 +50,7 @@ export const TimersScreen = (props: {
         }}
       />
 
-      <Column fullHeight style={{ height: "calc(100vh - 170px)", overflow: "auth" }} backgroundColor="white">
+      <Column fullHeight style={{ height: "calc(100vh - 170px)", overflow: "auto" }} backgroundColor="white">
         <Suspense fallback={
           <LoadingScreen
             message="Fetching timers"
@@ -61,6 +62,7 @@ export const TimersScreen = (props: {
             onEdit={props.onEdit}
             onAdd={props.onAdd}
             onConnectionIdUpdate={props.onConnectionIdUpdate}
+            onTimersCountChange={props.onTimersCountChange}
           />
         </Suspense>
       </Column>
@@ -113,6 +115,7 @@ const Timers = (props: {
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
   onConnectionIdUpdate: (id: ID) => void;
+  onTimersCountChange: (count: number) => void;
 }) => {
   const dialog = useDialog();
   const [timeNow, setTimeNow] = useState(moment());
@@ -155,7 +158,11 @@ const Timers = (props: {
 
   useEffect(() => {
     props.onConnectionIdUpdate(data.currentUser.timers.__id)
-  }, [data.currentUser.timers.__id])
+  }, [data.currentUser.timers.__id]);
+
+  useEffect(() => {
+    props.onTimersCountChange(data.currentUser.timers.edges?.length ?? 0)
+  }, [data.currentUser.timers.edges])
 
   const [deleteTimer] = useMutation<TimersScreen_DeleteMutation>(graphql`
     mutation TimersScreen_DeleteMutation (

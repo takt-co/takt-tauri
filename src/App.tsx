@@ -15,7 +15,7 @@ import { SettingsScreen } from "./components/SettingsScreen";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { AppQuery } from "./__generated__/AppQuery.graphql";
-import { LoadingScreen } from "./components/LoadingScreen";
+import { EmptyWarmdown, LoadingScreen } from "./components/LoadingScreen";
 
 type AppState = {
   tag: "viewingTimers" | "addingTimer" | "viewingSettings",
@@ -28,6 +28,7 @@ export const App = (props: {
   clearCache: () => void;
 }) => {
   const [timersConnectionId, setTimersConnectionId] = useState<ID>("");
+  const [timersCount, setTimersCount] = useState(0);
   const [date, setDate] = useState<DateString>(moment().format(config.dateFormat));
   const [state, setState] = useState<AppState>({
     tag: "viewingTimers"
@@ -92,13 +93,14 @@ export const App = (props: {
           fallback={
             <LoadingScreen
               message="Fetching timers"
-              Warmdown={TimersEmptyState}
+              Warmdown={timersCount === 0 ? TimersEmptyState : EmptyWarmdown}
             />
           }
         >
           <TimersScreen
             date={date}
             onConnectionIdUpdate={setTimersConnectionId}
+            onTimersCountChange={setTimersCount}
             setDate={setDate}
             onAdd={() => {
               setState({ tag: "addingTimer" });
