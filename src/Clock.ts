@@ -6,7 +6,6 @@ export type Clock = {
 
 export const secondsToClock = (seconds: number) => {
   if (seconds === 0) {
-    // some new comment
     return { hours: "0", minutes: "00", seconds: "00" };
   }
 
