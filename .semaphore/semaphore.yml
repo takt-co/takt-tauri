@@ -19,3 +19,6 @@ blocks:
         - name: yarn test
           commands:
             - yarn test --passWithNoTests
+        - name: eslint
+          commands:
+            - yarn eslint src
