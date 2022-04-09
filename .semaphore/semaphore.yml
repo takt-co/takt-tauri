@@ -13,7 +13,6 @@ blocks:
         commands:
           - sem-version node 16.13.0
           - checkout
-          - cd src
           - yarn install
       jobs:
         - name: yarn test
