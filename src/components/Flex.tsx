@@ -98,8 +98,7 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
 );
 
 export const Row = forwardRef<HTMLDivElement, FlexProps>(
-  // localRef if the ref passed from DivProps type
-  ({ style, ref: localRef, ...props }, ref) => {
+  ({ style, ref: omittedRef, ...props }, ref) => {
     return <Column
       forwardRef={ref}
       {...props}

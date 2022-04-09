@@ -8,6 +8,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { Unauthenticated } from './Unauthenticated';
 import App from './App';
 import { Column } from './components/Flex';
+import { TopBar } from './components/TopBar';
 
 const Takt = () => {
   const authentication = useAuthentication();
@@ -26,11 +27,11 @@ const Takt = () => {
 
 const Authenticated = () => {
   const authentication = useAuthentication();
-  const [environmentKey, setEnvironmentKey] = useState(0);
   if (authentication.tag !== "authenticated") {
     throw new Error("Tried to render Authenticated while not logged in");
   }
 
+  const [environmentKey, setEnvironmentKey] = useState(0);
   const environment = useMemo(() => (
     createRelayEnvironment(authentication.secureToken)
   ), [authentication.secureToken, environmentKey])
@@ -39,7 +40,8 @@ const Authenticated = () => {
     <RelayEnvironmentProvider environment={environment}>
       <Suspense fallback={(
         <Column style={{ height: "calc(100vh - 10px)", overflow: "hidden", borderRadius: 5 }}>
-          <LoadingScreen />
+          <TopBar />
+          <LoadingScreen message="Loading user" />
         </Column>
       )}>
         <DialogProvider>

@@ -51,7 +51,7 @@ fn main() {
               PhysicalPosition {
                 // NOTE: 323 = random number (due to retina?). May change between devices?
                 x: (position.x as i32 - (size.width as i32 / 2)) - 323,
-                y: position.y as i32
+                y: 0
               }
             )
           ).unwrap();

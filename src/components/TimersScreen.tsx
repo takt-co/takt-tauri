@@ -38,8 +38,8 @@ export const TimersScreen = (props: {
         onChangeDate={setDate}
       />
 
-      <Column fullHeight style={{ height: 353, minHeight: 353, maxHeight: 353, overflowY: "scroll" }} backgroundColor="white">
-        <Suspense fallback={<LoadingScreen />}>
+      <Column fullHeight style={{ height: "calc(100vh - 170px)", overflowY: "scroll" }} backgroundColor="white">
+        <Suspense fallback={<LoadingScreen message="Fetching timers" />}>
           <Timers
             date={date}
             onEdit={props.onEdit}

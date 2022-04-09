@@ -3,7 +3,6 @@ import { Column, Row } from "./components/Flex";
 import { colors } from "./Theme";
 import { Text } from "./components/Typography";
 import moment from "moment";
-import { LoadingScreen } from "./components/LoadingScreen";
 import { TimerForm } from "./components/TimerForm";
 import { DateString, ID } from "./Types";
 import { TimersScreen } from "./components/TimersScreen";
@@ -16,6 +15,7 @@ import { SettingsScreen } from "./components/SettingsScreen";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { AppQuery } from "./__generated__/AppQuery.graphql";
+import { LoadingScreen } from "./components/LoadingScreen";
 
 type AppState = {
   tag: "viewingTimers" | "addingTimer" | "viewingSettings",
@@ -51,7 +51,6 @@ export const App = (props: {
         left={(
           <Row paddingHorizontal="smaller" alignItems="center" gap="tiny">
             <Avatar
-              variant="rounded"
               alt={currentUser.displayName}
               src={currentUser.avatar?.url}
               sx={{ width: 28, height: 28, bgcolor: colors.darkPrimary }}
@@ -88,8 +87,8 @@ export const App = (props: {
         }
       />
 
-      <Suspense fallback={<LoadingScreen />}>
-        <Column fullHeight hidden={state.tag !== "viewingTimers"}>
+      <Column fullHeight backgroundColor="white" hidden={state.tag !== "viewingTimers"}>
+        <Suspense fallback={<LoadingScreen message="Fetching timers" />}>
           <TimersScreen
             date={date}
             onConnectionIdUpdate={setTimersConnectionId}
@@ -101,9 +100,11 @@ export const App = (props: {
               setState({ tag: "editingTimer", timer });
             }}
           />
-        </Column>
+        </Suspense>
+      </Column>
 
-        {state.tag === "addingTimer" || state.tag === "editingTimer" ? (
+      {state.tag === "addingTimer" || state.tag === "editingTimer" ? (
+        <Suspense fallback={<LoadingScreen message="Fetching projects" />}>
           <TimerForm
             date={date}
             setDate={setDate}
@@ -117,17 +118,17 @@ export const App = (props: {
               setState({ tag: "viewingTimers" });
             }}
           />
-        ) : state.tag === "viewingSettings" ? (
-          <SettingsScreen clearCache={props.clearCache} />
-        ) : state.tag === "viewingTimers" ? (
-          null // handled by setting the visible prop on TimersScreen
-        ) : (
-          // TODO: error reporting!
-          <Column fullHeight backgroundColor="white" alignItems="center" justifyContent="center">
-            <Text>Error: Unexpected app state</Text>
-          </Column>
-        )}
-      </Suspense>
+        </Suspense>
+      ) : state.tag === "viewingSettings" ? (
+        <SettingsScreen clearCache={props.clearCache} />
+      ) : state.tag === "viewingTimers" ? (
+        null // handled by setting the visible prop on TimersScreen
+      ) : (
+        // TODO: error reporting!
+        <Column fullHeight backgroundColor="white" alignItems="center" justifyContent="center">
+          <Text>Error: Unexpected app state</Text>
+        </Column>
+      )}
     </Column>
   );
 }

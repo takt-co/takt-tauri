@@ -73,7 +73,7 @@ const Setting = (props: {
     gap="small"
     alignItems="center"
     fullWidth
-    onClick={props.onClick}
+    onClick={props.disabled ? undefined : props.onClick}
     hoverStyle={{ cursor: "pointer", backgroundColor: colors.offWhite }}
   >
     <props.Icon

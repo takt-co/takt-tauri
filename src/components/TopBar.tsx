@@ -8,7 +8,7 @@ export const TopBar = (props: {
 }) => {
   return (
     <Column fullWidth>
-      <Row alignItems="center" justifyContent="center">
+      <Row alignItems="center" justifyContent="center" style={{ marginTop: 0 }}>
         <div
           style={{
             display: "inline-block",
