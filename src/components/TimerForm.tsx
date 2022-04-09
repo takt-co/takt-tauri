@@ -51,19 +51,11 @@ export const TimerForm = (props: {
     query TimerFormQuery {
       currentUser {
         id
-        projects {
-          nodes {
-            id
-            name
-            client {
+        account {
+          projects {
+            nodes {
               id
               name
-            }
-            tasks {
-              nodes {
-                id
-                name
-              }
             }
           }
         }

@@ -150,7 +150,7 @@ const Timers = (props: {
               id
               seconds
               status
-              lastActionAt
+              updatedAt
               ...TimersScreen_Timer
             }
           }
@@ -288,18 +288,14 @@ const TimerCard = (props: {
   const timer = useFragment(graphql`
     fragment TimersScreen_Timer on Timer {
       id
-      notes
+      date
       seconds
       status
-      lastActionAt
-      date
-      task {
+      notes
+      updatedAt
+      project {
         id
         name
-        project {
-          id
-          name
-        }
       }
     }
   `, props.timer);

@@ -38,10 +38,7 @@ export const App = (props: {
     query AppQuery {
       currentUser {
         id
-        displayName
-        avatar {
-          url
-        }
+        name
       }
     }
   `, {});
