@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
-import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
+import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { Column, Row } from "./Flex";
 import { Text } from "./Typography";
@@ -28,25 +28,18 @@ import {
   TimerForm_CreateTimerMutation,
 } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
 import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
-import { ID, NonNull } from "../CustomTypes";
+import { ID } from "../CustomTypes";
 import { Spacer } from "./Spacer";
-import { TimerForm_ProjectSelectQuery } from "./__generated__/TimerForm_ProjectSelectQuery.graphql";
 import { Layout } from "./Layout";
 import { Tooltip } from "./Tooltip";
 import { config } from "../config";
-import {
-  TimerForm_Timer$data,
-  TimerForm_Timer$key,
-} from "./__generated__/TimerForm_Timer.graphql";
-
-type TimerProject = NonNull<
-  TimerForm_ProjectSelectQuery["response"]["currentUser"]["projects"]["edges"][number]["node"]
->;
+import { ProjectSelect } from "./ProjectSelect";
+import { TimerForm_Query, TimerForm_Query$data } from "./__generated__/TimerForm_Query.graphql";
 
 type TimerAttributes = CreateTimerAttributes & { id?: ID };
 
 export type TimerFormProps = {
-  timer?: TimerForm_Timer$data;
+  timer?: TimerForm_Query$data;
   afterSave: (timer: TimerAttributes) => void;
   onCancel: () => void;
 };
@@ -54,12 +47,14 @@ export type TimerFormProps = {
 export const TimerForm = (props: TimerFormProps) => {
   const connectionId = "TODO";
 
+  const timer = props.timer?.node;
+
   const defaultAttrs: TimerAttributes = {
-    id: props.timer?.id,
-    projectId: props.timer?.project.id ?? "",
-    notes: props.timer?.notes ?? "",
-    date: props.timer?.date ?? moment().format(config.dateFormat),
-    seconds: props.timer?.seconds ?? 0,
+    id: timer?.id,
+    projectId: timer?.project?.id ?? "",
+    notes: timer?.notes ?? "",
+    date: timer?.date ?? moment().format(config.dateFormat),
+    seconds: timer?.seconds ?? 0,
   };
 
   const [attributes, setAttributes] = useState(defaultAttrs);
@@ -80,7 +75,6 @@ export const TimerForm = (props: TimerFormProps) => {
             node {
               id
               ...TimerCard_Timer
-              ...TimerForm_Timer
             }
           }
         }
@@ -96,7 +90,6 @@ export const TimerForm = (props: TimerFormProps) => {
         updateTimer(input: { timerId: $timerId, attributes: $attributes }) {
           timer {
             ...TimerCard_Timer
-            ...TimerForm_Timer
           }
         }
       }
@@ -206,10 +199,10 @@ export const TimerForm = (props: TimerFormProps) => {
           size="small"
           color="primary"
           onClick={() => {
-            if (props.timer) {
+            if (timer?.id) {
               updateTimer({
                 variables: {
-                  timerId: props.timer.id,
+                  timerId: timer.id,
                   attributes,
                 },
                 optimisticResponse: {
@@ -240,51 +233,6 @@ export const TimerForm = (props: TimerFormProps) => {
         </Button>
       </ButtonBar>
     </Column>
-  );
-};
-
-const ProjectSelect = (props: { value: ID; onChange: (value: ID) => void }) => {
-  const data = useLazyLoadQuery<TimerForm_ProjectSelectQuery>(
-    graphql`
-      query TimerForm_ProjectSelectQuery {
-        currentUser {
-          id
-          projects {
-            edges {
-              node {
-                id
-                name
-              }
-            }
-          }
-        }
-      }
-    `,
-    {}
-  );
-
-  const projects = data.currentUser.projects.edges
-    .map((e) => e.node)
-    .filter(Boolean) as ReadonlyArray<TimerProject>;
-
-  return (
-    <FormControl fullWidth size="small">
-      <InputLabel>Project</InputLabel>
-      <Select
-        value={props.value}
-        size="small"
-        label="Project"
-        onChange={(ev) => {
-          props.onChange(ev.target.value);
-        }}
-      >
-        {projects.map((project) => (
-          <MenuItem key={project.id} value={project.id}>
-            {project.name}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
   );
 };
 
@@ -385,28 +333,34 @@ const TimeInput = (props: {
 };
 
 export const EditTimerForm = (
-  props: TimerFormProps & {
-    timerKey: TimerForm_Timer$key;
+  { timerId, ...props }: TimerFormProps & {
+    timerId: ID;
   }
 ) => {
-  console.log("Edit timer");
-
-  const data = useFragment(
-    graphql`
-      fragment TimerForm_Timer on Timer {
-        id
-        date
-        seconds
-        notes
-        updatedAt
-        project {
+  const data = useLazyLoadQuery<TimerForm_Query>(graphql`
+    query TimerForm_Query(
+      $timerId: ID!
+    ) {
+      node(id: $timerId) {
+        ... on Timer {
           id
+          status
+          date
+          notes
+          seconds
+          project {
+            id
+          }
         }
       }
-    `,
-    props.timerKey
-  );
+    }
+  `, {
+    timerId
+  });
 
-  const { timer, ...rest } = props;
-  return <TimerForm {...rest} timer={data} />;
+  if (!data.node) {
+    throw new Error("EditTimerForm: Timer not found by ID");
+  }
+
+  return <TimerForm {...props} timer={data} />;
 };

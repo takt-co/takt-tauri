@@ -175,7 +175,6 @@ const Timers = (props: {
                 id
                 status
                 ...TimerCard_Timer
-                ...TimerForm_Timer
               }
             }
           }

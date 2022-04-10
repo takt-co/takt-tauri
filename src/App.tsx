@@ -3,7 +3,7 @@ import { Column } from "./components/Flex";
 import { Text } from "./components/Typography";
 import moment from "moment";
 import { EditTimerForm, TimerForm } from "./components/TimerForm";
-import { DateString } from "./CustomTypes";
+import { DateString, ID } from "./CustomTypes";
 import { TimersScreen } from "./components/TimersScreen";
 import { config } from "./config";
 import { SettingsScreen } from "./components/SettingsScreen";
@@ -13,7 +13,6 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { emit } from "@tauri-apps/api/event";
 import { App_CurrentUserQuery } from "./__generated__/App_CurrentUserQuery.graphql";
 import { Layout } from "./components/Layout";
-import { TimerForm_Timer$key } from "./components/__generated__/TimerForm_Timer.graphql";
 
 type AppState = {
   viewingDate: DateString;
@@ -23,7 +22,7 @@ type AppState = {
     }
   | {
       tag: "editingTimer";
-      timer: TimerForm_Timer$key;
+      timer: { id: ID };
     }
 );
 
@@ -58,7 +57,6 @@ export const App = (props: AppProps) => {
   return (
     <Layout>
       <Suspense fallback={<LoadingScreen message="Gotcha!" />}>
-        {/* Viewing timers */}
         {state.tag === "viewingTimers" ? (
           <TimersScreen
             date={state.viewingDate}
@@ -76,16 +74,14 @@ export const App = (props: AppProps) => {
               setState((prevState) => ({ ...prevState, tag: "addingTimer" }));
             }}
             onEdit={(timer) => {
-              console.log("TimersScreen:onEdit", { timer });
               setState((prevState) => ({
                 ...prevState,
-                tag: "addingTimer",
-                timer,
+                tag: "editingTimer",
+                timer
               }));
             }}
           />
-        ) : // Creating a new timer
-        state.tag === "addingTimer" ? (
+        ) : state.tag === "addingTimer" ? (
           <TimerForm
             afterSave={(timer) => {
               setState((prevState) => ({
@@ -101,11 +97,10 @@ export const App = (props: AppProps) => {
               }));
             }}
           />
-        ) : // Editing a timer
-        state.tag === "editingTimer" ? (
+        ) : state.tag === "editingTimer" ? (
           <Suspense fallback={<LoadingScreen />}>
             <EditTimerForm
-              timerKey={state.timer}
+              timerId={state.timer.id}
               afterSave={(timer) => {
                 setState((prevState) => ({
                   ...prevState,
@@ -121,8 +116,7 @@ export const App = (props: AppProps) => {
               }}
             />
           </Suspense>
-        ) : // Viewing settings
-        state.tag === "viewingSettings" ? (
+        ) : state.tag === "viewingSettings" ? (
           <SettingsScreen
             clearCache={props.clearCache}
             onClose={() => {
