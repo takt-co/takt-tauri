@@ -1,6 +1,6 @@
 import React, { Suspense, useState } from "react";
 import { Column, Row } from "./components/Flex";
-import { colors } from "./Theme";
+import { colors } from "./theme";
 import { Text } from "./components/Typography";
 import moment from "moment";
 import { TimerForm } from "./components/TimerForm";

@@ -1,5 +1,5 @@
 import React, { CSSProperties, forwardRef, ReactNode, useState } from "react";
-import { Color, colors } from "../Theme";
+import { Color, colors } from "../theme";
 import { spacing, Spacing } from "./Spacer";
 
 type DivProps = React.DetailedHTMLProps<

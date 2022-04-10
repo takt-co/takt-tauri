@@ -16,7 +16,7 @@ import { clockToSeconds, secondsToClock } from "../Clock";
 import { Button } from "./Button";
 import { SaveIcon, MinusCircled, PlusCircled } from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
-import { colors } from "../Theme";
+import { colors } from "../theme";
 import { TimerFormQuery } from "./__generated__/TimerFormQuery.graphql";
 import {
   CreateTimerAttributes,

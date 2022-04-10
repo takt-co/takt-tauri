@@ -1,5 +1,5 @@
 import React, { CSSProperties } from "react";
-import { HexColor } from "../Theme";
+import { HexColor } from "../theme";
 
 export const fontSizes = {
   small: 12,

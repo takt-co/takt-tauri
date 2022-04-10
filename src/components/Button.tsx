@@ -6,7 +6,7 @@ import {
   SxProps,
   Theme,
 } from "@mui/material";
-import { Color, colors, darken } from "../Theme";
+import { Color, colors, darken } from "../theme";
 import { FontSize, fontSizes } from "./Typography";
 
 export type ButtonVariant = "text" | "contained" | "outlined";

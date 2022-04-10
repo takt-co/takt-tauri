@@ -16,7 +16,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import { Color } from "../Theme";
+import { Color } from "../theme";
 
 type DialogContextType = {
   alert: (_config: {
