@@ -9,8 +9,6 @@ A React app wrapped in Tauri to create a desktop application.
 To begin, you'll need to make sure your local environment is setup to run Rust and Tauri.
 See their getting started for help: https://tauri.studio/docs/getting-started/prerequisites/
 
-## Developing
-
 Note: [`takt-rails`](https://github.com/takt-co/takt-rails) is expected to be running on port `3001` while developing.
 
 ```sh
