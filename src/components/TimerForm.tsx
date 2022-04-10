@@ -33,25 +33,39 @@ import { Spacer } from "./Spacer";
 import { TimerForm_ProjectSelectQuery } from "./__generated__/TimerForm_ProjectSelectQuery.graphql";
 import { Layout } from "./Layout";
 import { Tooltip } from "./Tooltip";
+import { config } from "../config";
+import { App_TimerForm_Timer$data } from "../__generated__/App_TimerForm_Timer.graphql";
 
 type TimerProject = NonNull<
-  TimerForm_ProjectSelectQuery["response"]["currentUser"]["account"]["projects"]["edges"][number]["node"]
+  TimerForm_ProjectSelectQuery["response"]["currentUser"]["projects"]["edges"][number]["node"]
 >;
 
-type TimerAttributes = CreateTimerAttributes & { id?: ID };
+type TimerAttributes = CreateTimerAttributes & { id: ID | null };
 
-type TimerFormProps = {
-  timer: TimerAttributes;
+export type TimerFormProps = {
+  timer: App_TimerForm_Timer$data | null;
   afterSave: (timer: TimerAttributes) => void;
   onCancel: () => void;
 };
 
 export const TimerForm = (props: TimerFormProps) => {
   const connectionId = "TODO";
-  const [attributes, setAttributes] = useState<TimerAttributes>(props.timer);
+
+  window.alert(props.timer);
+
+  const defaultAttrs = {
+    id: props.timer?.id ?? null,
+    projectId: props.timer?.project.id ?? "",
+    notes: props.timer?.notes ?? "",
+    date: props.timer?.date ?? moment().format(config.dateFormat),
+    seconds: props.timer?.seconds ?? 0,
+  };
+
+  const [attributes, setAttributes] = useState<TimerAttributes>(defaultAttrs);
 
   useEffect(() => {
-    setAttributes(props.timer);
+    window.alert(props.timer?.id);
+    setAttributes(defaultAttrs);
   }, [props.timer]);
 
   const [createTimer, createTimerInFlight] =
@@ -65,7 +79,8 @@ export const TimerForm = (props: TimerFormProps) => {
             cursor
             node {
               id
-              ...TimersScreen_Timer
+              ...TimerCard_Timer
+              ...App_TimerForm_Timer
             }
           }
         }
@@ -80,7 +95,8 @@ export const TimerForm = (props: TimerFormProps) => {
       ) {
         updateTimer(input: { timerId: $timerId, attributes: $attributes }) {
           timer {
-            ...TimersScreen_Timer
+            ...TimerCard_Timer
+            ...App_TimerForm_Timer
           }
         }
       }
@@ -94,7 +110,7 @@ export const TimerForm = (props: TimerFormProps) => {
             <Tooltip
               placement="right"
               key="Close"
-              title={props.timer.id ? "Cancel edit" : "Cancel create"}
+              title={props.timer ? "Cancel edit" : "Cancel create"}
             >
               <Row>
                 <CrossIcon height={20} fill={colors.white} />
@@ -105,8 +121,10 @@ export const TimerForm = (props: TimerFormProps) => {
       </Layout.TopBarRight>
 
       <Column fullHeight justifyContent="space-around" padding="small">
+        <Spacer size="tiny" vertical />
+
         <Text fontSize="large" strong>
-          {props.timer.id ? "Edit" : "Add"} timer
+          {props.timer ? "Edit" : "Add"} timer
         </Text>
 
         <Spacer size="medium" vertical />
@@ -130,16 +148,8 @@ export const TimerForm = (props: TimerFormProps) => {
                 size="small"
                 variant="outlined"
                 disabled
+                value="Fetching your projects..."
                 InputProps={{
-                  startAdornment: (
-                    <Text
-                      color={colors.gray}
-                      fontSize="detail"
-                      style={{ whiteSpace: "nowrap" }}
-                    >
-                      Fetching your projects...
-                    </Text>
-                  ),
                   endAdornment: (
                     <Row>
                       <CircularProgress size={16} />
@@ -170,7 +180,7 @@ export const TimerForm = (props: TimerFormProps) => {
             label="Notes"
             fullWidth
             multiline
-            rows={5}
+            rows={6}
             value={attributes.notes}
             onChange={(ev) => {
               setAttributes((timer) => ({ ...timer, notes: ev.target.value }));
@@ -196,7 +206,7 @@ export const TimerForm = (props: TimerFormProps) => {
           size="small"
           color="primary"
           onClick={() => {
-            if (props.timer.id) {
+            if (props.timer) {
               updateTimer({
                 variables: {
                   timerId: props.timer.id,
@@ -212,9 +222,11 @@ export const TimerForm = (props: TimerFormProps) => {
                 },
               });
             } else {
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
+              const { id, ...attrs } = attributes;
               createTimer({
                 variables: {
-                  attributes,
+                  attributes: attrs,
                   connections: [connectionId],
                 },
                 onCompleted: () => {
@@ -224,7 +236,7 @@ export const TimerForm = (props: TimerFormProps) => {
             }
           }}
         >
-          {props.timer.id ? "Update" : "Create"} timer
+          {props.timer ? "Update" : "Create"} timer
         </Button>
       </ButtonBar>
     </Column>
@@ -237,13 +249,11 @@ const ProjectSelect = (props: { value: ID; onChange: (value: ID) => void }) => {
       query TimerForm_ProjectSelectQuery {
         currentUser {
           id
-          account {
-            projects {
-              edges {
-                node {
-                  id
-                  name
-                }
+          projects {
+            edges {
+              node {
+                id
+                name
               }
             }
           }
@@ -253,7 +263,7 @@ const ProjectSelect = (props: { value: ID; onChange: (value: ID) => void }) => {
     {}
   );
 
-  const projects = data.currentUser.account.projects.edges
+  const projects = data.currentUser.projects.edges
     .map((e) => e.node)
     .filter(Boolean) as ReadonlyArray<TimerProject>;
 

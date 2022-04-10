@@ -12,7 +12,7 @@ import { Row } from "./Flex";
 
 export const Tooltip = styled(
   ({ className, children, ...props }: TooltipProps) => (
-    <MaterialTooltip {...props} classes={{ popper: className }}>
+    <MaterialTooltip arrow {...props} classes={{ popper: className }}>
       <Row>{children}</Row>
     </MaterialTooltip>
   )
