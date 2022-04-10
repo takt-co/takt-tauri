@@ -89,7 +89,6 @@
     "cross-env": "^7.0.3",
     "eslint": "^8.13.0",
     "graphql": "^16.3.0",
-    "lint-staged": ">=10",
     "relay-compiler": "^13.2.0"
   }
 }
