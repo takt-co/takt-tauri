@@ -15,7 +15,12 @@ import {
 } from "@mui/material";
 import { clockToSeconds, secondsToClock } from "../Clock";
 import { Button } from "./Button";
-import { SaveIcon, MinusCircled, PlusCircled, CrossIcon } from "../components/Icons";
+import {
+  SaveIcon,
+  MinusCircled,
+  PlusCircled,
+  CrossIcon,
+} from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
 import { colors } from "../TaktTheme";
 import {
@@ -29,7 +34,9 @@ import { TimerForm_ProjectSelectQuery } from "./__generated__/TimerForm_ProjectS
 import { Layout } from "./Layout";
 import { Tooltip } from "./Tooltip";
 
-type TimerProject = NonNull<TimerForm_ProjectSelectQuery["response"]["currentUser"]["account"]["projects"]["edges"][number]["node"]>;
+type TimerProject = NonNull<
+  TimerForm_ProjectSelectQuery["response"]["currentUser"]["account"]["projects"]["edges"][number]["node"]
+>;
 
 type TimerAttributes = CreateTimerAttributes & { id?: ID };
 
@@ -84,7 +91,11 @@ export const TimerForm = (props: TimerFormProps) => {
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
           <IconButton onClick={props.onCancel}>
-            <Tooltip placement="right" key="Close" title={props.timer.id ? "Cancel edit" : "Cancel create"}>
+            <Tooltip
+              placement="right"
+              key="Close"
+              title={props.timer.id ? "Cancel edit" : "Cancel create"}
+            >
               <Row>
                 <CrossIcon height={20} fill={colors.white} />
               </Row>
@@ -114,14 +125,18 @@ export const TimerForm = (props: TimerFormProps) => {
           />
 
           <Suspense
-            fallback={(
+            fallback={
               <TextField
                 size="small"
                 variant="outlined"
                 disabled
                 InputProps={{
                   startAdornment: (
-                    <Text color={colors.gray} fontSize="detail" style={{ whiteSpace: "nowrap" }}>
+                    <Text
+                      color={colors.gray}
+                      fontSize="detail"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
                       Fetching your projects...
                     </Text>
                   ),
@@ -129,10 +144,10 @@ export const TimerForm = (props: TimerFormProps) => {
                     <Row>
                       <CircularProgress size={16} />
                     </Row>
-                  )
+                  ),
                 }}
               />
-            )}
+            }
           >
             <ProjectSelect
               value={attributes.projectId}
@@ -216,10 +231,7 @@ export const TimerForm = (props: TimerFormProps) => {
   );
 };
 
-const ProjectSelect = (props: {
-  value: ID,
-  onChange: (value: ID) => void
-}) => {
+const ProjectSelect = (props: { value: ID; onChange: (value: ID) => void }) => {
   const data = useLazyLoadQuery<TimerForm_ProjectSelectQuery>(
     graphql`
       query TimerForm_ProjectSelectQuery {
@@ -241,7 +253,9 @@ const ProjectSelect = (props: {
     {}
   );
 
-  const projects = data.currentUser.account.projects.edges.map(e => e.node).filter(Boolean) as ReadonlyArray<TimerProject>;
+  const projects = data.currentUser.account.projects.edges
+    .map((e) => e.node)
+    .filter(Boolean) as ReadonlyArray<TimerProject>;
 
   return (
     <FormControl fullWidth size="small">

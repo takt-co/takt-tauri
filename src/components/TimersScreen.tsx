@@ -6,7 +6,13 @@ import { DateString, ID, NonNullTimer } from "../CustomTypes";
 import { Button } from "./Button";
 import { ButtonBar } from "./ButtonBar";
 import { Column, Row } from "./Flex";
-import { AddIcon, ClockIcon, SettingsIcon, TimerOffIcon, TodayIcon } from "./Icons";
+import {
+  AddIcon,
+  ClockIcon,
+  SettingsIcon,
+  TimerOffIcon,
+  TodayIcon,
+} from "./Icons";
 import { LoadingScreen } from "./LoadingScreen";
 import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
@@ -32,7 +38,7 @@ export const TimersScreen = (props: {
   setDate: (date: DateString) => void;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
-  recordingTimer: { id: ID, date: DateString } | null;
+  recordingTimer: { id: ID; date: DateString } | null;
   onViewSettings: () => void;
 }) => {
   const todayStr = moment().format(config.dateFormat);
@@ -43,10 +49,16 @@ export const TimersScreen = (props: {
           {props.recordingTimer && props.recordingTimer.date !== props.date && (
             <IconButton
               onClick={() => {
-                props.setDate(moment(props.recordingTimer!.date).format(config.dateFormat));
+                props.setDate(
+                  moment(props.recordingTimer!.date).format(config.dateFormat)
+                );
               }}
             >
-              <Tooltip placement="left" key="Today" title="Jump to recording timer">
+              <Tooltip
+                placement="left"
+                key="Today"
+                title="Jump to recording timer"
+              >
                 <Row>
                   <ClockIcon height={24} fill={colors.white} />
                 </Row>
@@ -139,7 +151,7 @@ const Timers = (props: {
   date: DateString;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
-  recordingTimer: { id: ID, date: DateString } | null;
+  recordingTimer: { id: ID; date: DateString } | null;
 }) => {
   const dialog = useDialog();
   const auth = useAuthentication() as Authenticated;

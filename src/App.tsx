@@ -67,7 +67,10 @@ export const App = (props: AppProps) => {
               setState((prevState) => ({ ...prevState, viewingDate }));
             }}
             onViewSettings={() => {
-              setState((prevState) => ({ ...prevState, tag: "viewingSettings" }));
+              setState((prevState) => ({
+                ...prevState,
+                tag: "viewingSettings",
+              }));
             }}
             onAdd={() => {
               setState((prevState) => ({ ...prevState, tag: "addingTimer" }));
@@ -80,9 +83,8 @@ export const App = (props: AppProps) => {
               }));
             }}
           />
-
-        // Creating or editing timer
-        ) : state.tag === "addingTimer" || state.tag === "editingTimer" ? (
+        ) : // Creating or editing timer
+        state.tag === "addingTimer" || state.tag === "editingTimer" ? (
           <TimerForm
             timer={
               state.tag === "editingTimer"
@@ -115,19 +117,17 @@ export const App = (props: AppProps) => {
               }));
             }}
           />
-
-        // Viewing settings
-        ) : state.tag === "viewingSettings" ? (
+        ) : // Viewing settings
+        state.tag === "viewingSettings" ? (
           <SettingsScreen
             clearCache={props.clearCache}
             onClose={() => {
               setState((prevState) => ({ ...prevState, tag: "viewingTimers" }));
             }}
           />
-
-        // Unexpected state
-        // TODO: error reporting
         ) : (
+          // Unexpected state
+          // TODO: error reporting
           <Column
             fullHeight
             backgroundColor="white"

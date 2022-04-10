@@ -10,11 +10,13 @@ import { spacing } from "./Spacer";
 import { colors } from "../TaktTheme";
 import { Row } from "./Flex";
 
-export const Tooltip = styled(({ className, children, ...props }: TooltipProps) => (
-  <MaterialTooltip {...props} classes={{ popper: className }}>
-    <Row>{children}</Row>
-  </MaterialTooltip>
-))(() => ({
+export const Tooltip = styled(
+  ({ className, children, ...props }: TooltipProps) => (
+    <MaterialTooltip {...props} classes={{ popper: className }}>
+      <Row>{children}</Row>
+    </MaterialTooltip>
+  )
+)(() => ({
   pointerEvents: "none",
   [`& .${tooltipClasses.arrow}`]: {
     color: colors.darkGray,
