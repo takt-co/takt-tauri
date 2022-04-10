@@ -33,3 +33,11 @@ $ yarn generate-types
 # Build a production release
 $ yarn tauri build
 ```
+
+#### Setup git hooks (Recommended)
+
+Adding this pre-push hook will ensure CI passes before you can push
+
+```sh
+$ echo "yarn eslint && yarn test" > .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+```
