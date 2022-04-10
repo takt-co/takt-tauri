@@ -24,38 +24,26 @@ import {
 } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
 import {
   TimerForm_UpdateTimerMutation,
-  UpdateTimerAttributes,
 } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
-import { TimersScreen_Timer$data } from "./__generated__/TimersScreen_Timer.graphql";
 import { DateString, ID } from "../CustomTypes";
 import { Spacer } from "./Spacer";
 
-export const TimerForm = (props: {
+type TimerAttributes = CreateTimerAttributes & { id?: ID };
+
+type TimerFormProps = {
+  timer: TimerAttributes;
   date: DateString;
   setDate: (date: DateString) => void;
-  timer: TimersScreen_Timer$data | null;
-  afterSave: (timer: TimersScreen_Timer$data) => void;
+  afterSave: (timer: TimerAttributes) => void;
   onCancel: () => void;
   connectionId: ID;
-}) => {
-  const [internalTimer, setInternalTimer] =
-    useState<TimersScreen_Timer$data | null>(null);
+};
+
+export const TimerForm = (props: TimerFormProps) => {
+  const [attributes, setAttributes] = useState<TimerAttributes>(props.timer);
 
   useEffect(() => {
-    setInternalTimer(
-      props.timer ??
-        ({
-          id: "",
-          notes: "",
-          seconds: 0,
-          status: "paused",
-          date: props.date,
-          project: {
-            id: "",
-            name: "",
-          },
-        } as TimersScreen_Timer$data)
-    );
+    setAttributes(props.timer);
   }, [props.timer, props.date]);
 
   const data = useLazyLoadQuery<TimerFormQuery>(
@@ -65,9 +53,11 @@ export const TimerForm = (props: {
           id
           account {
             projects {
-              nodes {
-                id
-                name
+              edges {
+                node {
+                  id
+                  name
+                }
               }
             }
           }
@@ -109,9 +99,10 @@ export const TimerForm = (props: {
       }
     `);
 
-  const projects = data.currentUser.account.projects.nodes ?? [];
+  const projects =
+    data.currentUser.account.projects.edges.map((e) => e.node) ?? [];
 
-  if (!internalTimer) {
+  if (!attributes) {
     return <LoadingScreen />;
   }
 
@@ -130,27 +121,25 @@ export const TimerForm = (props: {
             size="small"
             label="Date"
             type="date"
-            value={internalTimer.date as string}
+            value={attributes.date as string}
             onChange={(ev) => {
               const date = moment(ev.target.value).format("YYYY-MM-DD");
               console.log("call set date");
               props.setDate(date);
-              setInternalTimer((timer) => (timer ? { ...timer, date } : null));
+              setAttributes((timer) => ({ ...timer, date }));
             }}
           />
 
           <FormControl fullWidth size="small">
             <InputLabel>Project</InputLabel>
             <Select
-              value={internalTimer.project.id}
+              value={attributes.projectId}
               size="small"
               label="Project"
               onChange={(ev) => {
                 const project = projects.find((p) => p?.id === ev.target.value);
                 if (project) {
-                  setInternalTimer((timer) =>
-                    timer ? { ...timer, project } : null
-                  );
+                  setAttributes((timer) => ({ ...timer, project }));
                 }
               }}
             >
@@ -166,11 +155,9 @@ export const TimerForm = (props: {
 
           <Row justifyContent="center">
             <TimeInput
-              value={internalTimer.seconds ?? 0}
+              value={attributes.seconds ?? 0}
               onChange={(seconds) => {
-                setInternalTimer((timer) =>
-                  timer ? { ...timer, seconds } : null
-                );
+                setAttributes((timer) => ({ ...timer, seconds }));
               }}
             />
           </Row>
@@ -180,11 +167,9 @@ export const TimerForm = (props: {
             fullWidth
             multiline
             rows={5}
-            value={internalTimer.notes}
+            value={attributes.notes}
             onChange={(ev) => {
-              setInternalTimer((timer) =>
-                timer ? { ...timer, notes: ev.target.value } : null
-              );
+              setAttributes((timer) => ({ ...timer, notes: ev.target.value }));
             }}
           />
         </Column>
@@ -207,40 +192,29 @@ export const TimerForm = (props: {
           size="small"
           color="primary"
           onClick={() => {
-            if (props.timer) {
-              const attributes: UpdateTimerAttributes = {
-                projectId: internalTimer.project.id,
-                date: internalTimer.date,
-                notes: internalTimer.notes,
-                seconds: internalTimer.seconds,
-              };
-
+            if (props.timer.id) {
               updateTimer({
-                variables: { timerId: props.timer.id, attributes },
+                variables: {
+                  timerId: props.timer.id,
+                  attributes,
+                },
                 optimisticResponse: {
                   updateTimer: {
-                    timer: internalTimer,
+                    timer: attributes,
                   },
                 },
                 onCompleted: () => {
-                  props.afterSave(internalTimer);
+                  props.afterSave(attributes);
                 },
               });
             } else {
-              const attributes: CreateTimerAttributes = {
-                projectId: internalTimer.project.id,
-                date: internalTimer.date,
-                notes: internalTimer.notes,
-                seconds: internalTimer.seconds,
-              };
-
               createTimer({
                 variables: {
                   attributes,
                   connections: [props.connectionId],
                 },
                 onCompleted: () => {
-                  props.afterSave(internalTimer);
+                  props.afterSave(attributes);
                 },
               });
             }

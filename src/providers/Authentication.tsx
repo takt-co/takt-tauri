@@ -5,30 +5,44 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { SecureToken } from "../CustomTypes";
+import { ID, SecureToken } from "../CustomTypes";
 import axios, { AxiosInstance } from "axios";
 import { config } from "../config";
 
 const tokenStorageKey = "secureToken";
 
-type Authenticated = {
-  tag: "authenticated";
-  secureToken: SecureToken;
-  logout: () => Promise<void>;
+type AuthResponse = {
+  data: {
+    secureToken: SecureToken;
+    currentUserId: ID;
+  };
 };
 
 export type LoginDetails = { username: string; password: string };
 
-type Unauthenticated = {
+type Loading = {
+  tag: "loading";
+};
+
+export type Unauthenticated = {
   tag: "unauthenticated";
   login: (loginDetails: LoginDetails) => Promise<boolean>;
 };
 
-type AuthenticationState = { tag: "loading" } | Authenticated | Unauthenticated;
+export type Authenticated = {
+  tag: "authenticated";
+  secureToken: SecureToken;
+  currentUserId: ID;
+  logout: () => Promise<void>;
+};
 
-const AuthenticationContext = createContext<AuthenticationState>({
-  tag: "loading",
-});
+type AuthenticationState = Loading | Authenticated | Unauthenticated;
+
+const defaultState: AuthenticationState = {
+  tag: "loading" as const
+};
+
+const AuthenticationContext = createContext<AuthenticationState>(defaultState);
 
 const api = (token?: string): AxiosInstance => {
   return axios.create({
@@ -44,7 +58,7 @@ const api = (token?: string): AxiosInstance => {
 
 const verifySecureToken: (
   token: SecureToken | null
-) => Promise<SecureToken | null> = async (token) => {
+) => Promise<AuthResponse | null> = async (token) => {
   return new Promise((resolve) => {
     if (!token) {
       return resolve(null);
@@ -52,8 +66,8 @@ const verifySecureToken: (
 
     api(token)
       .get("/verify")
-      .then(() => {
-        resolve(token);
+      .then((resp: AuthResponse) => {
+        resolve(resp);
       })
       .catch(() => {
         resolve(null);
@@ -62,7 +76,7 @@ const verifySecureToken: (
 };
 
 export const AuthenticationProvider = (props: { children: ReactNode }) => {
-  const [state, setState] = useState<AuthenticationState>({ tag: "loading" });
+  const [state, setState] = useState<AuthenticationState>(defaultState);
 
   useEffect(() => {
     const currentToken = localStorage.getItem(
@@ -71,7 +85,10 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
 
     const logout = async () => {
       localStorage.clear();
-      setState({ tag: "unauthenticated", login });
+      setState({
+        tag: "unauthenticated",
+        login
+      });
     };
 
     const login: (loginDetails: LoginDetails) => Promise<boolean> = async (
@@ -81,11 +98,16 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
         api()
           .post("/authorise", loginDetails)
           .then((resp) => {
-            const { secureToken } = resp.data;
+            const { secureToken, currentUserId } = resp.data;
 
             if (secureToken) {
               localStorage.setItem(tokenStorageKey, secureToken);
-              setState({ tag: "authenticated", secureToken, logout });
+              setState({
+                tag: "authenticated",
+                secureToken,
+                currentUserId,
+                logout
+              });
               resolve(true);
             } else {
               resolve(false);
@@ -97,12 +119,20 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
       });
     };
 
-    verifySecureToken(currentToken).then((verifiedToken) => {
-      if (verifiedToken) {
-        localStorage.setItem(tokenStorageKey, verifiedToken);
-        setState({ tag: "authenticated", secureToken: verifiedToken, logout });
+    verifySecureToken(currentToken).then((auth) => {
+      if (auth?.data.secureToken) {
+        localStorage.setItem(tokenStorageKey, auth.data.secureToken);
+        setState({
+          tag: "authenticated",
+          secureToken: auth.data.secureToken,
+          currentUserId: auth.data.currentUserId,
+          logout
+        });
       } else {
-        setState({ tag: "unauthenticated", login });
+        setState({
+          tag: "unauthenticated",
+          login
+        });
       }
       return;
     });

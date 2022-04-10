@@ -3,41 +3,39 @@ import ReactDOM from "react-dom";
 import { RelayEnvironmentProvider } from "react-relay";
 import { DialogProvider } from "./providers/Dialog";
 import {
+  Authenticated,
   AuthenticationProvider,
   useAuthentication,
 } from "./providers/Authentication";
 import { createRelayEnvironment } from "./providers/Relay";
 import { LoadingScreen } from "./components/LoadingScreen";
-import { Unauthenticated } from "./Unauthenticated";
+import { Unauthenticated as UnauthenticatedScreen } from "./Unauthenticated";
 import App from "./App";
 import { Column } from "./components/Flex";
 import { TopBar } from "./components/TopBar";
 
 const Takt = () => {
-  const authentication = useAuthentication();
+  const auth = useAuthentication();
 
-  switch (authentication.tag) {
+  switch (auth.tag) {
     case "loading":
       return <LoadingScreen />;
     case "unauthenticated":
-      return <Unauthenticated />;
+      return <UnauthenticatedScreen />;
     case "authenticated":
-      return <Authenticated />;
+      return <AuthenticatedScreen />;
     default:
       throw new Error("Unexpected authentication state");
   }
 };
 
-const Authenticated = () => {
-  const authentication = useAuthentication();
-  if (authentication.tag !== "authenticated") {
-    throw new Error("Tried to render Authenticated while not logged in");
-  }
+const AuthenticatedScreen = () => {
+  const auth = useAuthentication() as Authenticated;
 
   const [environmentKey, setEnvironmentKey] = useState(0);
   const environment = useMemo(
-    () => createRelayEnvironment(authentication.secureToken),
-    [authentication.secureToken, environmentKey]
+    () => createRelayEnvironment(auth.secureToken),
+    [auth.secureToken, environmentKey]
   );
 
   return (

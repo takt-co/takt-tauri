@@ -9803,11 +9803,6 @@ tryer@^1.0.1:
   resolved "https://registry.npmjs.org/tryer/-/tryer-1.0.1.tgz"
   integrity sha512-c3zayb8/kWWpycWYg87P71E1S1ZL6b6IJxfb5fvsUgsf0S2MVGaDhDXXjDMpdCpfWXqptc+4mXwmiy1ypXqRAA==
 
-ts-dotenv@^0.8.3:
-  version "0.8.3"
-  resolved "https://registry.yarnpkg.com/ts-dotenv/-/ts-dotenv-0.8.3.tgz#1c8dbda2601bc7f088fa45248120d40c212f8594"
-  integrity sha512-S1wYF0j0C02SaV+escizhCcq0bC58as87cW7M+9zYnEhlgihGEU/Sl+CoshT2VU6Gp7wSrsoaOgt5OSBgsVaVA==
-
 tsconfig-paths@^3.12.0:
   version "3.14.1"
   resolved "https://registry.npmjs.org/tsconfig-paths/-/tsconfig-paths-3.14.1.tgz"

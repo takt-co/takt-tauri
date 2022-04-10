@@ -1,9 +1,9 @@
 import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
-import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
+import { useFragment, useMutation } from "react-relay";
 import { config } from "../config";
 import { colors, darken } from "../TaktTheme";
-import { DateString, ID } from "../CustomTypes";
+import { DateString, ID, NonNullTimer } from "../CustomTypes";
 import { Button } from "./Button";
 import { ButtonBar } from "./ButtonBar";
 import { Column, Row } from "./Flex";
@@ -11,28 +11,27 @@ import { AddIcon, Arrow, TimerOffIcon } from "./Icons";
 import { EmptyWarmdown, LoadingScreen } from "./LoadingScreen";
 import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
-import { emit } from "@tauri-apps/api/event";
-import { Clock, clockToSeconds, secondsToClock } from "../Clock";
+import { clockToSeconds, secondsToClock } from "../Clock";
 import {
   TimersScreen_Timer$data,
   TimersScreen_Timer$key,
 } from "./__generated__/TimersScreen_Timer.graphql";
-import { TimersScreenQuery } from "./__generated__/TimersScreenQuery.graphql";
 import { TimersScreen_StartRecordingMutation } from "./__generated__/TimersScreen_StartRecordingMutation.graphql";
 import { TimersScreen_StopRecordingMutation } from "./__generated__/TimersScreen_StopRecordingMutation.graphql";
 import { useDialog } from "../providers/Dialog";
 import { TimersScreen_ArchiveMutation } from "./__generated__/TimersScreen_ArchiveMutation.graphql";
+import { Authenticated, useAuthentication } from "../providers/Authentication";
+import { App_TimersQuery$data } from "../__generated__/App_TimersQuery.graphql";
 
 export const TimersScreen = (props: {
+  query: App_TimersQuery$data;
   date: DateString;
   setDate: (date: DateString) => void;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
-  onConnectionIdUpdate: (id: ID) => void;
-  onTimersCountChange: (count: number) => void;
+  recordingTimerId: ID | null;
 }) => {
   const { date, setDate } = props;
-  const [timersCount, setTimersCount] = useState(0);
 
   return (
     <Column fullWidth fullHeight>
@@ -63,20 +62,20 @@ export const TimersScreen = (props: {
           fallback={
             <LoadingScreen
               message="Fetching timers"
-              Warmdown={timersCount === 0 ? TimersEmptyState : EmptyWarmdown}
+              Warmdown={
+                props.query.currentUser.timers.edges.length === 0
+                  ? TimersEmptyState
+                  : EmptyWarmdown
+              }
             />
           }
         >
           <Timers
+            query={props.query}
             date={date}
             onEdit={props.onEdit}
             onAdd={props.onAdd}
-            onConnectionIdUpdate={props.onConnectionIdUpdate}
-            onTimersCountChange={(count) => {
-              // TODO: create context provider to easily access and manage this data
-              setTimersCount(count);
-              props.onTimersCountChange(count);
-            }}
+            recordingTimerId={props.recordingTimerId}
           />
         </Suspense>
       </Column>
@@ -127,13 +126,14 @@ const DateBar = (props: {
 };
 
 const Timers = (props: {
+  query: App_TimersQuery$data;
   date: DateString;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
-  onConnectionIdUpdate: (id: ID) => void;
-  onTimersCountChange: (count: number) => void;
+  recordingTimerId: ID | null;
 }) => {
   const dialog = useDialog();
+  const auth = useAuthentication() as Authenticated;
   const [timeNow, setTimeNow] = useState(moment());
 
   useEffect(() => {
@@ -144,44 +144,6 @@ const Timers = (props: {
       clearTimeout(timeout);
     };
   }, [timeNow, setTimeNow]);
-
-  const data = useLazyLoadQuery<TimersScreenQuery>(
-    graphql`
-      query TimersScreenQuery($date: ISO8601Date!) {
-        currentUser {
-          id
-          recordingTimer {
-            id
-          }
-          timers(endDate: $date, startDate: $date, first: 100)
-            @connection(key: "TimersScreen__timers") {
-            __id
-            edges {
-              cursor
-              node {
-                id
-                seconds
-                status
-                updatedAt
-                ...TimersScreen_Timer
-              }
-            }
-          }
-        }
-      }
-    `,
-    {
-      date: props.date,
-    }
-  );
-
-  useEffect(() => {
-    props.onConnectionIdUpdate(data.currentUser.timers.__id);
-  }, [data.currentUser.timers.__id]);
-
-  useEffect(() => {
-    props.onTimersCountChange(data.currentUser.timers.edges?.length ?? 0);
-  }, [data.currentUser.timers.edges]);
 
   const [archiveTimer] = useMutation<TimersScreen_ArchiveMutation>(graphql`
     mutation TimersScreen_ArchiveMutation($timerId: ID!) {
@@ -201,13 +163,9 @@ const Timers = (props: {
     }
   `);
 
-  useEffect(() => {
-    emit("recording", !!data.currentUser.recordingTimer);
-  }, [data.currentUser.recordingTimer]);
-
-  const timers = (data.currentUser.timers.edges ?? [])
-    .filter((e) => e?.node && e?.node.status !== "archived")
-    .map((e) => e?.node);
+  const timers = props.query.currentUser.timers.edges
+    .filter((e) => ["recording", "paused"].includes(e.node?.status ?? ""))
+    .map((e) => e.node) as ReadonlyArray<NonNullTimer>;
 
   if (timers.length === 0) {
     return <TimersEmptyState />;
@@ -215,58 +173,44 @@ const Timers = (props: {
 
   return (
     <Column fullHeight>
-      {timers.map((timer) => {
-        if (!timer) return null;
-
-        const recording = timer.id === data.currentUser.recordingTimer?.id;
-        let diff = recording
-          ? moment().diff(moment(timer.updatedAt), "seconds")
-          : 0;
-        if (diff < 0) diff = 0;
-        const clock = secondsToClock(timer.seconds + diff);
-
-        return (
-          <TimerCard
-            key={timer.id}
-            timer={timer}
-            clock={clock}
-            currentUserId={data.currentUser.id}
-            currentRecordingId={data.currentUser.recordingTimer?.id}
-            recording={recording}
-            onEdit={props.onEdit}
-            onDelete={() => {
-              dialog.confirm({
-                title: "Delete timer",
-                body: "Are you sure you want to delete this timer?",
-                confirmColor: "warning",
-                confirmLabel: "Delete",
-                onConfirm: () => {
-                  archiveTimer({
-                    variables: { timerId: timer.id },
-                    optimisticResponse: {
-                      archiveTimer: {
-                        timer: {
-                          id: timer.id,
-                          seconds: timer.seconds,
-                          status: "deleted",
-                          lastActionAt: moment().toISOString(),
-                          user: {
-                            id: data.currentUser.id,
-                            recordingTimer:
-                              data.currentUser.recordingTimer?.id === timer.id
-                                ? null
-                                : data.currentUser.recordingTimer,
-                          },
+      {timers.map((timer) => (
+        <TimerCard
+          key={timer.id}
+          timer={timer}
+          onEdit={props.onEdit}
+          onDelete={(timer) => {
+            dialog.confirm({
+              title: "Delete timer",
+              body: "Are you sure you want to delete this timer?",
+              confirmColor: "warning",
+              confirmLabel: "Delete",
+              onConfirm: () => {
+                archiveTimer({
+                  variables: { timerId: timer.id },
+                  optimisticResponse: {
+                    archiveTimer: {
+                      timer: {
+                        id: timer.id,
+                        seconds: timer.seconds,
+                        status: "deleted",
+                        lastActionAt: moment().toISOString(),
+                        user: {
+                          id: auth.currentUserId,
+                          recordingTimer:
+                            props.recordingTimerId ===
+                            timer.id
+                              ? null
+                              : props.recordingTimerId,
                         },
                       },
                     },
-                  });
-                },
-              });
-            }}
-          />
-        );
-      })}
+                  },
+                });
+              },
+            });
+          }}
+        />
+      ))}
     </Column>
   );
 };
@@ -288,16 +232,12 @@ export const TimersEmptyState = () => {
 
 const TimerCard = (props: {
   timer: TimersScreen_Timer$key;
-  clock: Clock;
-  recording: boolean;
-  currentUserId: ID;
-  currentRecordingId?: ID;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onDelete: (timer: TimersScreen_Timer$data) => void;
+  currentRecordingId?: ID;
 }) => {
-  const { clock, recording, currentUserId, currentRecordingId } = props;
-
-  const timer = useFragment(
+  const auth = useAuthentication() as Authenticated;
+  const timer = useFragment<TimersScreen_Timer$key>(
     graphql`
       fragment TimersScreen_Timer on Timer {
         id
@@ -314,6 +254,13 @@ const TimerCard = (props: {
     `,
     props.timer
   );
+
+  let diff =
+    timer.status === "recording"
+      ? moment().diff(moment(timer.updatedAt), "seconds")
+      : 0;
+  if (diff < 0) diff = 0;
+  const clock = secondsToClock(timer.seconds + diff);
 
   const [startRecording, startRecordingInFlight] =
     useMutation<TimersScreen_StartRecordingMutation>(graphql`
@@ -382,13 +329,13 @@ const TimerCard = (props: {
               </Text>
             </Row>
             <RecordButton
-              recording={recording}
+              recording={timer.status === "recording"}
               onClick={() => {
                 if (startRecordingInFlight || stopRecordingInFlight) {
                   return;
                 }
 
-                if (recording) {
+                if (timer.status === "recording") {
                   const optimisticResponse: TimersScreen_StopRecordingMutation["response"] =
                     {
                       stopRecording: {
@@ -398,7 +345,7 @@ const TimerCard = (props: {
                           seconds: clockToSeconds(clock),
                           updatedAt: moment().toISOString(),
                           user: {
-                            id: currentUserId,
+                            id: auth.currentUserId,
                             recordingTimer: null,
                           },
                         },
@@ -409,7 +356,7 @@ const TimerCard = (props: {
                     variables: { timerId: timer.id },
                     optimisticResponse,
                   });
-                } else {
+                } else if (timer.status === "paused") {
                   const optimisticResponse: TimersScreen_StartRecordingMutation["response"] =
                     {
                       startRecording: {
@@ -419,15 +366,15 @@ const TimerCard = (props: {
                           seconds: timer.seconds,
                           updatedAt: moment().toISOString(),
                           user: {
-                            id: currentUserId,
+                            id: auth.currentUserId,
                             recordingTimer: {
                               id: timer.id,
                             },
                           },
                         },
-                        pausedTimer: currentRecordingId
+                        pausedTimer: props.currentRecordingId
                           ? {
-                              id: currentRecordingId,
+                              id: props.currentRecordingId,
                               status: "paused",
                               seconds: 0, // TODO
                               updatedAt: moment().toISOString(),
@@ -440,6 +387,8 @@ const TimerCard = (props: {
                     variables: { timerId: timer.id },
                     optimisticResponse,
                   });
+                } else {
+                  // TODO: ERROR REPORTING
                 }
               }}
             />

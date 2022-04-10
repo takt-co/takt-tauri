@@ -128,10 +128,7 @@ type Project implements Node {
 """The connection type for Project."""
 type ProjectConnection {
   """A list of edges."""
-  edges: [ProjectEdge]
-
-  """A list of nodes."""
-  nodes: [Project]
+  edges: [ProjectEdge!]!
 
   """Information to aid in pagination."""
   pageInfo: PageInfo!
@@ -207,10 +204,7 @@ type Timer implements Node {
 """The connection type for Timer."""
 type TimerConnection {
   """A list of edges."""
-  edges: [TimerEdge]
-
-  """A list of nodes."""
-  nodes: [Timer]
+  edges: [TimerEdge!]!
 
   """Information to aid in pagination."""
   pageInfo: PageInfo!
@@ -289,10 +283,7 @@ type User implements Node {
 """The connection type for User."""
 type UserConnection {
   """A list of edges."""
-  edges: [UserEdge]
-
-  """A list of nodes."""
-  nodes: [User]
+  edges: [UserEdge!]!
 
   """Information to aid in pagination."""
   pageInfo: PageInfo!

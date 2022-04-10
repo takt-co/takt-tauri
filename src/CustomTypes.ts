@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // You should use this when you either:
 // - Have a type that you can't figure out, but maybe someone could help in a review
+
+import { AppQuery } from "./__generated__/AppQuery.graphql";
+import { App_TimersQuery } from "./__generated__/App_TimersQuery.graphql";
+
 // - Have a type that you expect to get for free when some other code is also converted to typescript (maybe you *should* do that conversion)
 export type TODO = any;
 
@@ -83,3 +87,5 @@ export type Json = JsonObject | JsonArray | JsonPrimitive;
 // TODO: can the type force formatting? "YYYY-MM-DD"
 export type DateString = string;
 export type SecureToken = NewType<string>;
+
+export type NonNullTimer = NonNull<App_TimersQuery["response"]["currentUser"]["timers"]["edges"][number]["node"]>;
