@@ -91,8 +91,5 @@
     "graphql": "^16.3.0",
     "lint-staged": ">=10",
     "relay-compiler": "^13.2.0"
-  },
-  "lint-staged": {
-    "*.{js,ts,tsx,json,md}": "yarn lint"
   }
 }
