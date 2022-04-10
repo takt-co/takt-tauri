@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { CircularProgress } from "@mui/material";
 import { Column } from "./Flex";
-import { colors } from "../Theme";
+import { colors } from "../TaktTheme";
 import { Text } from "./Typography";
 import { useIsMounted } from "../hooks/useIsMounted";
 
@@ -48,7 +48,7 @@ export const LoadingScreen = (props: {
         size={30}
         sx={{ circle: { stroke: colors.gray } }}
       />
-      {props.message && <Text color="gray">{props.message}</Text>}
+      {props.message && <Text color={colors.gray}>{props.message}</Text>}
     </Column>
   );
 };

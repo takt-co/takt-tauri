@@ -1,5 +1,5 @@
 import React from "react";
-import { colors } from "../Theme";
+import { colors } from "../TaktTheme";
 import { FlexProps, Row } from "./Flex";
 
 export const ButtonBar = ({

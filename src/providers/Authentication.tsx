@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState,
 } from "react";
-import { SecureToken } from "../Types";
+import { SecureToken } from "../CustomTypes";
 import axios, { AxiosInstance } from "axios";
 import { config } from "../config";
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { colors } from "../Theme";
+import { colors } from "../TaktTheme";
 import { Column, Row } from "./Flex";
 
 export const TopBar = (props: {

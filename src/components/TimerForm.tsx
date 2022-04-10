@@ -16,7 +16,7 @@ import { clockToSeconds, secondsToClock } from "../Clock";
 import { Button } from "./Button";
 import { SaveIcon, MinusCircled, PlusCircled } from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
-import { colors } from "../Theme";
+import { colors } from "../TaktTheme";
 import { TimerFormQuery } from "./__generated__/TimerFormQuery.graphql";
 import {
   CreateTimerAttributes,
@@ -27,7 +27,7 @@ import {
   UpdateTimerAttributes,
 } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
 import { TimersScreen_Timer$data } from "./__generated__/TimersScreen_Timer.graphql";
-import { DateString, ID } from "../Types";
+import { DateString, ID } from "../CustomTypes";
 import { Spacer } from "./Spacer";
 
 export const TimerForm = (props: {

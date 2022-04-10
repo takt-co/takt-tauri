@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { colors } from "../Theme";
+import { colors } from "../TaktTheme";
 import { Column, Row } from "./Flex";
 import { CleanUpIcon, IconProps, LoginIcon, PowerIcon } from "./Icons";
 import { Text } from "./Typography";

@@ -1,10 +1,10 @@
 import React, { Suspense, useState } from "react";
 import { Column, Row } from "./components/Flex";
-import { colors } from "./Theme";
+import { colors } from "./TaktTheme";
 import { Text } from "./components/Typography";
 import moment from "moment";
 import { TimerForm } from "./components/TimerForm";
-import { DateString, ID } from "./Types";
+import { DateString, ID } from "./CustomTypes";
 import { TimersEmptyState, TimersScreen } from "./components/TimersScreen";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
 import { config } from "./config";

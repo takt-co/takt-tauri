@@ -7,7 +7,7 @@ import { IconButton, InputAdornment, TextField } from "@mui/material";
 import { Button } from "./components/Button";
 import LogoSrc from "./assets/logo.png";
 import { LoginIcon, PasswordHidden, PasswordShowing } from "./components/Icons";
-import { colors } from "./Theme";
+import { colors } from "./TaktTheme";
 
 export const Unauthenticated = () => {
   const authentication = useAuthentication();
