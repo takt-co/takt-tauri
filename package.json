@@ -47,7 +47,9 @@
     "prepare": "husky install",
     "lint": "yarn prettier src --write",
     "typecheck": "tsc",
-    "clean-generated": "find . -name '__generated__' -type d -prune -exec rm -rf '{}' +"
+    "clean-generated": "find . -name '__generated__' -type d -prune -exec rm -rf '{}' +",
+    "pre-commit": "echo 'TODO: fix pre-commit linting'",
+    "pre-push": "yarn test"
   },
   "relay": {
     "src": "./src/",
