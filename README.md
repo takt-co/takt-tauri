@@ -9,7 +9,7 @@ A React app wrapped in Tauri to create a desktop application.
 To begin, you'll need to make sure your local environment is setup to run Rust and Tauri.
 See their getting started for help: https://tauri.studio/docs/getting-started/prerequisites/
 
-Note: [`takt-rails`](https://github.com/takt-co/takt-rails) is expected to be running on port `3001` while developing.
+Note: [`takt-rails`](https://github.com/takt-co/takt-rails) is expected to be running while developing.
 
 ```sh
 # Install packages
@@ -19,7 +19,7 @@ $ yarn install
 $ yarn tauri dev
 
 # Setup dotenv variables
-# - required for `fetch-schema` command
+# FETCH_SCHEMA_TOKEN is required for `fetch-schema` command
 $ cp .env.example .env && code .env
 
 # Fetch an updated schema from the API

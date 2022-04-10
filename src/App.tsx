@@ -9,13 +9,14 @@ import { TimersEmptyState, TimersScreen } from "./components/TimersScreen";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
 import { config } from "./config";
 import { TopBar } from "./components/TopBar";
-import { CalendarIcon, CrossIcon, SettingsIcon } from "./components/Icons";
-import { Avatar, IconButton, Tooltip } from "@mui/material";
+import { CrossIcon, ProjectsIcon, SettingsIcon, TodayIcon } from "./components/Icons";
+import { Avatar, IconButton } from "@mui/material";
 import { SettingsScreen } from "./components/SettingsScreen";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { AppQuery } from "./__generated__/AppQuery.graphql";
 import { EmptyWarmdown, LoadingScreen } from "./components/LoadingScreen";
+import { Tooltip } from "./components/Tooltip";
 
 type AppState =
   | {
@@ -58,53 +59,57 @@ export const App = (props: { clearCache: () => void }) => {
     >
       <TopBar
         left={
-          <Row paddingHorizontal="smaller" alignItems="center" gap="tiny">
-            <Avatar
-              alt={currentUser.name}
-              sx={{ width: 28, height: 28, bgcolor: colors.darkPrimary }}
-            />
+          <Row paddingHorizontal="tiny" alignItems="center">
+            <IconButton>
+              <Tooltip title={currentUser.name} key="User" placement="right">
+                <Avatar
+                  alt={currentUser.name}
+                  sx={{ width: 26, height: 26, bgcolor: colors.darkPrimary }}
+                />
+              </Tooltip>
+            </IconButton>
+            <IconButton>
+              <Tooltip title="Manage projects" key="Projects" placement="right">
+                <Row><ProjectsIcon height={20} fill={colors.white} /></Row>
+              </Tooltip>
+            </IconButton>
           </Row>
         }
         right={
           state.tag === "viewingTimers" ? (
             <Row paddingHorizontal="tiny">
-              <Tooltip placement="top" key="Today" title="Jump to today" arrow>
-                <IconButton
-                  onClick={() => {
-                    const today = moment();
-                    today.startOf("day");
-                    setDate(today.format(config.dateFormat));
-                  }}
-                >
-                  <CalendarIcon height={20} fill={colors.white} />
-                </IconButton>
-              </Tooltip>
-              <Tooltip placement="top" key="Settings" title="Settings" arrow>
-                <IconButton
-                  onClick={() => {
-                    setState({ tag: "viewingSettings" });
-                  }}
-                >
-                  <SettingsIcon height={20} fill={colors.white} />
-                </IconButton>
-              </Tooltip>
+              <IconButton
+                onClick={() => {
+                  const today = moment();
+                  today.startOf("day");
+                  setDate(today.format(config.dateFormat));
+                }}
+              >
+                <Tooltip placement="left" key="Today" title="Jump to today">
+                  <Row><TodayIcon height={24} fill={colors.white} /></Row>
+                </Tooltip>
+              </IconButton>
+              <IconButton
+                onClick={() => {
+                  setState({ tag: "viewingSettings" });
+                }}
+              >
+                <Tooltip placement="left" key="Settings" title="Settings">
+                  <Row><SettingsIcon height={20} fill={colors.white} /></Row>
+                </Tooltip>
+              </IconButton>
             </Row>
           ) : state.tag === "viewingSettings" ? (
             <Row paddingHorizontal="tiny">
-              <Tooltip
-                placement="top"
-                key="Close settings"
-                title="Close settings"
-                arrow
+              <IconButton
+                onClick={() => {
+                  setState({ tag: "viewingTimers" });
+                }}
               >
-                <IconButton
-                  onClick={() => {
-                    setState({ tag: "viewingTimers" });
-                  }}
-                >
-                  <CrossIcon height={20} fill={colors.white} />
-                </IconButton>
-              </Tooltip>
+                <Tooltip placement="right" key="Close" title="Close settings">
+                  <Row><CrossIcon height={20} fill={colors.white} /></Row>
+                </Tooltip>
+              </IconButton>
             </Row>
           ) : undefined
         }

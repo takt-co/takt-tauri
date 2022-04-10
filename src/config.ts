@@ -6,9 +6,11 @@ const production = {
   isDevelopment,
 };
 
+export type Config = typeof production;
+
 const development = {
   ...production,
-  // apiBaseUrl: "http://localhost:3001",
+  apiBaseUrl: "http://localhost:3001",
 };
 
 export const config = isDevelopment ? development : production;
