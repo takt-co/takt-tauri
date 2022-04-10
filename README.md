@@ -39,5 +39,5 @@ $ yarn tauri build
 Adding this pre-push hook will ensure CI passes before you can push
 
 ```sh
-$ echo "yarn test && yarn eslint" > .git/hooks/pre-push && chmod +x .git/hooks/pre-push
+$ echo "yarn test" > .git/hooks/pre-push && chmod +x .git/hooks/pre-push
 ```
