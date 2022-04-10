@@ -1,11 +1,9 @@
 version: v1.0
 name: Node JS
-
 agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu2004
-
 blocks:
   - name: Verify
     task:
@@ -21,9 +19,8 @@ blocks:
         - name: eslint
           commands:
             - yarn eslint
-
 promotions:
   - name: Build test
     pipeline_file: build-test.yml
     auto_promote:
-      when: "result = 'passed' and branch = 'main'"
+      when: result = 'passed' and branch = 'main'
