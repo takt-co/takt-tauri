@@ -26,12 +26,11 @@ import { Tooltip } from "./Tooltip";
 import { DateBar } from "./DateBar";
 import { TimersScreen_Query } from "./__generated__/TimersScreen_Query.graphql";
 import { TimerCard } from "./TimerCard";
-import { TimerCard_Timer$data } from "./__generated__/TimerCard_Timer.graphql";
 
 export const TimersScreen = (props: {
   date: DateString;
   setDate: (date: DateString) => void;
-  onEdit: (timer: TimerCard_Timer$data) => void;
+  onEdit: (timer: { id: ID, seconds: number }) => void;
   onAdd: () => void;
   recordingTimer: { id: ID; date: DateString } | null;
   onViewSettings: () => void;
@@ -146,7 +145,7 @@ export const TimersScreen = (props: {
 
 const Timers = (props: {
   date: DateString;
-  onEdit: (timer: TimerCard_Timer$data) => void;
+  onEdit: (timer: { id: ID, seconds: number }) => void;
   onAdd: () => void;
   recordingTimer: { id: ID; date: DateString } | null;
 }) => {
@@ -176,7 +175,7 @@ const Timers = (props: {
                 id
                 status
                 ...TimerCard_Timer
-                ...App_TimerForm_Timer
+                ...TimerForm_Timer
               }
             }
           }

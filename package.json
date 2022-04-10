@@ -45,7 +45,7 @@
     "generate-types": "yarn clean-generated && relay-compiler",
     "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"http://localhost:3001/graphql\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js",
     "prepare": "husky install",
-    "lint": "yarn prettier src --write && yarn eslint --fix",
+    "lint": "yarn prettier src --write",
     "typecheck": "tsc",
     "clean-generated": "find . -name '__generated__' -type d -prune -exec rm -rf '{}' +"
   },

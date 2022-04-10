@@ -1,6 +1,6 @@
 import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
-import { useLazyLoadQuery, useMutation } from "react-relay";
+import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { Column, Row } from "./Flex";
 import { Text } from "./Typography";
@@ -34,16 +34,16 @@ import { TimerForm_ProjectSelectQuery } from "./__generated__/TimerForm_ProjectS
 import { Layout } from "./Layout";
 import { Tooltip } from "./Tooltip";
 import { config } from "../config";
-import { App_TimerForm_Timer$data } from "../__generated__/App_TimerForm_Timer.graphql";
+import { TimerForm_Timer$data, TimerForm_Timer$key } from "./__generated__/TimerForm_Timer.graphql";
 
 type TimerProject = NonNull<
   TimerForm_ProjectSelectQuery["response"]["currentUser"]["projects"]["edges"][number]["node"]
 >;
 
-type TimerAttributes = CreateTimerAttributes & { id: ID | null };
+type TimerAttributes = CreateTimerAttributes & { id?: ID };
 
 export type TimerFormProps = {
-  timer: App_TimerForm_Timer$data | null;
+  timer?: TimerForm_Timer$data;
   afterSave: (timer: TimerAttributes) => void;
   onCancel: () => void;
 };
@@ -51,20 +51,17 @@ export type TimerFormProps = {
 export const TimerForm = (props: TimerFormProps) => {
   const connectionId = "TODO";
 
-  window.alert(props.timer);
-
-  const defaultAttrs = {
-    id: props.timer?.id ?? null,
+  const defaultAttrs: TimerAttributes = {
+    id: props.timer?.id,
     projectId: props.timer?.project.id ?? "",
     notes: props.timer?.notes ?? "",
     date: props.timer?.date ?? moment().format(config.dateFormat),
     seconds: props.timer?.seconds ?? 0,
   };
 
-  const [attributes, setAttributes] = useState<TimerAttributes>(defaultAttrs);
+  const [attributes, setAttributes] = useState(defaultAttrs);
 
   useEffect(() => {
-    window.alert(props.timer?.id);
     setAttributes(defaultAttrs);
   }, [props.timer]);
 
@@ -80,7 +77,7 @@ export const TimerForm = (props: TimerFormProps) => {
             node {
               id
               ...TimerCard_Timer
-              ...App_TimerForm_Timer
+              ...TimerForm_Timer
             }
           }
         }
@@ -96,7 +93,7 @@ export const TimerForm = (props: TimerFormProps) => {
         updateTimer(input: { timerId: $timerId, attributes: $attributes }) {
           timer {
             ...TimerCard_Timer
-            ...App_TimerForm_Timer
+            ...TimerForm_Timer
           }
         }
       }
@@ -382,4 +379,29 @@ const TimeInput = (props: {
       </Button>
     </Row>
   );
+};
+
+export const EditTimerForm = (props: TimerFormProps & {
+  timerKey: TimerForm_Timer$key;
+}) => {
+  console.log("Edit timer");
+
+  const data = useFragment(
+    graphql`
+      fragment TimerForm_Timer on Timer {
+        id
+        date
+        seconds
+        notes
+        updatedAt
+        project {
+          id
+        }
+      }
+    `,
+    props.timerKey
+  );
+
+  const { timer, ...rest } = props;
+  return <TimerForm {...rest} timer={data} />;
 };

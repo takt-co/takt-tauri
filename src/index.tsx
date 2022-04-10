@@ -13,6 +13,7 @@ import { Unauthenticated as UnauthenticatedScreen } from "./Unauthenticated";
 import { App } from "./App";
 import { Column } from "./components/Flex";
 import { TopBar } from "./components/TopBar";
+import ErrorBoundary from "./ErrorBoundry";
 
 const Takt = () => {
   const auth = useAuthentication();
@@ -69,9 +70,11 @@ const AuthenticatedScreen = () => {
 
 ReactDOM.render(
   <React.StrictMode>
-    <AuthenticationProvider>
-      <Takt />
-    </AuthenticationProvider>
+    <ErrorBoundary>
+      <AuthenticationProvider>
+        <Takt />
+      </AuthenticationProvider>
+    </ErrorBoundary>
   </React.StrictMode>,
   document.getElementById("root")
 );

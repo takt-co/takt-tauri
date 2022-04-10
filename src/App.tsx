@@ -2,18 +2,18 @@ import React, { Suspense, useEffect, useState } from "react";
 import { Column } from "./components/Flex";
 import { Text } from "./components/Typography";
 import moment from "moment";
-import { TimerForm, TimerFormProps } from "./components/TimerForm";
+import { EditTimerForm, TimerForm } from "./components/TimerForm";
 import { DateString } from "./CustomTypes";
 import { TimersScreen } from "./components/TimersScreen";
 import { config } from "./config";
 import { SettingsScreen } from "./components/SettingsScreen";
-import { useFragment, useLazyLoadQuery } from "react-relay";
+import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { emit } from "@tauri-apps/api/event";
 import { App_CurrentUserQuery } from "./__generated__/App_CurrentUserQuery.graphql";
 import { Layout } from "./components/Layout";
-import { App_TimerForm_Timer$key } from "./__generated__/App_TimerForm_Timer.graphql";
+import { TimerForm_Timer$key } from "./components/__generated__/TimerForm_Timer.graphql";
 
 type AppState = {
   viewingDate: DateString;
@@ -23,7 +23,7 @@ type AppState = {
     }
   | {
       tag: "editingTimer";
-      timer: App_TimerForm_Timer$key;
+      timer: TimerForm_Timer$key;
     }
 );
 
@@ -76,6 +76,7 @@ export const App = (props: AppProps) => {
               setState((prevState) => ({ ...prevState, tag: "addingTimer" }));
             }}
             onEdit={(timer) => {
+              console.log("TimersScreen:onEdit", { timer });
               setState((prevState) => ({
                 ...prevState,
                 tag: "addingTimer",
@@ -83,10 +84,28 @@ export const App = (props: AppProps) => {
               }));
             }}
           />
-          ) : // Creating a new timer
-          state.tag === "addingTimer" ? (
-            <TimerForm
-              timer={null}
+        ) : // Creating a new timer
+        state.tag === "addingTimer" ? (
+          <TimerForm
+            afterSave={(timer) => {
+              setState((prevState) => ({
+                ...prevState,
+                viewingDate: timer.date,
+                tag: "viewingTimers",
+              }));
+            }}
+            onCancel={() => {
+              setState((prevState) => ({
+                ...prevState,
+                tag: "viewingTimers",
+              }));
+            }}
+          />
+        ) : // Editing a timer
+        state.tag === "editingTimer" ? (
+          <Suspense fallback={<LoadingScreen />}>
+            <EditTimerForm
+              timerKey={state.timer}
               afterSave={(timer) => {
                 setState((prevState) => ({
                   ...prevState,
@@ -101,24 +120,7 @@ export const App = (props: AppProps) => {
                 }));
               }}
             />
-          ) : // Editing a timer
-            state.tag === "editingTimer" ? (
-              <EditTimerForm
-                timer={state.timer}
-                afterSave={(timer) => {
-                  setState((prevState) => ({
-                    ...prevState,
-                    viewingDate: timer.date,
-                    tag: "viewingTimers",
-                  }));
-                }}
-                onCancel={() => {
-                  setState((prevState) => ({
-                    ...prevState,
-                    tag: "viewingTimers",
-                  }));
-                }}
-              />
+          </Suspense>
         ) : // Viewing settings
         state.tag === "viewingSettings" ? (
           <SettingsScreen
@@ -142,31 +144,4 @@ export const App = (props: AppProps) => {
       </Suspense>
     </Layout>
   );
-};
-
-const EditTimerForm = ({ timer, ...rest }: Omit<TimerFormProps, "timer"> & {
-  timer: App_TimerForm_Timer$key
-}) => {
-  if (timer == null) {
-    // TODO: ERROR REPORTING
-    return null;
-  }
-
-  const data = useFragment(
-    graphql`
-      fragment App_TimerForm_Timer on Timer {
-        id
-        date
-        seconds
-        notes
-        updatedAt
-        project {
-          id
-        }
-      }
-    `,
-    timer
-  );
-
-  return <TimerForm {...rest} timer={data} />;
 };

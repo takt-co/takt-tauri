@@ -1,6 +1,6 @@
+import React from "react";
 import { graphql } from "babel-plugin-relay/macro";
 import moment from "moment";
-import React from "react";
 import { useFragment, useMutation } from "react-relay";
 import { clockToSeconds, secondsToClock } from "../Clock";
 import { ID } from "../CustomTypes";
@@ -13,14 +13,13 @@ import { Text } from "./Typography";
 import { TimerCard_StartRecordingMutation } from "./__generated__/TimerCard_StartRecordingMutation.graphql";
 import { TimerCard_StopRecordingMutation } from "./__generated__/TimerCard_StopRecordingMutation.graphql";
 import {
-  TimerCard_Timer$data,
   TimerCard_Timer$key,
 } from "./__generated__/TimerCard_Timer.graphql";
 
 export const TimerCard = (props: {
   timer: TimerCard_Timer$key;
-  onEdit: (timer: TimerCard_Timer$data) => void;
-  onDelete: (timer: TimerCard_Timer$data) => void;
+  onEdit: (timer: { id: ID, seconds: number }) => void;
+  onDelete: (timer: { id: ID, seconds: number }) => void;
   currentRecordingId?: ID;
 }) => {
   const auth = useAuthentication() as Authenticated;
@@ -204,7 +203,7 @@ export const TimerCard = (props: {
             variant="outlined"
             size="small"
             onClick={() => {
-              props.onEdit({ ...timer, seconds: clockToSeconds(clock) });
+              props.onEdit({ id: timer.id, seconds: clockToSeconds(clock) });
             }}
           >
             Edit
@@ -214,7 +213,7 @@ export const TimerCard = (props: {
             color="warning"
             size="small"
             onClick={() => {
-              props.onDelete(timer);
+              props.onDelete({ id: timer.id, seconds: clockToSeconds(clock) });
             }}
           >
             Delete
