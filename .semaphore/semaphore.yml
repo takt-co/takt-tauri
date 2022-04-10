@@ -14,6 +14,7 @@ blocks:
           - sem-version node 16.13.0
           - checkout
           - yarn install
+          - yarn generate-types
       jobs:
         - name: CI
           commands:
