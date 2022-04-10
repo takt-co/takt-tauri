@@ -12,4 +12,5 @@ blocks:
           commands:
             - checkout
             - yarn install
+            - yarn generate-types
             - yarn tauri build
