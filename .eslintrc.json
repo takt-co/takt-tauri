@@ -8,10 +8,7 @@
     "browser": true,
     "es2021": true
   },
-  "ignorePatterns": [
-    ".eslintrc.json",
-    "package.json"
-  ],
+  "ignorePatterns": [".eslintrc.json", "package.json"],
   "extends": [
     "eslint:recommended",
     "plugin:react/recommended",
@@ -25,12 +22,9 @@
     "ecmaVersion": "latest",
     "sourceType": "module"
   },
-  "plugins": [
-    "react",
-    "@typescript-eslint"
-  ],
+  "plugins": ["react", "@typescript-eslint"],
   "rules": {
-    "indent": ["error", 2],
+    "indent": "off",
     "linebreak-style": ["error", "unix"],
     "quotes": ["error", "double"],
     "semi": ["error", "always"]

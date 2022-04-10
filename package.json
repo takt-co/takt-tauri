@@ -44,7 +44,7 @@
     "generate-types": "relay-compiler",
     "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"%FETCH_SCHEMA_URL%\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js",
     "prepare": "husky install",
-    "lint": "yarn prettier src --write && yarn eslint --fix"
+    "lint": "yarn prettier src --write"
   },
   "relay": {
     "src": "./src/",

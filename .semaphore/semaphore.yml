@@ -20,4 +20,4 @@ blocks:
             - yarn test --passWithNoTests
         - name: eslint
           commands:
-            - yarn eslint src
+            - yarn eslint
