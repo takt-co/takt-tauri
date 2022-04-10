@@ -15,9 +15,14 @@ blocks:
           - checkout
           - yarn install
       jobs:
-        - name: yarn test
+        - name: typecheck, eslint, test
           commands:
-            - yarn test --passWithNoTests
-        - name: eslint
-          commands:
+            - yarn typecheck
             - yarn eslint
+            - yarn test
+
+promotions:
+  - name: Build test
+    pipeline_file: build-test.yml
+    auto_promote:
+      when: result = 'passed'
