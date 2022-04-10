@@ -21,3 +21,9 @@ blocks:
         - name: eslint
           commands:
             - yarn eslint
+
+promotions:
+  - name: Build test
+    pipeline_file: build-test.yml
+    auto_promote:
+      when: "result = 'passed' and branch = 'main'"
