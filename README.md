@@ -5,6 +5,7 @@
 A React app wrapped in Tauri to create a desktop application.
 
 ## Getting started
+
 To begin, you'll need to make sure your local environment is setup to run Rust and Tauri.
 See their getting started for help: https://tauri.studio/docs/getting-started/prerequisites/
 
@@ -18,6 +19,10 @@ $ yarn install
 
 # Run Tauri and React app
 $ yarn tauri dev
+
+# Setup dotenv variables
+# - required for `fetch-schema` command
+$ cp .env.example .env && code .env
 
 # Fetch an updated schema from the API
 $ yarn fetch-schema
