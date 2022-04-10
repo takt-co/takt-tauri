@@ -15,14 +15,15 @@ blocks:
           - checkout
           - yarn install
       jobs:
-        - name: typecheck, eslint, test
+        - name: typecheck
           commands:
             - yarn typecheck
+        - name: eslint
+          commands:
             - yarn eslint
+        - name: test
+          commands:
             - yarn test
-
-promotions:
-  - name: Build test
-    pipeline_file: build-test.yml
-    auto_promote:
-      when: result = 'passed'
+        - name: build
+          commands:
+            - yarn build
