@@ -1,0 +1,16 @@
+version: v1.0
+name: Tauri build test
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+blocks:
+  - name: Tauri
+    task:
+      jobs:
+      - name: Build
+        commands:
+          - checkout --use-cache
+          - heroku git:remote -a takt-rails
+          - git push heroku -f main
