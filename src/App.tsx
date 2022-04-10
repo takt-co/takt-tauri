@@ -9,7 +9,12 @@ import { TimersEmptyState, TimersScreen } from "./components/TimersScreen";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
 import { config } from "./config";
 import { TopBar } from "./components/TopBar";
-import { CrossIcon, ProjectsIcon, SettingsIcon, TodayIcon } from "./components/Icons";
+import {
+  CrossIcon,
+  ProjectsIcon,
+  SettingsIcon,
+  TodayIcon,
+} from "./components/Icons";
 import { Avatar, IconButton } from "@mui/material";
 import { SettingsScreen } from "./components/SettingsScreen";
 import { useLazyLoadQuery } from "react-relay";
@@ -70,7 +75,9 @@ export const App = (props: { clearCache: () => void }) => {
             </IconButton>
             <IconButton>
               <Tooltip title="Manage projects" key="Projects" placement="right">
-                <Row><ProjectsIcon height={20} fill={colors.white} /></Row>
+                <Row>
+                  <ProjectsIcon height={20} fill={colors.white} />
+                </Row>
               </Tooltip>
             </IconButton>
           </Row>
@@ -86,7 +93,9 @@ export const App = (props: { clearCache: () => void }) => {
                 }}
               >
                 <Tooltip placement="left" key="Today" title="Jump to today">
-                  <Row><TodayIcon height={24} fill={colors.white} /></Row>
+                  <Row>
+                    <TodayIcon height={24} fill={colors.white} />
+                  </Row>
                 </Tooltip>
               </IconButton>
               <IconButton
@@ -95,7 +104,9 @@ export const App = (props: { clearCache: () => void }) => {
                 }}
               >
                 <Tooltip placement="left" key="Settings" title="Settings">
-                  <Row><SettingsIcon height={20} fill={colors.white} /></Row>
+                  <Row>
+                    <SettingsIcon height={20} fill={colors.white} />
+                  </Row>
                 </Tooltip>
               </IconButton>
             </Row>
@@ -107,7 +118,9 @@ export const App = (props: { clearCache: () => void }) => {
                 }}
               >
                 <Tooltip placement="right" key="Close" title="Close settings">
-                  <Row><CrossIcon height={20} fill={colors.white} /></Row>
+                  <Row>
+                    <CrossIcon height={20} fill={colors.white} />
+                  </Row>
                 </Tooltip>
               </IconButton>
             </Row>
