@@ -37,6 +37,7 @@ export const Button = (
   if (variant === "outlined") {
     styles = {
       ...styles,
+      borderWidth: 1,
       borderColor: colors[color ?? "primary"],
       color: colors[color ?? "primary"],
       "&:hover": {
@@ -56,6 +57,7 @@ export const Button = (
   return (
     <MaterialButton
       sx={styles}
+      variant={variant}
       startIcon={
         loading ? (
           <CircularProgress
