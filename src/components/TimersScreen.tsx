@@ -389,52 +389,56 @@ const TimerCard = (props: {
                 }
 
                 if (recording) {
-                  const optimisticResponse: TimersScreen_StopRecordingMutation["response"] = {
-                    stopRecording: {
-                      timer: {
-                        id: timer.id,
-                        status: "paused",
-                        seconds: clockToSeconds(clock),
-                        updatedAt: moment().toISOString(),
-                        user: {
-                          id: currentUserId,
-                          recordingTimer: null,
+                  const optimisticResponse: TimersScreen_StopRecordingMutation["response"] =
+                    {
+                      stopRecording: {
+                        timer: {
+                          id: timer.id,
+                          status: "paused",
+                          seconds: clockToSeconds(clock),
+                          updatedAt: moment().toISOString(),
+                          user: {
+                            id: currentUserId,
+                            recordingTimer: null,
+                          },
                         },
                       },
-                    }
-                  };
+                    };
 
                   stopRecording({
                     variables: { timerId: timer.id },
-                    optimisticResponse
+                    optimisticResponse,
                   });
                 } else {
-                  const optimisticResponse: TimersScreen_StartRecordingMutation["response"] = {
-                    startRecording: {
-                      timer: {
-                        ...timer,
-                        status: "recording",
-                        seconds: timer.seconds,
-                        updatedAt: moment().toISOString(),
-                        user: {
-                          id: currentUserId,
-                          recordingTimer: {
-                            id: timer.id
-                          }
-                        }
+                  const optimisticResponse: TimersScreen_StartRecordingMutation["response"] =
+                    {
+                      startRecording: {
+                        timer: {
+                          ...timer,
+                          status: "recording",
+                          seconds: timer.seconds,
+                          updatedAt: moment().toISOString(),
+                          user: {
+                            id: currentUserId,
+                            recordingTimer: {
+                              id: timer.id,
+                            },
+                          },
+                        },
+                        pausedTimer: currentRecordingId
+                          ? {
+                              id: currentRecordingId,
+                              status: "paused",
+                              seconds: 0, // TODO
+                              updatedAt: moment().toISOString(),
+                            }
+                          : null,
                       },
-                      pausedTimer: currentRecordingId ? {
-                        id: currentRecordingId,
-                        status: "paused",
-                        seconds: 0, // TODO
-                        updatedAt: moment().toISOString(),
-                      } : null,
-                    },
-                  };
+                    };
 
                   startRecording({
                     variables: { timerId: timer.id },
-                    optimisticResponse
+                    optimisticResponse,
                   });
                 }
               }}
