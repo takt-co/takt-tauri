@@ -45,7 +45,7 @@
     "prepare": "husky install",
     "start": "cross-env BROWSER=none react-scripts start",
     "tauri": "tauri",
-    "test": "CI=true react-scripts test"
+    "test": "CI=true react-scripts test --bail"
   },
   "relay": {
     "src": "./src/",
