@@ -1,6 +1,5 @@
 import { Environment, Network, RecordSource, Store } from "relay-runtime";
 import { Json, SecureToken } from "../Types";
-import { NewType } from "../Types";
 import { random } from "lodash";
 import { config } from "../config";
 
@@ -11,7 +10,7 @@ const delay = (durationMilliseconds: number): Promise<void> => {
 };
 
 const sendRequest =
-  (token: SecureToken, onNoAuth: () => void) =>
+  (token: SecureToken, onNoAuth?: () => void) =>
   async (params: { name: string; text?: string | null }, variables: Json) => {
     if (process.env.NODE_ENV === "development") {
       await delay(random(200, 1000));
@@ -37,7 +36,7 @@ const sendRequest =
       (response.status === 401 &&
         JSON.parse(body)?.error?.startsWith("Invalid authorization"))
     ) {
-      onNoAuth();
+      onNoAuth?.();
       return json;
     } else if (!response.ok) {
       throw new Error(body);
@@ -47,8 +46,7 @@ const sendRequest =
 
 export const createRelayEnvironment = (token: SecureToken) => {
   return new Environment({
-    network: Network.create(sendRequest(token, () => {})),
+    network: Network.create(sendRequest(token)),
     store: new Store(new RecordSource()),
   });
 };
-

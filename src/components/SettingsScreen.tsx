@@ -1,16 +1,14 @@
-import React, { useState } from "react"
-import { colors } from "../Theme"
-import { Column, Row } from "./Flex"
-import { CleanUpIcon, IconProps, LoginIcon, PowerIcon } from "./Icons"
-import { Text } from "./Typography"
-import { Spacer } from "./Spacer"
-import { useAuthentication } from "../providers/Authentication"
-import { process } from "@tauri-apps/api"
-import { config } from "../config"
+import React, { useState } from "react";
+import { colors } from "../Theme";
+import { Column, Row } from "./Flex";
+import { CleanUpIcon, IconProps, LoginIcon, PowerIcon } from "./Icons";
+import { Text } from "./Typography";
+import { Spacer } from "./Spacer";
+import { useAuthentication } from "../providers/Authentication";
+import { process } from "@tauri-apps/api";
+import { config } from "../config";
 
-export const SettingsScreen = (props: {
-  clearCache: () => void;
-}) => {
+export const SettingsScreen = (props: { clearCache: () => void }) => {
   const authentication = useAuthentication();
   if (authentication.tag !== "authenticated") {
     throw new Error("Rendered SettingsScreen while not authenticated");
@@ -21,7 +19,9 @@ export const SettingsScreen = (props: {
   return (
     <Column fullHeight backgroundColor="white">
       <Row padding="small">
-        <Text fontSize="large" strong>Settings</Text>
+        <Text fontSize="large" strong>
+          Settings
+        </Text>
       </Row>
       <Column fullHeight justifyContent="space-between">
         <Column>
@@ -37,7 +37,10 @@ export const SettingsScreen = (props: {
           <Setting
             label="Sign out"
             Icon={LoginIcon}
-            iconProps={{ width: 16, style: { boxSizing: "content-box", paddingRight: 4 } }}
+            iconProps={{
+              width: 16,
+              style: { boxSizing: "content-box", paddingRight: 4 },
+            }}
             onClick={authentication.logout}
           />
         </Column>
@@ -51,17 +54,17 @@ export const SettingsScreen = (props: {
               } else {
                 process.exit();
               }
-             }}
+            }}
           />
           <Spacer size="small" />
         </Column>
       </Column>
     </Column>
-  )
-}
+  );
+};
 
 const Setting = (props: {
-  label: String;
+  label: string;
   Icon: React.FunctionComponent<IconProps>;
   onClick: () => void;
   iconProps?: IconProps;
@@ -81,7 +84,7 @@ const Setting = (props: {
         width: 20,
         height: 20,
         fill: props.disabled ? colors.gray : colors.darkGray,
-        ...props.iconProps
+        ...props.iconProps,
       }}
     />
     <Text color={props.disabled ? colors.gray : colors.darkGray}>

@@ -1,4 +1,5 @@
-import React from "react"
+import React, { CSSProperties } from "react";
+import { HexColor } from "../Theme";
 
 export const fontSizes = {
   small: 12,
@@ -6,23 +7,22 @@ export const fontSizes = {
   body: 16,
   large: 20,
   xlarge: 28,
-}
+};
 
 export type FontSize = keyof typeof fontSizes;
 
-type TextProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLParagraphElement>, HTMLParagraphElement> & {
+type TextProps = React.DetailedHTMLProps<
+  React.HTMLAttributes<HTMLParagraphElement>,
+  HTMLParagraphElement
+> & {
+  style?: CSSProperties;
+  color?: HexColor;
   fontSize?: FontSize;
   strong?: boolean;
 };
 
 export const Text = (props: TextProps) => {
-  const {
-    style,
-    strong,
-    color,
-    fontSize: textFontSize,
-    ...rest
-  } = props;
+  const { style, strong, color, fontSize: textFontSize, ...rest } = props;
 
   return (
     <p
@@ -33,9 +33,9 @@ export const Text = (props: TextProps) => {
         color: color,
         margin: style?.margin ?? 0,
         padding: style?.padding ?? 0,
-        ...style
+        ...style,
       }}
       {...rest}
     />
-  )
-}
+  );
+};

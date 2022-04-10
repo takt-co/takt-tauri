@@ -13,7 +13,10 @@ import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
 import { emit } from "@tauri-apps/api/event";
 import { Clock, clockToSeconds, secondsToClock } from "../Clock";
-import { TimersScreen_Timer$data, TimersScreen_Timer$key } from "./__generated__/TimersScreen_Timer.graphql";
+import {
+  TimersScreen_Timer$data,
+  TimersScreen_Timer$key,
+} from "./__generated__/TimersScreen_Timer.graphql";
 import { TimersScreenQuery } from "./__generated__/TimersScreenQuery.graphql";
 import { TimersScreen_StartRecordingMutation } from "./__generated__/TimersScreen_StartRecordingMutation.graphql";
 import { TimersScreen_StopRecordingMutation } from "./__generated__/TimersScreen_StopRecordingMutation.graphql";
@@ -37,27 +40,33 @@ export const TimersScreen = (props: {
         date={date}
         onPrev={() => {
           const prevDate = moment(props.date, config.dateFormat);
-            prevDate.startOf("day");
-            prevDate.subtract(12, "hours");
+          prevDate.startOf("day");
+          prevDate.subtract(12, "hours");
 
           setDate(prevDate.format(config.dateFormat));
         }}
         onNext={() => {
           const nextDate = moment(props.date, config.dateFormat);
-            nextDate.endOf("day");
-            nextDate.add(12, "hours");
+          nextDate.endOf("day");
+          nextDate.add(12, "hours");
 
           setDate(nextDate.format(config.dateFormat));
         }}
       />
 
-      <Column fullHeight style={{ height: "calc(100vh - 170px)", overflow: "auto" }} backgroundColor="white">
-        <Suspense fallback={
-          <LoadingScreen
-            message="Fetching timers"
-            Warmdown={timersCount === 0 ? TimersEmptyState : EmptyWarmdown}
-          />
-        }>
+      <Column
+        fullHeight
+        style={{ height: "calc(100vh - 170px)", overflow: "auto" }}
+        backgroundColor="white"
+      >
+        <Suspense
+          fallback={
+            <LoadingScreen
+              message="Fetching timers"
+              Warmdown={timersCount === 0 ? TimersEmptyState : EmptyWarmdown}
+            />
+          }
+        >
           <Timers
             date={date}
             onEdit={props.onEdit}
@@ -90,29 +99,31 @@ export const TimersScreen = (props: {
         </Button>
       </ButtonBar>
     </Column>
-  )
-}
+  );
+};
 
 const DateBar = (props: {
-  date: DateString,
-  onPrev: () => void,
-  onNext: () => void,
+  date: DateString;
+  onPrev: () => void;
+  onNext: () => void;
 }) => {
   return (
-    <Row alignItems="center" justifyContent="space-between" padding="smaller" backgroundColor="offWhite" style={{ height: 46 }}>
+    <Row
+      alignItems="center"
+      justifyContent="space-between"
+      padding="smaller"
+      backgroundColor="offWhite"
+      style={{ height: 46 }}
+    >
       <Arrow
         width={20}
         style={{ transform: "rotate(180deg)", cursor: "pointer" }}
         onClick={props.onPrev}
       />
       <Text>{moment(props.date).format("dddd, D MMMM YYYY")}</Text>
-      <Arrow
-        width={20}
-        style={{ cursor: "pointer" }}
-        onClick={props.onNext}
-      />
+      <Arrow width={20} style={{ cursor: "pointer" }} onClick={props.onNext} />
     </Row>
-  )
+  );
 };
 
 const Timers = (props: {
@@ -129,53 +140,52 @@ const Timers = (props: {
     const timeout = setTimeout(() => {
       setTimeNow(moment());
     }, 1000);
-    return () => { clearTimeout(timeout) }
+    return () => {
+      clearTimeout(timeout);
+    };
   }, [timeNow, setTimeNow]);
 
-  const data = useLazyLoadQuery<TimersScreenQuery>(graphql`
-    query TimersScreenQuery (
-      $date: ISO8601Date!
-    ) {
-      currentUser {
-        id
-        recordingTimer {
+  const data = useLazyLoadQuery<TimersScreenQuery>(
+    graphql`
+      query TimersScreenQuery($date: ISO8601Date!) {
+        currentUser {
           id
-        }
-        timers(endDate: $date, startDate: $date, first: 100)
-          @connection(key: "TimersScreen__timers") {
-          __id
-          edges {
-            cursor
-            node {
-              id
-              seconds
-              status
-              updatedAt
-              ...TimersScreen_Timer
+          recordingTimer {
+            id
+          }
+          timers(endDate: $date, startDate: $date, first: 100)
+            @connection(key: "TimersScreen__timers") {
+            __id
+            edges {
+              cursor
+              node {
+                id
+                seconds
+                status
+                updatedAt
+                ...TimersScreen_Timer
+              }
             }
           }
         }
       }
+    `,
+    {
+      date: props.date,
     }
-  `, {
-    date: props.date
-  });
+  );
 
   useEffect(() => {
-    props.onConnectionIdUpdate(data.currentUser.timers.__id)
+    props.onConnectionIdUpdate(data.currentUser.timers.__id);
   }, [data.currentUser.timers.__id]);
 
   useEffect(() => {
-    props.onTimersCountChange(data.currentUser.timers.edges?.length ?? 0)
-  }, [data.currentUser.timers.edges])
+    props.onTimersCountChange(data.currentUser.timers.edges?.length ?? 0);
+  }, [data.currentUser.timers.edges]);
 
   const [archiveTimer] = useMutation<TimersScreen_ArchiveMutation>(graphql`
-    mutation TimersScreen_ArchiveMutation (
-      $timerId: ID!
-    ) {
-      archiveTimer(input: {
-        timerId: $timerId
-      }) {
+    mutation TimersScreen_ArchiveMutation($timerId: ID!) {
+      archiveTimer(input: { timerId: $timerId }) {
         timer {
           id
           status
@@ -196,20 +206,22 @@ const Timers = (props: {
   }, [data.currentUser.recordingTimer]);
 
   const timers = (data.currentUser.timers.edges ?? [])
-    .filter(e => e?.node && e?.node.status !== "archived")
-    .map(e => e?.node);
+    .filter((e) => e?.node && e?.node.status !== "archived")
+    .map((e) => e?.node);
 
   if (timers.length === 0) {
-    return <TimersEmptyState />
+    return <TimersEmptyState />;
   }
 
   return (
     <Column fullHeight>
-      {timers.map(timer => {
+      {timers.map((timer) => {
         if (!timer) return null;
 
         const recording = timer.id === data.currentUser.recordingTimer?.id;
-        let diff = recording ? moment().diff(moment(timer.updatedAt), "seconds") : 0;
+        let diff = recording
+          ? moment().diff(moment(timer.updatedAt), "seconds")
+          : 0;
         if (diff < 0) diff = 0;
         const clock = secondsToClock(timer.seconds + diff);
 
@@ -240,23 +252,24 @@ const Timers = (props: {
                           lastActionAt: moment().toISOString(),
                           user: {
                             id: data.currentUser.id,
-                            recordingTimer: data.currentUser.recordingTimer?.id === timer.id
-                              ? null
-                              : data.currentUser.recordingTimer,
+                            recordingTimer:
+                              data.currentUser.recordingTimer?.id === timer.id
+                                ? null
+                                : data.currentUser.recordingTimer,
                           },
                         },
-                      }
-                    }
-                  })
-                }
+                      },
+                    },
+                  });
+                },
               });
             }}
           />
-        )
+        );
       })}
     </Column>
-  )
-}
+  );
+};
 
 export const TimersEmptyState = () => {
   return (
@@ -270,8 +283,8 @@ export const TimersEmptyState = () => {
       <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
       <Text color="gray">No timers on this date</Text>
     </Column>
-  )
-}
+  );
+};
 
 const TimerCard = (props: {
   timer: TimersScreen_Timer$key;
@@ -284,65 +297,62 @@ const TimerCard = (props: {
 }) => {
   const { clock, recording, currentUserId, currentRecordingId } = props;
 
-  const timer = useFragment(graphql`
-    fragment TimersScreen_Timer on Timer {
-      id
-      date
-      seconds
-      status
-      notes
-      updatedAt
-      project {
+  const timer = useFragment(
+    graphql`
+      fragment TimersScreen_Timer on Timer {
         id
-        name
-      }
-    }
-  `, props.timer);
-
-  const [startRecording, startRecordingInFlight] = useMutation<TimersScreen_StartRecordingMutation>(graphql`
-    mutation TimersScreen_StartRecordingMutation (
-      $timerId: ID!
-    ) {
-      startRecording(input: {
-        timerId: $timerId
-      }) {
-        timer {
-          ...TimersScreen_Timer
-          user {
-            id
-            recordingTimer {
-              id
-            }
-          }
-        }
-        pausedTimer {
+        date
+        seconds
+        status
+        notes
+        updatedAt
+        project {
           id
-          status
-          seconds
+          name
         }
       }
-    }
-  `);
+    `,
+    props.timer
+  );
 
-  const [stopRecording, stopRecordingInFlight] = useMutation<TimersScreen_StopRecordingMutation>(graphql`
-    mutation TimersScreen_StopRecordingMutation (
-      $timerId: ID!
-    ) {
-      stopRecording(input: {
-        timerId: $timerId
-      }) {
-        timer {
-          ...TimersScreen_Timer
-          user {
-            id
-            recordingTimer {
+  const [startRecording, startRecordingInFlight] =
+    useMutation<TimersScreen_StartRecordingMutation>(graphql`
+      mutation TimersScreen_StartRecordingMutation($timerId: ID!) {
+        startRecording(input: { timerId: $timerId }) {
+          timer {
+            ...TimersScreen_Timer
+            user {
               id
+              recordingTimer {
+                id
+              }
+            }
+          }
+          pausedTimer {
+            id
+            status
+            seconds
+          }
+        }
+      }
+    `);
+
+  const [stopRecording, stopRecordingInFlight] =
+    useMutation<TimersScreen_StopRecordingMutation>(graphql`
+      mutation TimersScreen_StopRecordingMutation($timerId: ID!) {
+        stopRecording(input: { timerId: $timerId }) {
+          timer {
+            ...TimersScreen_Timer
+            user {
+              id
+              recordingTimer {
+                id
+              }
             }
           }
         }
       }
-    }
-  `);
+    `);
 
   return (
     <Row
@@ -360,7 +370,9 @@ const TimerCard = (props: {
           </Column>
           <Row alignItems="center" gap="smaller">
             <Row alignItems="flex-end">
-              <Text fontSize="large">{clock.hours}:{clock.minutes}</Text>
+              <Text fontSize="large">
+                {clock.hours}:{clock.minutes}
+              </Text>
             </Row>
             <RecordButton
               recording={recording}
@@ -384,9 +396,9 @@ const TimerCard = (props: {
                           id: currentUserId,
                           recordingTimer: null,
                         },
-                      }
-                    }
-                  })
+                      },
+                    },
+                  });
                 } else {
                   startRecording({
                     variables: { timerId: timer.id },
@@ -398,19 +410,21 @@ const TimerCard = (props: {
                           seconds: timer.seconds,
                           lastActionAt: moment().toISOString(),
                         },
-                        stoppedTimer: currentRecordingId ? {
-                          id: currentRecordingId,
-                          status: "paused",
-                        } : null,
+                        stoppedTimer: currentRecordingId
+                          ? {
+                              id: currentRecordingId,
+                              status: "paused",
+                            }
+                          : null,
                         user: {
                           id: currentUserId,
                           recordingTimer: {
                             id: timer.id,
                           },
                         },
-                      }
+                      },
                     },
-                  })
+                  });
                 }
               }}
             />
@@ -418,10 +432,17 @@ const TimerCard = (props: {
         </Row>
 
         {timer.notes.length > 0 && (
-          <Column style={{ borderLeft: `1px solid ${colors.gray}`}} paddingHorizontal="tiny">
+          <Column
+            style={{ borderLeft: `1px solid ${colors.gray}` }}
+            paddingHorizontal="tiny"
+          >
             <Text
               fontSize="detail"
-              style={{ whiteSpace: "pre-wrap", lineHeight: 1.5, color: colors.darkGray }}
+              style={{
+                whiteSpace: "pre-wrap",
+                lineHeight: 1.5,
+                color: colors.darkGray,
+              }}
             >
               {timer.notes}
             </Text>
@@ -433,7 +454,7 @@ const TimerCard = (props: {
             variant="outlined"
             size="small"
             onClick={() => {
-              props.onEdit({ ...timer, seconds: clockToSeconds(clock) })
+              props.onEdit({ ...timer, seconds: clockToSeconds(clock) });
             }}
           >
             Edit
@@ -451,13 +472,10 @@ const TimerCard = (props: {
         </Row>
       </Column>
     </Row>
-  )
-}
+  );
+};
 
-const RecordButton = (props: {
-  recording: boolean;
-  onClick: () => void;
-}) => {
+const RecordButton = (props: { recording: boolean; onClick: () => void }) => {
   return (
     <span
       onClick={props.onClick}
@@ -470,5 +488,5 @@ const RecordButton = (props: {
         cursor: "pointer",
       }}
     />
-  )
-}
+  );
+};

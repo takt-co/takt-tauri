@@ -14,14 +14,19 @@
     "@types/node": "^16.7.13",
     "@types/react": "^17.0.20",
     "@types/react-dom": "^17.0.9",
+    "@typescript-eslint/eslint-plugin": "^5.18.0",
+    "@typescript-eslint/parser": "^5.18.0",
     "axios": "^0.26.1",
     "colord": "^2.9.2",
     "cross-var": "^1.1.0",
     "dotenv": "^16.0.0",
     "dotenv-cli": "^5.0.0",
+    "eslint-plugin-react": "^7.29.4",
     "get-graphql-schema": "^2.1.2",
+    "husky": ">=6",
     "lodash": "^4.17.21",
     "moment": "^2.29.1",
+    "prettier": "^2.6.2",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-relay": "^13.2.0",
@@ -37,7 +42,9 @@
     "eject": "react-scripts eject",
     "tauri": "tauri",
     "generate-types": "relay-compiler",
-    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"%FETCH_SCHEMA_URL%\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js"
+    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"%FETCH_SCHEMA_URL%\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js",
+    "prepare": "husky install",
+    "lint": "yarn prettier src --write"
   },
   "relay": {
     "src": "./src/",
@@ -79,7 +86,12 @@
     "@types/relay-runtime": "^13.0.2",
     "babel-plugin-relay": "^13.2.0",
     "cross-env": "^7.0.3",
+    "eslint": "^8.13.0",
     "graphql": "^16.3.0",
+    "lint-staged": ">=10",
     "relay-compiler": "^13.2.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,tsx,json,md}": "yarn lint"
   }
 }

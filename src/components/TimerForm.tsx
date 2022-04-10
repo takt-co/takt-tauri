@@ -1,19 +1,31 @@
-import moment from "moment";
 import React, { useEffect, useState } from "react";
+import moment from "moment";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { LoadingScreen } from "./LoadingScreen";
 import { Column, Row } from "./Flex";
 import { Text } from "./Typography";
-import { FormControl, InputLabel, MenuItem, Select, TextField } from "@mui/material";
+import {
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
 import { clockToSeconds, secondsToClock } from "../Clock";
 import { Button } from "./Button";
 import { SaveIcon, MinusCircled, PlusCircled } from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
 import { colors } from "../Theme";
 import { TimerFormQuery } from "./__generated__/TimerFormQuery.graphql";
-import { CreateTimerAttributes, TimerForm_CreateTimerMutation } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
-import { TimerForm_UpdateTimerMutation, UpdateTimerAttributes } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
+import {
+  CreateTimerAttributes,
+  TimerForm_CreateTimerMutation,
+} from "./__generated__/TimerForm_CreateTimerMutation.graphql";
+import {
+  TimerForm_UpdateTimerMutation,
+  UpdateTimerAttributes,
+} from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
 import { TimersScreen_Timer$data } from "./__generated__/TimersScreen_Timer.graphql";
 import { DateString, ID } from "../Types";
 import { Spacer } from "./Spacer";
@@ -26,77 +38,81 @@ export const TimerForm = (props: {
   onCancel: () => void;
   connectionId: ID;
 }) => {
-  const [internalTimer, setInternalTimer] = useState<TimersScreen_Timer$data | null>(null);
+  const [internalTimer, setInternalTimer] =
+    useState<TimersScreen_Timer$data | null>(null);
 
   useEffect(() => {
-    setInternalTimer(props.timer ?? {
-      id: "",
-      notes: "",
-      seconds: 0,
-      status: "paused",
-      date: props.date,
-      project: {
-        id: "",
-        name: "",
-      }
-    } as TimersScreen_Timer$data);
+    setInternalTimer(
+      props.timer ??
+        ({
+          id: "",
+          notes: "",
+          seconds: 0,
+          status: "paused",
+          date: props.date,
+          project: {
+            id: "",
+            name: "",
+          },
+        } as TimersScreen_Timer$data)
+    );
   }, [props.timer, props.date]);
 
-  const data = useLazyLoadQuery<TimerFormQuery>(graphql`
-    query TimerFormQuery {
-      currentUser {
-        id
-        account {
-          projects {
-            nodes {
-              id
-              name
+  const data = useLazyLoadQuery<TimerFormQuery>(
+    graphql`
+      query TimerFormQuery {
+        currentUser {
+          id
+          account {
+            projects {
+              nodes {
+                id
+                name
+              }
             }
           }
         }
       }
-    }
-  `, {});
+    `,
+    {}
+  );
 
-  const [createTimer, createTimerInFlight] = useMutation<TimerForm_CreateTimerMutation>(graphql`
-    mutation TimerForm_CreateTimerMutation (
-      $attributes: CreateTimerAttributes!
-      $connections: [ID!]!
-    ) {
-      createTimer(input: {
-        attributes: $attributes
-      }) {
-        timer @appendEdge(connections: $connections) {
-          cursor
-          node {
-            id
+  const [createTimer, createTimerInFlight] =
+    useMutation<TimerForm_CreateTimerMutation>(graphql`
+      mutation TimerForm_CreateTimerMutation(
+        $attributes: CreateTimerAttributes!
+        $connections: [ID!]!
+      ) {
+        createTimer(input: { attributes: $attributes }) {
+          timer @appendEdge(connections: $connections) {
+            cursor
+            node {
+              id
+              ...TimersScreen_Timer
+            }
+          }
+        }
+      }
+    `);
+
+  const [updateTimer, updateTimerInFlight] =
+    useMutation<TimerForm_UpdateTimerMutation>(graphql`
+      mutation TimerForm_UpdateTimerMutation(
+        $timerId: ID!
+        $attributes: UpdateTimerAttributes!
+      ) {
+        updateTimer(input: { timerId: $timerId, attributes: $attributes }) {
+          timer {
             ...TimersScreen_Timer
           }
         }
       }
-    }
-  `);
-
-  const [updateTimer, updateTimerInFlight] = useMutation<TimerForm_UpdateTimerMutation>(graphql`
-    mutation TimerForm_UpdateTimerMutation (
-      $timerId: ID!
-      $attributes: UpdateTimerAttributes!
-    ) {
-      updateTimer(input: {
-        timerId: $timerId,
-        attributes: $attributes
-      }) {
-        timer {
-          ...TimersScreen_Timer
-        }
-      }
-    }
-  `)
+    `);
 
   const projects = data.currentUser.account.projects.nodes ?? [];
 
   if (!internalTimer) {
-    return <LoadingScreen />
+    return <LoadingScreen />;
   }
 
   return (
@@ -119,7 +135,7 @@ export const TimerForm = (props: {
               const date = moment(ev.target.value).format("YYYY-MM-DD");
               console.log("call set date");
               props.setDate(date);
-              setInternalTimer((timer) => (timer ? { ...timer, date } : null))
+              setInternalTimer((timer) => (timer ? { ...timer, date } : null));
             }}
           />
 
@@ -130,15 +146,21 @@ export const TimerForm = (props: {
               size="small"
               label="Project"
               onChange={(ev) => {
-                const project = projects.find(p => p?.id === ev.target.value);
+                const project = projects.find((p) => p?.id === ev.target.value);
                 if (project) {
-                  setInternalTimer((timer) => ({ ...timer!, project }));
+                  setInternalTimer((timer) =>
+                    timer ? { ...timer, project } : null
+                  );
                 }
               }}
             >
-              {projects.map(p => p ? (
-                <MenuItem key={p.id} value={p.id}>{p.name}</MenuItem>
-              ) : null)}
+              {projects.map((p) =>
+                p ? (
+                  <MenuItem key={p.id} value={p.id}>
+                    {p.name}
+                  </MenuItem>
+                ) : null
+              )}
             </Select>
           </FormControl>
 
@@ -146,7 +168,9 @@ export const TimerForm = (props: {
             <TimeInput
               value={internalTimer.seconds ?? 0}
               onChange={(seconds) => {
-                setInternalTimer((timer) => ({ ...timer!, seconds }))
+                setInternalTimer((timer) =>
+                  timer ? { ...timer, seconds } : null
+                );
               }}
             />
           </Row>
@@ -158,7 +182,9 @@ export const TimerForm = (props: {
             rows={5}
             value={internalTimer.notes}
             onChange={(ev) => {
-              setInternalTimer((timer) => ({ ...timer!, notes: ev.target.value }))
+              setInternalTimer((timer) =>
+                timer ? { ...timer, notes: ev.target.value } : null
+              );
             }}
           />
         </Column>
@@ -177,13 +203,7 @@ export const TimerForm = (props: {
           variant="outlined"
           loading={createTimerInFlight || updateTimerInFlight}
           disableElevation
-          startIcon={
-            <SaveIcon
-              width={12}
-              height={12}
-              fill={colors.primary}
-            />
-          }
+          startIcon={<SaveIcon width={12} height={12} fill={colors.primary} />}
           size="small"
           color="primary"
           onClick={() => {
@@ -193,26 +213,26 @@ export const TimerForm = (props: {
                 date: internalTimer.date,
                 notes: internalTimer.notes,
                 seconds: internalTimer.seconds,
-              }
+              };
 
               updateTimer({
                 variables: { timerId: props.timer.id, attributes },
                 optimisticResponse: {
                   updateTimer: {
-                    timer: internalTimer
-                  }
+                    timer: internalTimer,
+                  },
                 },
                 onCompleted: () => {
                   props.afterSave(internalTimer);
-                }
-              })
+                },
+              });
             } else {
               const attributes: CreateTimerAttributes = {
                 projectId: internalTimer.project.id,
                 date: internalTimer.date,
                 notes: internalTimer.notes,
                 seconds: internalTimer.seconds,
-              }
+              };
 
               createTimer({
                 variables: {
@@ -221,8 +241,8 @@ export const TimerForm = (props: {
                 },
                 onCompleted: () => {
                   props.afterSave(internalTimer);
-                }
-              })
+                },
+              });
             }
           }}
         >
@@ -230,8 +250,8 @@ export const TimerForm = (props: {
         </Button>
       </ButtonBar>
     </Column>
-  )
-}
+  );
+};
 
 const buildTimeOptions = (count: number) => {
   return Array.from(Array(count).keys()).map((num) => {
@@ -250,7 +270,13 @@ const TimeInput = (props: {
   const clock = secondsToClock(props.value);
 
   return (
-    <Row fullWidth justifyContent="space-between" alignItems="center" gap="small" paddingHorizontal="tiny">
+    <Row
+      fullWidth
+      justifyContent="space-between"
+      alignItems="center"
+      gap="small"
+      paddingHorizontal="tiny"
+    >
       <Button
         variant="text"
         color="primary"
@@ -271,12 +297,17 @@ const TimeInput = (props: {
           value={clock.hours.length === 1 ? `0${clock.hours}` : clock.hours}
           label="Hrs"
           onChange={(ev) => {
-            const seconds = clockToSeconds({ ...clock, hours: `${ev.target.value}` });
-            props.onChange(seconds)
+            const seconds = clockToSeconds({
+              ...clock,
+              hours: `${ev.target.value}`,
+            });
+            props.onChange(seconds);
           }}
         >
-          {hourOptions.map(hour => (
-            <MenuItem key={hour.value} value={hour.value}>{hour.label}</MenuItem>
+          {hourOptions.map((hour) => (
+            <MenuItem key={hour.value} value={hour.value}>
+              {hour.label}
+            </MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -287,12 +318,17 @@ const TimeInput = (props: {
           value={clock.minutes}
           label="Mins"
           onChange={(ev) => {
-            const seconds = clockToSeconds({ ...clock, minutes: `${ev.target.value}` });
-            props.onChange(seconds)
+            const seconds = clockToSeconds({
+              ...clock,
+              minutes: `${ev.target.value}`,
+            });
+            props.onChange(seconds);
           }}
         >
-          {minuteOptions.map(minute => (
-            <MenuItem key={minute.value} value={minute.value}>{minute.label}</MenuItem>
+          {minuteOptions.map((minute) => (
+            <MenuItem key={minute.value} value={minute.value}>
+              {minute.label}
+            </MenuItem>
           ))}
         </Select>
       </FormControl>
@@ -310,5 +346,5 @@ const TimeInput = (props: {
         <PlusCircled width={30} height={30} fill={colors.primary} />
       </Button>
     </Row>
-  )
-}
+  );
+};

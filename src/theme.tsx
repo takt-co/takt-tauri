@@ -5,13 +5,11 @@ export type HexColor = NewType<string>;
 
 export type Color = keyof typeof colors;
 
-export const darken = (color: Color, amount: number) => (
-  colord(colors[color]).darken(amount).toHex() as HexColor
-);
+export const darken = (color: Color, amount: number) =>
+  colord(colors[color]).darken(amount).toHex() as HexColor;
 
-export const lighten = (color: Color, amount: number) => (
-  colord(colors[color]).lighten(amount).toHex() as HexColor
-);
+export const lighten = (color: Color, amount: number) =>
+  colord(colors[color]).lighten(amount).toHex() as HexColor;
 
 export const colors = {
   primary: "#20639B" as HexColor,
@@ -24,4 +22,3 @@ export const colors = {
   gray: "#9c9c9c" as HexColor,
   darkGray: "#333333" as HexColor,
 };
-

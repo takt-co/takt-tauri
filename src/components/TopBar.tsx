@@ -33,8 +33,8 @@ export const TopBar = (props: {
           WebkitUserSelect: "none",
         }}
       >
-        <Column children={props.left} />
-        <Column children={props.right} />
+        <Column>{props.left}</Column>
+        <Column>{props.right}</Column>
       </Row>
     </Column>
   );
