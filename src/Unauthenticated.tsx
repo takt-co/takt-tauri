@@ -55,9 +55,13 @@ export const Unauthenticated = () => {
         style={{ borderRadius: "0 0 5px 5px", height: "calc(100vh - 65px)" }}
       >
         <Column>
-          <Text fontSize="large" strong>👋 Hello, there.</Text>
+          <Text fontSize="large" strong>
+            👋 Hello, there.
+          </Text>
           <Spacer size="smaller" />
-          <Text fontSize="detail" color={colors.darkGray}>Please login using the form below</Text>
+          <Text fontSize="detail" color={colors.darkGray}>
+            Please login using the form below
+          </Text>
           <Spacer size="tiny" />
         </Column>
         <TextField
