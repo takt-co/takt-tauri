@@ -5,9 +5,14 @@ import { useLazyLoadQuery } from "react-relay";
 import { ID, NonNull } from "../CustomTypes";
 import { ProjectSelect_Query } from "./__generated__/ProjectSelect_Query.graphql";
 
-type ProjectSelectOption = NonNull<ProjectSelect_Query["response"]["currentUser"]["projects"]["edges"][number]["node"]>;
+type ProjectSelectOption = NonNull<
+  ProjectSelect_Query["response"]["currentUser"]["projects"]["edges"][number]["node"]
+>;
 
-export const ProjectSelect = (props: { value: ID; onChange: (value: ID) => void }) => {
+export const ProjectSelect = (props: {
+  value: ID;
+  onChange: (value: ID) => void;
+}) => {
   const data = useLazyLoadQuery<ProjectSelect_Query>(
     graphql`
       query ProjectSelect_Query {

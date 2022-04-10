@@ -77,7 +77,7 @@ export const App = (props: AppProps) => {
               setState((prevState) => ({
                 ...prevState,
                 tag: "editingTimer",
-                timer
+                timer,
               }));
             }}
           />

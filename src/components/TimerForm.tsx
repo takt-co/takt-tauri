@@ -34,7 +34,10 @@ import { Layout } from "./Layout";
 import { Tooltip } from "./Tooltip";
 import { config } from "../config";
 import { ProjectSelect } from "./ProjectSelect";
-import { TimerForm_Query, TimerForm_Query$data } from "./__generated__/TimerForm_Query.graphql";
+import {
+  TimerForm_Query,
+  TimerForm_Query$data,
+} from "./__generated__/TimerForm_Query.graphql";
 
 type TimerAttributes = CreateTimerAttributes & { id?: ID };
 
@@ -332,31 +335,33 @@ const TimeInput = (props: {
   );
 };
 
-export const EditTimerForm = (
-  { timerId, ...props }: TimerFormProps & {
-    timerId: ID;
-  }
-) => {
-  const data = useLazyLoadQuery<TimerForm_Query>(graphql`
-    query TimerForm_Query(
-      $timerId: ID!
-    ) {
-      node(id: $timerId) {
-        ... on Timer {
-          id
-          status
-          date
-          notes
-          seconds
-          project {
+export const EditTimerForm = ({
+  timerId,
+  ...props
+}: TimerFormProps & {
+  timerId: ID;
+}) => {
+  const data = useLazyLoadQuery<TimerForm_Query>(
+    graphql`
+      query TimerForm_Query($timerId: ID!) {
+        node(id: $timerId) {
+          ... on Timer {
             id
+            status
+            date
+            notes
+            seconds
+            project {
+              id
+            }
           }
         }
       }
+    `,
+    {
+      timerId,
     }
-  `, {
-    timerId
-  });
+  );
 
   if (!data.node) {
     throw new Error("EditTimerForm: Timer not found by ID");
