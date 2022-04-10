@@ -8,6 +8,7 @@ import { Button } from "./components/Button";
 import LogoSrc from "./assets/logo.png";
 import { LoginIcon, PasswordHidden, PasswordShowing } from "./components/Icons";
 import { colors } from "./TaktTheme";
+import { Spacer } from "./components/Spacer";
 
 export const Unauthenticated = () => {
   const authentication = useAuthentication();
@@ -21,6 +22,13 @@ export const Unauthenticated = () => {
     password: "",
   });
   const [inFlight, setInFlight] = useState(false);
+
+  const handleLogin = () => {
+    setInFlight(true);
+    authentication.login(loginDetails).then(() => {
+      setInFlight(false);
+    });
+  };
 
   return (
     <Column
@@ -46,7 +54,16 @@ export const Unauthenticated = () => {
         gap="small"
         style={{ borderRadius: "0 0 5px 5px", height: "calc(100vh - 65px)" }}
       >
-        <Text color={colors.darkGray}>Please login using the form below:</Text>
+        <Column>
+          <Text fontSize="large" strong>
+            👋 Hello, there.
+          </Text>
+          <Spacer size="smaller" />
+          <Text fontSize="detail" color={colors.darkGray}>
+            Please login using the form below
+          </Text>
+          <Spacer size="tiny" />
+        </Column>
         <TextField
           label="Username"
           fullWidth
@@ -66,6 +83,12 @@ export const Unauthenticated = () => {
           type={showingPassword ? "text" : "password"}
           value={loginDetails.password}
           sx={{ root: { borderRadius: 0 } }}
+          onKeyDown={(ev) => {
+            if (ev.key === "Enter") {
+              handleLogin();
+            }
+          }}
+          onSubmit={handleLogin}
           onChange={(ev) => {
             setLoginDetails((deets) => ({
               ...deets,
@@ -98,12 +121,7 @@ export const Unauthenticated = () => {
             startIcon={
               <LoginIcon width={12} height={12} fill={colors.primary} />
             }
-            onClick={() => {
-              setInFlight(true);
-              authentication.login(loginDetails).then(() => {
-                setInFlight(false);
-              });
-            }}
+            onClick={handleLogin}
           >
             Login
           </Button>
