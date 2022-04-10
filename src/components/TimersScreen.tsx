@@ -320,7 +320,10 @@ const TimerCard = (props: {
       mutation TimersScreen_StartRecordingMutation($timerId: ID!) {
         startRecording(input: { timerId: $timerId }) {
           timer {
-            ...TimersScreen_Timer
+            id
+            status
+            seconds
+            updatedAt
             user {
               id
               recordingTimer {
@@ -332,6 +335,7 @@ const TimerCard = (props: {
             id
             status
             seconds
+            updatedAt
           }
         }
       }
@@ -342,7 +346,10 @@ const TimerCard = (props: {
       mutation TimersScreen_StopRecordingMutation($timerId: ID!) {
         stopRecording(input: { timerId: $timerId }) {
           timer {
-            ...TimersScreen_Timer
+            id
+            status
+            seconds
+            updatedAt
             user {
               id
               recordingTimer {
@@ -382,48 +389,52 @@ const TimerCard = (props: {
                 }
 
                 if (recording) {
-                  stopRecording({
-                    variables: { timerId: timer.id },
-                    optimisticResponse: {
-                      stopRecording: {
-                        timer: {
-                          ...timer,
-                          seconds: clockToSeconds(clock),
-                          status: "paused",
-                          lastActionAt: moment().toISOString(),
-                        },
+                  const optimisticResponse: TimersScreen_StopRecordingMutation["response"] = {
+                    stopRecording: {
+                      timer: {
+                        id: timer.id,
+                        status: "paused",
+                        seconds: clockToSeconds(clock),
+                        updatedAt: moment().toISOString(),
                         user: {
                           id: currentUserId,
                           recordingTimer: null,
                         },
                       },
-                    },
+                    }
+                  };
+
+                  stopRecording({
+                    variables: { timerId: timer.id },
+                    optimisticResponse
                   });
                 } else {
-                  startRecording({
-                    variables: { timerId: timer.id },
-                    optimisticResponse: {
-                      startRecording: {
-                        timer: {
-                          ...timer,
-                          status: "recording",
-                          seconds: timer.seconds,
-                          lastActionAt: moment().toISOString(),
-                        },
-                        stoppedTimer: currentRecordingId
-                          ? {
-                              id: currentRecordingId,
-                              status: "paused",
-                            }
-                          : null,
+                  const optimisticResponse: TimersScreen_StartRecordingMutation["response"] = {
+                    startRecording: {
+                      timer: {
+                        ...timer,
+                        status: "recording",
+                        seconds: timer.seconds,
+                        updatedAt: moment().toISOString(),
                         user: {
                           id: currentUserId,
                           recordingTimer: {
-                            id: timer.id,
-                          },
-                        },
+                            id: timer.id
+                          }
+                        }
                       },
+                      pausedTimer: currentRecordingId ? {
+                        id: currentRecordingId,
+                        status: "paused",
+                        seconds: 0, // TODO
+                        updatedAt: moment().toISOString(),
+                      } : null,
                     },
+                  };
+
+                  startRecording({
+                    variables: { timerId: timer.id },
+                    optimisticResponse
                   });
                 }
               }}
