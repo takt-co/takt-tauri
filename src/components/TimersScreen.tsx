@@ -1,13 +1,12 @@
 import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
 import { useFragment, useMutation } from "react-relay";
-import { config } from "../config";
 import { colors, darken } from "../TaktTheme";
 import { DateString, ID, NonNullTimer } from "../CustomTypes";
 import { Button } from "./Button";
 import { ButtonBar } from "./ButtonBar";
 import { Column, Row } from "./Flex";
-import { AddIcon, Arrow, TimerOffIcon } from "./Icons";
+import { AddIcon, SettingsIcon, TimerOffIcon, TodayIcon } from "./Icons";
 import { EmptyWarmdown, LoadingScreen } from "./LoadingScreen";
 import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
@@ -22,6 +21,11 @@ import { useDialog } from "../providers/Dialog";
 import { TimersScreen_ArchiveMutation } from "./__generated__/TimersScreen_ArchiveMutation.graphql";
 import { Authenticated, useAuthentication } from "../providers/Authentication";
 import { App_TimersQuery$data } from "../__generated__/App_TimersQuery.graphql";
+import { Layout } from "./Layout";
+import { IconButton } from "@mui/material";
+import { config } from "../config";
+import { Tooltip } from "./Tooltip";
+import { DateBar } from "./DateBar";
 
 export const TimersScreen = (props: {
   query: App_TimersQuery$data;
@@ -30,28 +34,54 @@ export const TimersScreen = (props: {
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
   recordingTimerId: ID | null;
+  onViewSettings: () => void;
 }) => {
-  const { date, setDate } = props;
-
   return (
     <Column fullWidth fullHeight>
-      <DateBar
-        date={date}
-        onPrev={() => {
-          const prevDate = moment(props.date, config.dateFormat);
-          prevDate.startOf("day");
-          prevDate.subtract(12, "hours");
+      <Layout.TopBarRight>
+        <Row paddingHorizontal="tiny">
+          <IconButton
+            onClick={() => {
+              const today = moment();
+              today.startOf("day");
+              props.setDate(today.format(config.dateFormat));
+            }}
+          >
+            <Tooltip placement="left" key="Today" title="Jump to today">
+              <Row>
+                <TodayIcon height={24} fill={colors.white} />
+              </Row>
+            </Tooltip>
+          </IconButton>
+          <IconButton
+            onClick={props.onViewSettings}
+          >
+            <Tooltip placement="left" key="Settings" title="Settings">
+              <Row>
+                <SettingsIcon height={20} fill={colors.white} />
+              </Row>
+            </Tooltip>
+          </IconButton>
+        </Row>
+      </Layout.TopBarRight>
 
-          setDate(prevDate.format(config.dateFormat));
-        }}
-        onNext={() => {
-          const nextDate = moment(props.date, config.dateFormat);
-          nextDate.endOf("day");
-          nextDate.add(12, "hours");
-
-          setDate(nextDate.format(config.dateFormat));
-        }}
-      />
+      <Layout.TopBarBelow>
+        <DateBar
+          date={props.date}
+          onPrev={() => {
+            const prevDate = moment(props.date, config.dateFormat);
+            prevDate.startOf("day");
+            prevDate.subtract(12, "hours");
+            props.setDate(prevDate.format(config.dateFormat));
+          }}
+          onNext={() => {
+            const nextDate = moment(props.date, config.dateFormat);
+            nextDate.endOf("day");
+            nextDate.add(12, "hours");
+            props.setDate(nextDate.format(config.dateFormat));
+          }}
+        />
+      </Layout.TopBarBelow>
 
       <Column
         fullHeight
@@ -72,7 +102,7 @@ export const TimersScreen = (props: {
         >
           <Timers
             query={props.query}
-            date={date}
+            date={props.date}
             onEdit={props.onEdit}
             onAdd={props.onAdd}
             recordingTimerId={props.recordingTimerId}
@@ -98,30 +128,6 @@ export const TimersScreen = (props: {
         </Button>
       </ButtonBar>
     </Column>
-  );
-};
-
-const DateBar = (props: {
-  date: DateString;
-  onPrev: () => void;
-  onNext: () => void;
-}) => {
-  return (
-    <Row
-      alignItems="center"
-      justifyContent="space-between"
-      padding="smaller"
-      backgroundColor="offWhite"
-      style={{ height: 46 }}
-    >
-      <Arrow
-        width={20}
-        style={{ transform: "rotate(180deg)", cursor: "pointer" }}
-        onClick={props.onPrev}
-      />
-      <Text>{moment(props.date).format("dddd, D MMMM YYYY")}</Text>
-      <Arrow width={20} style={{ cursor: "pointer" }} onClick={props.onNext} />
-    </Row>
   );
 };
 

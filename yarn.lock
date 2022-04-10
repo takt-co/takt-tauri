@@ -8636,6 +8636,11 @@ react-scripts@5.0.0:
   optionalDependencies:
     fsevents "^2.3.2"
 
+react-teleporter@^2.2.1:
+  version "2.2.1"
+  resolved "https://registry.yarnpkg.com/react-teleporter/-/react-teleporter-2.2.1.tgz#0b88cd3ea62e4e96c38f02d7fd15b290438a6aeb"
+  integrity sha512-mGoyg0WICb/kBk5Vl0TUSV+lXSouHb/pvefj/1Z4UHlr++4D/QeSiorqAHnJyr54twcN8ggW/PXwst1toJzBCw==
+
 react-transition-group@^4.4.2:
   version "4.4.2"
   resolved "https://registry.npmjs.org/react-transition-group/-/react-transition-group-4.4.2.tgz"

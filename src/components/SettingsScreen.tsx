@@ -1,14 +1,20 @@
 import React, { useState } from "react";
 import { colors } from "../TaktTheme";
 import { Column, Row } from "./Flex";
-import { CleanUpIcon, IconProps, LoginIcon, PowerIcon } from "./Icons";
+import { CleanUpIcon, CrossIcon, IconProps, LoginIcon, PowerIcon } from "./Icons";
 import { Text } from "./Typography";
 import { Spacer } from "./Spacer";
 import { useAuthentication } from "../providers/Authentication";
 import { process } from "@tauri-apps/api";
 import { config } from "../config";
+import { Layout } from "./Layout";
+import { IconButton } from "@mui/material";
+import { Tooltip } from "./Tooltip";
 
-export const SettingsScreen = (props: { clearCache: () => void }) => {
+export const SettingsScreen = (props: {
+  clearCache: () => void,
+  onClose: () => void;
+}) => {
   const authentication = useAuthentication();
   if (authentication.tag !== "authenticated") {
     throw new Error("Rendered SettingsScreen while not authenticated");
@@ -18,6 +24,18 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
 
   return (
     <Column fullHeight backgroundColor="white">
+      <Layout.TopBarRight>
+        <Row paddingHorizontal="tiny">
+          <IconButton onClick={props.onClose}>
+            <Tooltip placement="right" key="Close" title="Close settings">
+              <Row>
+                <CrossIcon height={20} fill={colors.white} />
+              </Row>
+            </Tooltip>
+          </IconButton>
+        </Row>
+      </Layout.TopBarRight>
+
       <Row padding="small">
         <Text fontSize="large" strong>
           Settings

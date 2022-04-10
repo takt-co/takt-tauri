@@ -1,30 +1,20 @@
 import React, { Suspense, useEffect, useState } from "react";
-import { Column, Row } from "./components/Flex";
-import { colors } from "./TaktTheme";
+import { Column } from "./components/Flex";
 import { Text } from "./components/Typography";
 import moment from "moment";
 import { TimerForm } from "./components/TimerForm";
-import { DateString, NonNullTimer } from "./CustomTypes";
-import { TimersEmptyState, TimersScreen } from "./components/TimersScreen";
+import { DateString } from "./CustomTypes";
+import { TimersScreen } from "./components/TimersScreen";
 import { config } from "./config";
-import { TopBar } from "./components/TopBar";
-import {
-  CrossIcon,
-  ProjectsIcon,
-  SettingsIcon,
-  TodayIcon,
-} from "./components/Icons";
-import { Avatar, IconButton } from "@mui/material";
 import { SettingsScreen } from "./components/SettingsScreen";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
-import { AppQuery } from "./__generated__/AppQuery.graphql";
-import { EmptyWarmdown, LoadingScreen } from "./components/LoadingScreen";
-import { Tooltip } from "./components/Tooltip";
+import { LoadingScreen } from "./components/LoadingScreen";
 import { emit } from "@tauri-apps/api/event";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
 import { App_CurrentUserQuery } from "./__generated__/App_CurrentUserQuery.graphql";
 import { App_TimersQuery } from "./__generated__/App_TimersQuery.graphql";
+import { Layout } from "./components/Layout";
 
 type AppState = {
   viewingDate: DateString;
@@ -38,12 +28,20 @@ type AppState = {
     }
 );
 
-export const App = (props: { clearCache: () => void }) => {
-  const [state, setState] = useState<AppState>({
-    viewingDate: moment().format(config.dateFormat),
-    tag: "viewingTimers",
-  });
+type AppProps = { clearCache: () => void };
 
+// TODO: can clearly be refactored!
+export const App = (props: AppProps) => {
+  return (
+    <Layout>
+      <Suspense fallback={<LoadingScreen message="Gotcha!" />}>
+        <AppWithoutUser {...props} />
+      </Suspense>
+    </Layout>
+  );
+};
+
+const AppWithoutUser = (props: AppProps) => {
   const { currentUser } = useLazyLoadQuery<App_CurrentUserQuery>(
     graphql`
       query App_CurrentUserQuery {
@@ -58,6 +56,11 @@ export const App = (props: { clearCache: () => void }) => {
     `,
     {}
   );
+
+  const [state, setState] = useState<AppState>({
+    viewingDate: moment().format(config.dateFormat),
+    tag: "viewingTimers",
+  });
 
   const timersQuery = useLazyLoadQuery<App_TimersQuery>(
     graphql`
@@ -81,181 +84,100 @@ export const App = (props: { clearCache: () => void }) => {
     { date: state.viewingDate }
   );
 
-  const timers = timersQuery.currentUser.timers.edges
-    .filter(Boolean)
-    .map((e) => e.node) as ReadonlyArray<NonNullTimer>;
-
   useEffect(() => {
     emit("recording", Boolean(currentUser.recordingTimer));
   }, [currentUser.recordingTimer]);
 
-  const setViewingDate = (viewingDate: DateString) => {
-    setState((prevState) => ({ ...prevState, viewingDate }));
-  };
+
+  if (state.tag === "viewingTimers") {
+    return (
+      <TimersScreen
+        date={state.viewingDate}
+        query={timersQuery}
+        recordingTimerId={currentUser.recordingTimer?.id ?? null}
+        setDate={(viewingDate: DateString) => {
+          setState((prevState) => ({ ...prevState, viewingDate }));
+        }}
+        onViewSettings={() => {
+          setState((prevState) => ({ ...prevState, tag: "viewingSettings" }));
+        }}
+        onAdd={() => {
+          setState((prevState) => ({ ...prevState, tag: "addingTimer" }));
+        }}
+        onEdit={(timer) => {
+          setState((prevState) => ({
+            ...prevState,
+            tag: "addingTimer",
+            timer,
+          }));
+        }}
+      />
+    );
+  }
+
+  if (state.tag === "addingTimer" || state.tag === "editingTimer") {
+    return (
+      <TimerForm
+        date={state.viewingDate}
+        setDate={(viewingDate: DateString) => {
+          setState((prevState) => ({ ...prevState, viewingDate }));
+        }}
+        connectionId={timersQuery.currentUser.timers.__id}
+        timer={
+          state.tag === "editingTimer"
+            ? {
+                id: state.timer.id,
+                projectId: state.timer.project.id,
+                date: state.timer.date,
+                seconds: state.timer.seconds,
+                notes: state.timer.notes,
+              }
+            : {
+                id: undefined,
+                projectId: "",
+                date: "2000-01-01",
+                seconds: 0,
+                notes: "",
+              }
+        }
+        afterSave={(timer) => {
+          setState((prevState) => ({
+            ...prevState,
+            viewingDate: timer.date,
+            tag: "viewingSettings",
+          }));
+        }}
+        onCancel={() => {
+          setState((prevState) => ({
+            ...prevState,
+            tag: "viewingSettings",
+          }));
+        }}
+      />
+    );
+  }
+
+  if (state.tag === "viewingSettings") {
+    return (
+      <SettingsScreen
+        clearCache={props.clearCache}
+        onClose={() => {
+          setState((prevState) => ({ ...prevState, tag: "viewingTimers" }));
+        }}
+      />
+    );
+  }
+
+  // TODO: error reporting
 
   return (
     <Column
-      style={{
-        height: "calc(100vh - 10px)",
-        overflow: "hidden",
-        borderRadius: 5,
-      }}
+      fullHeight
+      backgroundColor="white"
+      alignItems="center"
+      justifyContent="center"
     >
-      {/* TODO: layout transport thing so screens can update this area */}
-      <TopBar
-        left={
-          <Row paddingHorizontal="tiny" alignItems="center">
-            <IconButton>
-              <Tooltip title={currentUser.name} key="User" placement="right">
-                <Suspense fallback={() => null}>
-                  <Avatar
-                    alt={currentUser.name}
-                    sx={{ width: 26, height: 26, bgcolor: colors.darkPrimary }}
-                  />
-                </Suspense>
-              </Tooltip>
-            </IconButton>
-            <IconButton>
-              <Tooltip title="Manage projects" key="Projects" placement="right">
-                <Row>
-                  <ProjectsIcon height={20} fill={colors.white} />
-                </Row>
-              </Tooltip>
-            </IconButton>
-          </Row>
-        }
-        right={
-          state.tag === "viewingTimers" ? (
-            <Row paddingHorizontal="tiny">
-              <IconButton
-                onClick={() => {
-                  const today = moment();
-                  today.startOf("day");
-                  setState((prevState) => ({
-                    ...prevState,
-                    date: today.format(config.dateFormat),
-                  }));
-                }}
-              >
-                <Tooltip placement="left" key="Today" title="Jump to today">
-                  <Row>
-                    <TodayIcon height={24} fill={colors.white} />
-                  </Row>
-                </Tooltip>
-              </IconButton>
-              <IconButton
-                onClick={() => {
-                  setState((prevState) => ({
-                    ...prevState,
-                    tag: "viewingSettings",
-                  }));
-                }}
-              >
-                <Tooltip placement="left" key="Settings" title="Settings">
-                  <Row>
-                    <SettingsIcon height={20} fill={colors.white} />
-                  </Row>
-                </Tooltip>
-              </IconButton>
-            </Row>
-          ) : state.tag === "viewingSettings" ? (
-            <Row paddingHorizontal="tiny">
-              <IconButton
-                onClick={() => {
-                  setState((prevState) => ({
-                    ...prevState,
-                    tag: "viewingSettings",
-                  }));
-                }}
-              >
-                <Tooltip placement="right" key="Close" title="Close settings">
-                  <Row>
-                    <CrossIcon height={20} fill={colors.white} />
-                  </Row>
-                </Tooltip>
-              </IconButton>
-            </Row>
-          ) : undefined
-        }
-      />
-
-      {state.tag === "viewingTimers" ? (
-        <Suspense
-          fallback={
-            <LoadingScreen
-              message="Fetching timers"
-              Warmdown={timers.length === 0 ? TimersEmptyState : EmptyWarmdown}
-            />
-          }
-        >
-          <TimersScreen
-            date={state.viewingDate}
-            query={timersQuery}
-            recordingTimerId={currentUser.recordingTimer?.id ?? null}
-            setDate={setViewingDate}
-            onAdd={() => {
-              setState((prevState) => ({ ...prevState, tag: "addingTimer" }));
-            }}
-            onEdit={(timer) => {
-              setState((prevState) => ({
-                ...prevState,
-                tag: "addingTimer",
-                timer,
-              }));
-            }}
-          />
-        </Suspense>
-      ) : state.tag === "addingTimer" || state.tag === "editingTimer" ? (
-        <Suspense fallback={<LoadingScreen message="Fetching projects" />}>
-          <TimerForm
-            date={state.viewingDate}
-            setDate={setViewingDate}
-            connectionId={timersQuery.currentUser.timers.__id}
-            timer={
-              state.tag === "editingTimer"
-                ? {
-                    id: state.timer.id,
-                    projectId: state.timer.project.id,
-                    date: state.timer.date,
-                    seconds: state.timer.seconds,
-                    notes: state.timer.notes,
-                  }
-                : {
-                    id: undefined,
-                    projectId: "",
-                    date: "2000-01-01",
-                    seconds: 0,
-                    notes: "",
-                  }
-            }
-            afterSave={(timer) => {
-              setState((prevState) => ({
-                ...prevState,
-                viewingDate: timer.date,
-                tag: "viewingSettings",
-              }));
-            }}
-            onCancel={() => {
-              setState((prevState) => ({
-                ...prevState,
-                tag: "viewingSettings",
-              }));
-            }}
-          />
-        </Suspense>
-      ) : state.tag === "viewingSettings" ? (
-        <SettingsScreen clearCache={props.clearCache} />
-      ) : (
-        <Column
-          fullHeight
-          backgroundColor="white"
-          alignItems="center"
-          justifyContent="center"
-        >
-          {/* TODO: error reporting! */}
-          <Text>Error: Unexpected app state</Text>
-        </Column>
-      )}
+      <Text>Error: Unexpected app state</Text>
     </Column>
   );
 };
