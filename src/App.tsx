@@ -27,7 +27,7 @@ import { App_CurrentUserQuery } from "./__generated__/App_CurrentUserQuery.graph
 import { App_TimersQuery } from "./__generated__/App_TimersQuery.graphql";
 
 type AppState = {
-  viewingDate: DateString
+  viewingDate: DateString;
 } & (
   | {
       tag: "viewingTimers" | "addingTimer" | "viewingSettings";
@@ -36,7 +36,7 @@ type AppState = {
       tag: "editingTimer";
       timer: TimersScreen_Timer$data;
     }
-    );
+);
 
 export const App = (props: { clearCache: () => void }) => {
   const [state, setState] = useState<AppState>({
@@ -44,17 +44,20 @@ export const App = (props: { clearCache: () => void }) => {
     tag: "viewingTimers",
   });
 
-  const { currentUser } = useLazyLoadQuery<App_CurrentUserQuery>(graphql`
-    query App_CurrentUserQuery {
-      currentUser {
-        id
-        name
-        recordingTimer {
+  const { currentUser } = useLazyLoadQuery<App_CurrentUserQuery>(
+    graphql`
+      query App_CurrentUserQuery {
+        currentUser {
           id
+          name
+          recordingTimer {
+            id
+          }
         }
       }
-    }
-  `, {});
+    `,
+    {}
+  );
 
   const timersQuery = useLazyLoadQuery<App_TimersQuery>(
     graphql`
@@ -128,7 +131,10 @@ export const App = (props: { clearCache: () => void }) => {
                 onClick={() => {
                   const today = moment();
                   today.startOf("day");
-                  setState((prevState) => ({ ...prevState, date: today.format(config.dateFormat) }));
+                  setState((prevState) => ({
+                    ...prevState,
+                    date: today.format(config.dateFormat),
+                  }));
                 }}
               >
                 <Tooltip placement="left" key="Today" title="Jump to today">
@@ -139,7 +145,10 @@ export const App = (props: { clearCache: () => void }) => {
               </IconButton>
               <IconButton
                 onClick={() => {
-                  setState((prevState) => ({ ...prevState, tag: "viewingSettings" }));
+                  setState((prevState) => ({
+                    ...prevState,
+                    tag: "viewingSettings",
+                  }));
                 }}
               >
                 <Tooltip placement="left" key="Settings" title="Settings">
@@ -153,7 +162,10 @@ export const App = (props: { clearCache: () => void }) => {
             <Row paddingHorizontal="tiny">
               <IconButton
                 onClick={() => {
-                  setState((prevState) => ({ ...prevState, tag: "viewingSettings" }));
+                  setState((prevState) => ({
+                    ...prevState,
+                    tag: "viewingSettings",
+                  }));
                 }}
               >
                 <Tooltip placement="right" key="Close" title="Close settings">
@@ -185,7 +197,11 @@ export const App = (props: { clearCache: () => void }) => {
               setState((prevState) => ({ ...prevState, tag: "addingTimer" }));
             }}
             onEdit={(timer) => {
-              setState((prevState) => ({ ...prevState, tag: "addingTimer", timer }));
+              setState((prevState) => ({
+                ...prevState,
+                tag: "addingTimer",
+                timer,
+              }));
             }}
           />
         </Suspense>
@@ -216,11 +232,14 @@ export const App = (props: { clearCache: () => void }) => {
               setState((prevState) => ({
                 ...prevState,
                 viewingDate: timer.date,
-                tag: "viewingSettings"
+                tag: "viewingSettings",
               }));
             }}
             onCancel={() => {
-              setState((prevState) => ({ ...prevState, tag: "viewingSettings" }));
+              setState((prevState) => ({
+                ...prevState,
+                tag: "viewingSettings",
+              }));
             }}
           />
         </Suspense>
@@ -233,7 +252,7 @@ export const App = (props: { clearCache: () => void }) => {
           alignItems="center"
           justifyContent="center"
         >
-           {/* TODO: error reporting! */}
+          {/* TODO: error reporting! */}
           <Text>Error: Unexpected app state</Text>
         </Column>
       )}

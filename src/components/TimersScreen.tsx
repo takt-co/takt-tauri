@@ -197,8 +197,7 @@ const Timers = (props: {
                         user: {
                           id: auth.currentUserId,
                           recordingTimer:
-                            props.recordingTimerId ===
-                            timer.id
+                            props.recordingTimerId === timer.id
                               ? null
                               : props.recordingTimerId,
                         },

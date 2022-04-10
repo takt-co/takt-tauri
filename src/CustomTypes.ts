@@ -88,4 +88,6 @@ export type Json = JsonObject | JsonArray | JsonPrimitive;
 export type DateString = string;
 export type SecureToken = NewType<string>;
 
-export type NonNullTimer = NonNull<App_TimersQuery["response"]["currentUser"]["timers"]["edges"][number]["node"]>;
+export type NonNullTimer = NonNull<
+  App_TimersQuery["response"]["currentUser"]["timers"]["edges"][number]["node"]
+>;

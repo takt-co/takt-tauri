@@ -22,9 +22,7 @@ import {
   CreateTimerAttributes,
   TimerForm_CreateTimerMutation,
 } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
-import {
-  TimerForm_UpdateTimerMutation,
-} from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
+import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
 import { DateString, ID } from "../CustomTypes";
 import { Spacer } from "./Spacer";
 

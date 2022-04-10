@@ -39,7 +39,7 @@ export type Authenticated = {
 type AuthenticationState = Loading | Authenticated | Unauthenticated;
 
 const defaultState: AuthenticationState = {
-  tag: "loading" as const
+  tag: "loading" as const,
 };
 
 const AuthenticationContext = createContext<AuthenticationState>(defaultState);
@@ -87,7 +87,7 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
       localStorage.clear();
       setState({
         tag: "unauthenticated",
-        login
+        login,
       });
     };
 
@@ -106,7 +106,7 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
                 tag: "authenticated",
                 secureToken,
                 currentUserId,
-                logout
+                logout,
               });
               resolve(true);
             } else {
@@ -126,12 +126,12 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
           tag: "authenticated",
           secureToken: auth.data.secureToken,
           currentUserId: auth.data.currentUserId,
-          logout
+          logout,
         });
       } else {
         setState({
           tag: "unauthenticated",
-          login
+          login,
         });
       }
       return;
