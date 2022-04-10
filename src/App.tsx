@@ -4,7 +4,7 @@ import { colors } from "./theme";
 import { Text } from "./components/Typography";
 import moment from "moment";
 import { TimerForm } from "./components/TimerForm";
-import { DateString, ID } from "./Types";
+import { DateString, ID } from "./types";
 import { TimersEmptyState, TimersScreen } from "./components/TimersScreen";
 import { TimersScreen_Timer$data } from "./components/__generated__/TimersScreen_Timer.graphql";
 import { config } from "./config";

@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { omit } from "lodash";
 import { Button, ButtonVariant } from "../components/Button";
-import { ID } from "../Types";
+import { ID } from "../types";
 import {
   Backdrop,
   Dialog as MaterialDialog,

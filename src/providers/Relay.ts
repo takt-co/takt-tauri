@@ -1,5 +1,5 @@
 import { Environment, Network, RecordSource, Store } from "relay-runtime";
-import { Json, SecureToken } from "../Types";
+import { Json, SecureToken } from "../types";
 import { random } from "lodash";
 import { config } from "../config";
 

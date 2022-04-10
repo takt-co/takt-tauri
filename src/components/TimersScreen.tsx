@@ -3,7 +3,7 @@ import moment from "moment";
 import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
 import { config } from "../config";
 import { colors, darken } from "../theme";
-import { DateString, ID } from "../Types";
+import { DateString, ID } from "../types";
 import { Button } from "./Button";
 import { ButtonBar } from "./ButtonBar";
 import { Column, Row } from "./Flex";
@@ -12,7 +12,7 @@ import { EmptyWarmdown, LoadingScreen } from "./LoadingScreen";
 import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
 import { emit } from "@tauri-apps/api/event";
-import { Clock, clockToSeconds, secondsToClock } from "../Clock";
+import { Clock, clockToSeconds, secondsToClock } from "../clock";
 import {
   TimersScreen_Timer$data,
   TimersScreen_Timer$key,

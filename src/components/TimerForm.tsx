@@ -12,7 +12,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { clockToSeconds, secondsToClock } from "../Clock";
+import { clockToSeconds, secondsToClock } from "../clock";
 import { Button } from "./Button";
 import { SaveIcon, MinusCircled, PlusCircled } from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
@@ -27,7 +27,7 @@ import {
   UpdateTimerAttributes,
 } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
 import { TimersScreen_Timer$data } from "./__generated__/TimersScreen_Timer.graphql";
-import { DateString, ID } from "../Types";
+import { DateString, ID } from "../types";
 import { Spacer } from "./Spacer";
 
 export const TimerForm = (props: {
