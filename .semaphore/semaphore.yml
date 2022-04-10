@@ -15,15 +15,9 @@ blocks:
           - checkout
           - yarn install
       jobs:
-        - name: typecheck
+        - name: CI
           commands:
             - yarn typecheck
-        - name: eslint
-          commands:
             - yarn eslint
-        - name: test
-          commands:
             - yarn test
-        - name: build
-          commands:
             - yarn build
