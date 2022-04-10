@@ -10,5 +10,6 @@ blocks:
       jobs:
         - name: Build
           commands:
+            - checkout
             - yarn install
             - yarn tauri build
