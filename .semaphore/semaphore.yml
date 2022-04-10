@@ -15,7 +15,7 @@ blocks:
       jobs:
         - name: yarn test
           commands:
-            - yarn test --passWithNoTests
+            - yarn test --ci --passWithNoTests
         - name: eslint
           commands:
             - yarn eslint
