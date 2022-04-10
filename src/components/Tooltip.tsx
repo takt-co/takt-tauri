@@ -7,17 +7,21 @@ import {
 } from "@mui/material";
 import { fontSizes } from "./Typography";
 import { spacing } from "./Spacer";
+import { colors } from "../TaktTheme";
+import { Row } from "./Flex";
 
-export const Tooltip = styled(({ className, ...props }: TooltipProps) => (
-  <MaterialTooltip arrow {...props} classes={{ popper: className }} />
-))(({ theme }) => ({
+export const Tooltip = styled(({ className, children, ...props }: TooltipProps) => (
+  <MaterialTooltip {...props} classes={{ popper: className }}>
+    <Row>{children}</Row>
+  </MaterialTooltip>
+))(() => ({
   pointerEvents: "none",
   [`& .${tooltipClasses.arrow}`]: {
-    color: theme.palette.common.black,
+    color: colors.darkGray,
   },
   [`& .${tooltipClasses.tooltip}`]: {
     fontSize: fontSizes.small,
     padding: `${spacing.tiny}px ${spacing.smaller}px`,
-    backgroundColor: "rgba(0,0,0,0.7)",
+    backgroundColor: colors.darkGray,
   },
 }));

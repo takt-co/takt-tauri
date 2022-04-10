@@ -1,15 +1,23 @@
-import React, { Suspense } from "react";
+import React from "react";
 import { Column, Row } from "./Flex";
 import { TopBar } from "./TopBar";
 import { createTeleporter } from "react-teleporter";
-import { Avatar, IconButton, Tooltip } from "@mui/material";
+import { Avatar, IconButton } from "@mui/material";
 import { colors } from "../TaktTheme";
 import { ProjectsIcon } from "./Icons";
+import { Tooltip } from "./Tooltip";
+import { ID } from "../CustomTypes";
 
 export const TopBarRight = createTeleporter();
 export const TopBarBelow = createTeleporter();
 
-export const Layout = (props: { children: React.ReactNode }) => {
+export const Layout = (props: {
+  user?: {
+    id: ID;
+    name: string;
+  };
+  children: React.ReactNode;
+}) => {
   return (
     <Column
       style={{
@@ -21,21 +29,19 @@ export const Layout = (props: { children: React.ReactNode }) => {
       <TopBar
         left={
           <Row paddingHorizontal="tiny" alignItems="center">
-            {/* <IconButton>
-              <Tooltip title={currentUser.name} key="User" placement="right">
-                <Suspense fallback={() => null}>
+            {props.user && (
+              <IconButton>
+                <Tooltip title={props.user.name} key="User" placement="right">
                   <Avatar
-                    alt={currentUser.name}
+                    alt={props.user.name}
                     sx={{ width: 26, height: 26, bgcolor: colors.darkPrimary }}
                   />
-                </Suspense>
-              </Tooltip>
-            </IconButton> */}
+                </Tooltip>
+              </IconButton>
+            )}
             <IconButton>
               <Tooltip title="Manage projects" key="Projects" placement="right">
-                <Row>
-                  <ProjectsIcon height={20} fill={colors.white} />
-                </Row>
+                <ProjectsIcon height={20} fill={colors.white} />
               </Tooltip>
             </IconButton>
           </Row>

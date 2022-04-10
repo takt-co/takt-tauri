@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
-import { LoadingScreen } from "./LoadingScreen";
 import { Column, Row } from "./Flex";
 import { Text } from "./Typography";
 import {
+  CircularProgress,
   FormControl,
+  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -14,56 +15,37 @@ import {
 } from "@mui/material";
 import { clockToSeconds, secondsToClock } from "../Clock";
 import { Button } from "./Button";
-import { SaveIcon, MinusCircled, PlusCircled } from "../components/Icons";
+import { SaveIcon, MinusCircled, PlusCircled, CrossIcon } from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
 import { colors } from "../TaktTheme";
-import { TimerFormQuery } from "./__generated__/TimerFormQuery.graphql";
 import {
   CreateTimerAttributes,
   TimerForm_CreateTimerMutation,
 } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
 import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
-import { DateString, ID } from "../CustomTypes";
+import { ID, NonNull } from "../CustomTypes";
 import { Spacer } from "./Spacer";
+import { TimerForm_ProjectSelectQuery } from "./__generated__/TimerForm_ProjectSelectQuery.graphql";
+import { Layout } from "./Layout";
+import { Tooltip } from "./Tooltip";
+
+type TimerProject = NonNull<TimerForm_ProjectSelectQuery["response"]["currentUser"]["account"]["projects"]["edges"][number]["node"]>;
 
 type TimerAttributes = CreateTimerAttributes & { id?: ID };
 
 type TimerFormProps = {
   timer: TimerAttributes;
-  date: DateString;
-  setDate: (date: DateString) => void;
   afterSave: (timer: TimerAttributes) => void;
   onCancel: () => void;
-  connectionId: ID;
 };
 
 export const TimerForm = (props: TimerFormProps) => {
+  const connectionId = "TODO";
   const [attributes, setAttributes] = useState<TimerAttributes>(props.timer);
 
   useEffect(() => {
     setAttributes(props.timer);
-  }, [props.timer, props.date]);
-
-  const data = useLazyLoadQuery<TimerFormQuery>(
-    graphql`
-      query TimerFormQuery {
-        currentUser {
-          id
-          account {
-            projects {
-              edges {
-                node {
-                  id
-                  name
-                }
-              }
-            }
-          }
-        }
-      }
-    `,
-    {}
-  );
+  }, [props.timer]);
 
   const [createTimer, createTimerInFlight] =
     useMutation<TimerForm_CreateTimerMutation>(graphql`
@@ -97,18 +79,23 @@ export const TimerForm = (props: TimerFormProps) => {
       }
     `);
 
-  const projects =
-    data.currentUser.account.projects.edges.map((e) => e.node) ?? [];
-
-  if (!attributes) {
-    return <LoadingScreen />;
-  }
-
   return (
     <Column fullHeight backgroundColor="white">
+      <Layout.TopBarRight>
+        <Row paddingHorizontal="tiny">
+          <IconButton onClick={props.onCancel}>
+            <Tooltip placement="right" key="Close" title={props.timer.id ? "Cancel edit" : "Cancel create"}>
+              <Row>
+                <CrossIcon height={20} fill={colors.white} />
+              </Row>
+            </Tooltip>
+          </IconButton>
+        </Row>
+      </Layout.TopBarRight>
+
       <Column fullHeight justifyContent="space-around" padding="small">
         <Text fontSize="large" strong>
-          {props.timer ? "Edit" : "Add"} timer
+          {props.timer.id ? "Edit" : "Add"} timer
         </Text>
 
         <Spacer size="medium" vertical />
@@ -122,34 +109,38 @@ export const TimerForm = (props: TimerFormProps) => {
             value={attributes.date as string}
             onChange={(ev) => {
               const date = moment(ev.target.value).format("YYYY-MM-DD");
-              console.log("call set date");
-              props.setDate(date);
               setAttributes((timer) => ({ ...timer, date }));
             }}
           />
 
-          <FormControl fullWidth size="small">
-            <InputLabel>Project</InputLabel>
-            <Select
+          <Suspense
+            fallback={(
+              <TextField
+                size="small"
+                variant="outlined"
+                disabled
+                InputProps={{
+                  startAdornment: (
+                    <Text color={colors.gray} fontSize="detail" style={{ whiteSpace: "nowrap" }}>
+                      Fetching your projects...
+                    </Text>
+                  ),
+                  endAdornment: (
+                    <Row>
+                      <CircularProgress size={16} />
+                    </Row>
+                  )
+                }}
+              />
+            )}
+          >
+            <ProjectSelect
               value={attributes.projectId}
-              size="small"
-              label="Project"
-              onChange={(ev) => {
-                const project = projects.find((p) => p?.id === ev.target.value);
-                if (project) {
-                  setAttributes((timer) => ({ ...timer, project }));
-                }
+              onChange={(projectId) => {
+                setAttributes((timer) => ({ ...timer, projectId }));
               }}
-            >
-              {projects.map((p) =>
-                p ? (
-                  <MenuItem key={p.id} value={p.id}>
-                    {p.name}
-                  </MenuItem>
-                ) : null
-              )}
-            </Select>
-          </FormControl>
+            />
+          </Suspense>
 
           <Row justifyContent="center">
             <TimeInput
@@ -209,7 +200,7 @@ export const TimerForm = (props: TimerFormProps) => {
               createTimer({
                 variables: {
                   attributes,
-                  connections: [props.connectionId],
+                  connections: [connectionId],
                 },
                 onCompleted: () => {
                   props.afterSave(attributes);
@@ -218,10 +209,58 @@ export const TimerForm = (props: TimerFormProps) => {
             }
           }}
         >
-          {props.timer ? "Update" : "Create"} timer
+          {props.timer.id ? "Update" : "Create"} timer
         </Button>
       </ButtonBar>
     </Column>
+  );
+};
+
+const ProjectSelect = (props: {
+  value: ID,
+  onChange: (value: ID) => void
+}) => {
+  const data = useLazyLoadQuery<TimerForm_ProjectSelectQuery>(
+    graphql`
+      query TimerForm_ProjectSelectQuery {
+        currentUser {
+          id
+          account {
+            projects {
+              edges {
+                node {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    `,
+    {}
+  );
+
+  const projects = data.currentUser.account.projects.edges.map(e => e.node).filter(Boolean) as ReadonlyArray<TimerProject>;
+
+  return (
+    <FormControl fullWidth size="small">
+      <InputLabel>Project</InputLabel>
+      <Select
+        value={props.value}
+        size="small"
+        label="Project"
+        onChange={(ev) => {
+          props.onChange(ev.target.value);
+        }}
+      >
+        {projects.map((project) => (
+          <MenuItem key={project.id} value={project.id}>
+            {project.name}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
   );
 };
 

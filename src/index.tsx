@@ -10,7 +10,7 @@ import {
 import { createRelayEnvironment } from "./providers/Relay";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { Unauthenticated as UnauthenticatedScreen } from "./Unauthenticated";
-import App from "./App";
+import { App } from "./App";
 import { Column } from "./components/Flex";
 import { TopBar } from "./components/TopBar";
 

@@ -1,13 +1,13 @@
 import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
-import { useFragment, useMutation } from "react-relay";
+import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
 import { colors, darken } from "../TaktTheme";
 import { DateString, ID, NonNullTimer } from "../CustomTypes";
 import { Button } from "./Button";
 import { ButtonBar } from "./ButtonBar";
 import { Column, Row } from "./Flex";
-import { AddIcon, SettingsIcon, TimerOffIcon, TodayIcon } from "./Icons";
-import { EmptyWarmdown, LoadingScreen } from "./LoadingScreen";
+import { AddIcon, ClockIcon, SettingsIcon, TimerOffIcon, TodayIcon } from "./Icons";
+import { LoadingScreen } from "./LoadingScreen";
 import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
 import { clockToSeconds, secondsToClock } from "../Clock";
@@ -20,39 +20,52 @@ import { TimersScreen_StopRecordingMutation } from "./__generated__/TimersScreen
 import { useDialog } from "../providers/Dialog";
 import { TimersScreen_ArchiveMutation } from "./__generated__/TimersScreen_ArchiveMutation.graphql";
 import { Authenticated, useAuthentication } from "../providers/Authentication";
-import { App_TimersQuery$data } from "../__generated__/App_TimersQuery.graphql";
 import { Layout } from "./Layout";
 import { IconButton } from "@mui/material";
 import { config } from "../config";
 import { Tooltip } from "./Tooltip";
 import { DateBar } from "./DateBar";
+import { TimersScreen_Query } from "./__generated__/TimersScreen_Query.graphql";
 
 export const TimersScreen = (props: {
-  query: App_TimersQuery$data;
   date: DateString;
   setDate: (date: DateString) => void;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
-  recordingTimerId: ID | null;
+  recordingTimer: { id: ID, date: DateString } | null;
   onViewSettings: () => void;
 }) => {
+  const todayStr = moment().format(config.dateFormat);
   return (
     <Column fullWidth fullHeight>
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
-          <IconButton
-            onClick={() => {
-              const today = moment();
-              today.startOf("day");
-              props.setDate(today.format(config.dateFormat));
-            }}
-          >
-            <Tooltip placement="left" key="Today" title="Jump to today">
-              <Row>
-                <TodayIcon height={24} fill={colors.white} />
-              </Row>
-            </Tooltip>
-          </IconButton>
+          {props.recordingTimer && props.recordingTimer.date !== props.date && (
+            <IconButton
+              onClick={() => {
+                props.setDate(moment(props.recordingTimer!.date).format(config.dateFormat));
+              }}
+            >
+              <Tooltip placement="left" key="Today" title="Jump to recording timer">
+                <Row>
+                  <ClockIcon height={24} fill={colors.white} />
+                </Row>
+              </Tooltip>
+            </IconButton>
+          )}
+          {props.date !== todayStr && (
+            <IconButton
+              onClick={() => {
+                props.setDate(todayStr);
+              }}
+            >
+              <Tooltip placement="left" key="Today" title="Jump to today">
+                <Row>
+                  <TodayIcon height={24} fill={colors.white} />
+                </Row>
+              </Tooltip>
+            </IconButton>
+          )}
           <IconButton onClick={props.onViewSettings}>
             <Tooltip placement="left" key="Settings" title="Settings">
               <Row>
@@ -68,14 +81,12 @@ export const TimersScreen = (props: {
           date={props.date}
           onPrev={() => {
             const prevDate = moment(props.date, config.dateFormat);
-            prevDate.startOf("day");
-            prevDate.subtract(12, "hours");
+            prevDate.subtract(1, "day");
             props.setDate(prevDate.format(config.dateFormat));
           }}
           onNext={() => {
             const nextDate = moment(props.date, config.dateFormat);
-            nextDate.endOf("day");
-            nextDate.add(12, "hours");
+            nextDate.add(1, "day");
             props.setDate(nextDate.format(config.dateFormat));
           }}
         />
@@ -90,20 +101,15 @@ export const TimersScreen = (props: {
           fallback={
             <LoadingScreen
               message="Fetching timers"
-              Warmdown={
-                props.query.currentUser.timers.edges.length === 0
-                  ? TimersEmptyState
-                  : EmptyWarmdown
-              }
+              Warmdown={TimersEmptyState}
             />
           }
         >
           <Timers
-            query={props.query}
             date={props.date}
             onEdit={props.onEdit}
             onAdd={props.onAdd}
-            recordingTimerId={props.recordingTimerId}
+            recordingTimer={props.recordingTimer}
           />
         </Suspense>
       </Column>
@@ -130,11 +136,10 @@ export const TimersScreen = (props: {
 };
 
 const Timers = (props: {
-  query: App_TimersQuery$data;
   date: DateString;
   onEdit: (timer: TimersScreen_Timer$data) => void;
   onAdd: () => void;
-  recordingTimerId: ID | null;
+  recordingTimer: { id: ID, date: DateString } | null;
 }) => {
   const dialog = useDialog();
   const auth = useAuthentication() as Authenticated;
@@ -148,6 +153,28 @@ const Timers = (props: {
       clearTimeout(timeout);
     };
   }, [timeNow, setTimeNow]);
+
+  const timersQuery = useLazyLoadQuery<TimersScreen_Query>(
+    graphql`
+      query TimersScreen_Query($date: ISO8601Date!) {
+        currentUser {
+          timers(endDate: $date, startDate: $date, first: 100)
+            @connection(key: "Timers__timers") {
+            __id
+            edges {
+              cursor
+              node {
+                id
+                status
+                ...TimersScreen_Timer
+              }
+            }
+          }
+        }
+      }
+    `,
+    { date: props.date }
+  );
 
   const [archiveTimer] = useMutation<TimersScreen_ArchiveMutation>(graphql`
     mutation TimersScreen_ArchiveMutation($timerId: ID!) {
@@ -167,7 +194,7 @@ const Timers = (props: {
     }
   `);
 
-  const timers = props.query.currentUser.timers.edges
+  const timers = timersQuery.currentUser.timers.edges
     .filter((e) => ["recording", "paused"].includes(e.node?.status ?? ""))
     .map((e) => e.node) as ReadonlyArray<NonNullTimer>;
 
@@ -201,9 +228,9 @@ const Timers = (props: {
                         user: {
                           id: auth.currentUserId,
                           recordingTimer:
-                            props.recordingTimerId === timer.id
+                            props.recordingTimer?.id === timer.id
                               ? null
-                              : props.recordingTimerId,
+                              : props.recordingTimer?.id,
                         },
                       },
                     },
