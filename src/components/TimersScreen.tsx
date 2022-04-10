@@ -53,9 +53,7 @@ export const TimersScreen = (props: {
               </Row>
             </Tooltip>
           </IconButton>
-          <IconButton
-            onClick={props.onViewSettings}
-          >
+          <IconButton onClick={props.onViewSettings}>
             <Tooltip placement="left" key="Settings" title="Settings">
               <Row>
                 <SettingsIcon height={20} fill={colors.white} />

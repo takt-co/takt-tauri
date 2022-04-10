@@ -88,7 +88,6 @@ const AppWithoutUser = (props: AppProps) => {
     emit("recording", Boolean(currentUser.recordingTimer));
   }, [currentUser.recordingTimer]);
 
-
   if (state.tag === "viewingTimers") {
     return (
       <TimersScreen

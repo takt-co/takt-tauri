@@ -10,7 +10,11 @@ export const TopBar = (props: {
   return (
     <Column fullWidth>
       <Column fullWidth>
-        <Row alignItems="center" justifyContent="center" style={{ marginTop: 0 }}>
+        <Row
+          alignItems="center"
+          justifyContent="center"
+          style={{ marginTop: 0 }}
+        >
           <div
             style={{
               display: "inline-block",

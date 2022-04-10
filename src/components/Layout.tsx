@@ -9,9 +9,7 @@ import { ProjectsIcon } from "./Icons";
 export const TopBarRight = createTeleporter();
 export const TopBarBelow = createTeleporter();
 
-export const Layout = (props: {
-  children: React.ReactNode;
-}) => {
+export const Layout = (props: { children: React.ReactNode }) => {
   return (
     <Column
       style={{

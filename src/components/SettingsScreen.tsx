@@ -1,7 +1,13 @@
 import React, { useState } from "react";
 import { colors } from "../TaktTheme";
 import { Column, Row } from "./Flex";
-import { CleanUpIcon, CrossIcon, IconProps, LoginIcon, PowerIcon } from "./Icons";
+import {
+  CleanUpIcon,
+  CrossIcon,
+  IconProps,
+  LoginIcon,
+  PowerIcon,
+} from "./Icons";
 import { Text } from "./Typography";
 import { Spacer } from "./Spacer";
 import { useAuthentication } from "../providers/Authentication";
@@ -12,7 +18,7 @@ import { IconButton } from "@mui/material";
 import { Tooltip } from "./Tooltip";
 
 export const SettingsScreen = (props: {
-  clearCache: () => void,
+  clearCache: () => void;
   onClose: () => void;
 }) => {
   const authentication = useAuthentication();
