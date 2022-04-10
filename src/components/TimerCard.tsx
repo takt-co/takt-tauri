@@ -12,14 +12,12 @@ import { Tooltip } from "./Tooltip";
 import { Text } from "./Typography";
 import { TimerCard_StartRecordingMutation } from "./__generated__/TimerCard_StartRecordingMutation.graphql";
 import { TimerCard_StopRecordingMutation } from "./__generated__/TimerCard_StopRecordingMutation.graphql";
-import {
-  TimerCard_Timer$key,
-} from "./__generated__/TimerCard_Timer.graphql";
+import { TimerCard_Timer$key } from "./__generated__/TimerCard_Timer.graphql";
 
 export const TimerCard = (props: {
   timer: TimerCard_Timer$key;
-  onEdit: (timer: { id: ID, seconds: number }) => void;
-  onDelete: (timer: { id: ID, seconds: number }) => void;
+  onEdit: (timer: { id: ID; seconds: number }) => void;
+  onDelete: (timer: { id: ID; seconds: number }) => void;
   currentRecordingId?: ID;
 }) => {
   const auth = useAuthentication() as Authenticated;

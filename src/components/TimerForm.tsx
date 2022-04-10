@@ -34,7 +34,10 @@ import { TimerForm_ProjectSelectQuery } from "./__generated__/TimerForm_ProjectS
 import { Layout } from "./Layout";
 import { Tooltip } from "./Tooltip";
 import { config } from "../config";
-import { TimerForm_Timer$data, TimerForm_Timer$key } from "./__generated__/TimerForm_Timer.graphql";
+import {
+  TimerForm_Timer$data,
+  TimerForm_Timer$key,
+} from "./__generated__/TimerForm_Timer.graphql";
 
 type TimerProject = NonNull<
   TimerForm_ProjectSelectQuery["response"]["currentUser"]["projects"]["edges"][number]["node"]
@@ -381,9 +384,11 @@ const TimeInput = (props: {
   );
 };
 
-export const EditTimerForm = (props: TimerFormProps & {
-  timerKey: TimerForm_Timer$key;
-}) => {
+export const EditTimerForm = (
+  props: TimerFormProps & {
+    timerKey: TimerForm_Timer$key;
+  }
+) => {
   console.log("Edit timer");
 
   const data = useFragment(

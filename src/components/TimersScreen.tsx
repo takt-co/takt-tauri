@@ -30,7 +30,7 @@ import { TimerCard } from "./TimerCard";
 export const TimersScreen = (props: {
   date: DateString;
   setDate: (date: DateString) => void;
-  onEdit: (timer: { id: ID, seconds: number }) => void;
+  onEdit: (timer: { id: ID; seconds: number }) => void;
   onAdd: () => void;
   recordingTimer: { id: ID; date: DateString } | null;
   onViewSettings: () => void;
@@ -145,7 +145,7 @@ export const TimersScreen = (props: {
 
 const Timers = (props: {
   date: DateString;
-  onEdit: (timer: { id: ID, seconds: number }) => void;
+  onEdit: (timer: { id: ID; seconds: number }) => void;
   onAdd: () => void;
   recordingTimer: { id: ID; date: DateString } | null;
 }) => {
