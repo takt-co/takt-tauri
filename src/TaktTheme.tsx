@@ -1,5 +1,5 @@
 import { colord } from "colord";
-import { NewType } from "./Types";
+import { NewType } from "./CustomTypes";
 
 export type HexColor = NewType<string>;
 

@@ -2,8 +2,8 @@ import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
 import { useFragment, useLazyLoadQuery, useMutation } from "react-relay";
 import { config } from "../config";
-import { colors, darken } from "../Theme";
-import { DateString, ID } from "../Types";
+import { colors, darken } from "../TaktTheme";
+import { DateString, ID } from "../CustomTypes";
 import { Button } from "./Button";
 import { ButtonBar } from "./ButtonBar";
 import { Column, Row } from "./Flex";
@@ -281,7 +281,7 @@ export const TimersEmptyState = () => {
       backgroundColor="white"
     >
       <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
-      <Text color="gray">No timers on this date</Text>
+      <Text color={colors.gray}>No timers on this date</Text>
     </Column>
   );
 };

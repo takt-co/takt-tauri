@@ -14,10 +14,11 @@ blocks:
           - sem-version node 16.13.0
           - checkout
           - yarn install
+          - yarn generate-types
       jobs:
-        - name: yarn test
+        - name: CI
           commands:
-            - yarn test --passWithNoTests
-        - name: eslint
-          commands:
+            - yarn typecheck
             - yarn eslint
+            - yarn test
+            - yarn build

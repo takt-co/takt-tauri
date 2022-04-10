@@ -8,7 +8,7 @@ import React, {
 } from "react";
 import { omit } from "lodash";
 import { Button, ButtonVariant } from "../components/Button";
-import { ID } from "../Types";
+import { ID } from "../CustomTypes";
 import {
   Backdrop,
   Dialog as MaterialDialog,
@@ -16,7 +16,7 @@ import {
   DialogContent,
   DialogTitle,
 } from "@mui/material";
-import { Color } from "../Theme";
+import { Color } from "../TaktTheme";
 
 type DialogContextType = {
   alert: (_config: {
