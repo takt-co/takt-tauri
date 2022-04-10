@@ -21,11 +21,11 @@ schemaString =
 
 schemaString = schemaString.replace(
   `type SurveyRelease {`,
-  `type SurveyRelease @fetchable(field_name: "id") {`,
+  `type SurveyRelease @fetchable(field_name: "id") {`
 );
 schemaString = schemaString.replace(
   `type SurveyVersion {`,
-  `type SurveyVersion @fetchable(field_name: "id") {`,
+  `type SurveyVersion @fetchable(field_name: "id") {`
 );
 
 fs.writeFileSync(schemaPath, schemaString);

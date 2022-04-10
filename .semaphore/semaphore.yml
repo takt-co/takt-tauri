@@ -4,6 +4,7 @@ agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu2004
+
 blocks:
   - name: Verify
     task:
@@ -15,10 +16,11 @@ blocks:
       jobs:
         - name: yarn test
           commands:
-            - yarn test --ci --passWithNoTests
+            - yarn test
         - name: eslint
           commands:
             - yarn eslint
+
 promotions:
   - name: Build test
     pipeline_file: build-test.yml
