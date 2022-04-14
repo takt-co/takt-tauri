@@ -1,7 +1,24 @@
+import moment from "moment";
+import { DateTime } from "./CustomTypes";
+
 export type Clock = {
   hours: string;
   minutes: string;
   seconds: string;
+};
+
+export const currentSeconds = (timer: {
+  status: string;
+  seconds: number;
+  updatedAt: DateTime | null;
+}) => {
+  if (timer.status !== "recording" || !timer.updatedAt) {
+    return timer.seconds;
+  }
+
+  let diff = moment().diff(moment(timer.updatedAt), "seconds");
+  if (diff < 0) diff = 0;
+  return timer.seconds + diff;
 };
 
 export const secondsToClock = (seconds: number) => {

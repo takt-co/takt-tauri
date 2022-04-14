@@ -1,6 +1,6 @@
 {
   "name": "takt-tauri",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.8.2",
@@ -31,6 +31,7 @@
     "react-dom": "^17.0.2",
     "react-relay": "^13.2.0",
     "react-scripts": "5.0.0",
+    "react-teleporter": "^2.2.1",
     "relay-runtime": "^13.2.0",
     "typescript": "^4.4.2",
     "web-vitals": "^2.1.0"
@@ -40,17 +41,26 @@
     "build": "react-scripts build",
     "test": "CI=true react-scripts test --passWithNoTests",
     "eject": "react-scripts eject",
+    "dev": "yarn lint-staged && yarn tauri dev",
     "tauri": "tauri",
-    "generate-types": "relay-compiler",
-    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"%FETCH_SCHEMA_URL%/graphql\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js",
+    "generate-types": "yarn clean-generated && relay-compiler",
+    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"http://localhost:3001/graphql\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js",
+    "build-types": "yarn fetch-schema && yarn generate-types",
     "prepare": "husky install",
-    "lint": "yarn prettier src --write",
-    "typecheck": "tsc"
+    "lint": "yarn prettier src --write && yarn eslint --fix",
+    "typecheck": "tsc",
+    "clean-generated": "find . -name '__generated__' -type d -prune -exec rm -rf '{}' +",
+    "pre-commit": "echo 'TODO: fix pre-commit linting'",
+    "pre-push": "yarn test"
   },
   "relay": {
     "src": "./src/",
     "schema": "./schema.graphql",
     "language": "typescript",
+    "customScalars": {
+      "ISO8601DateTime": "string",
+      "ISO8601Date": "string"
+    },
     "exclude": [
       "**/node_modules/**",
       "**/__mocks__/**",

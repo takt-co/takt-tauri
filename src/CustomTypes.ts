@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // You should use this when you either:
 // - Have a type that you can't figure out, but maybe someone could help in a review
+
 // - Have a type that you expect to get for free when some other code is also converted to typescript (maybe you *should* do that conversion)
 export type TODO = any;
 
@@ -82,4 +83,16 @@ export type Json = JsonObject | JsonArray | JsonPrimitive;
 
 // TODO: can the type force formatting? "YYYY-MM-DD"
 export type DateString = string;
+export type DateTime = string;
 export type SecureToken = NewType<string>;
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type ExtractByTypename<
+  Kind,
+  Items extends { readonly __typename: string }
+> = Items extends any
+  ? Items["__typename"] extends Kind
+    ? Items
+    : never
+  : never;
+/* eslint-enable @typescript-eslint/no-explicit-any */
