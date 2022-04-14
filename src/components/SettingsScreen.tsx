@@ -16,23 +16,26 @@ import { config } from "../config";
 import { Layout } from "./Layout";
 import { IconButton } from "@mui/material";
 import { Tooltip } from "./Tooltip";
+import { useAppState } from "../providers/AppState";
 
-export const SettingsScreen = (props: {
-  clearCache: () => void;
-  onClose: () => void;
-}) => {
+export const SettingsScreen = (props: { clearCache: () => void }) => {
   const authentication = useAuthentication();
   if (authentication.tag !== "authenticated") {
     throw new Error("Rendered SettingsScreen while not authenticated");
   }
 
+  const { setAppState } = useAppState();
   const [cacheCleared, setCacheCleared] = useState(false);
 
   return (
     <Column fullHeight backgroundColor="white">
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
-          <IconButton onClick={props.onClose}>
+          <IconButton
+            onClick={() => {
+              setAppState((s) => ({ ...s, tag: "viewingTimers" }));
+            }}
+          >
             <Tooltip placement="right" key="Close" title="Close settings">
               <Row>
                 <CrossIcon height={20} fill={colors.white} />

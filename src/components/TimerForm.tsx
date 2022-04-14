@@ -35,7 +35,8 @@ import {
   TimerStatus,
 } from "./__generated__/TimerForm_Query.graphql";
 import { LoadingScreen } from "./LoadingScreen";
-import { useAppContext } from "../providers/AppContext";
+import { useAppState } from "../providers/AppState";
+import { uniq } from "lodash";
 
 const createTimerMutation = graphql`
   mutation TimerForm_CreateTimerMutation($attributes: CreateTimerAttributes!) {
@@ -88,9 +89,6 @@ type TimerFormDefaultValues = {
 export type TimerFormProps = {
   timerId?: ID;
   defaultValues: TimerFormDefaultValues;
-  afterCreate: (date: DateString) => void;
-  afterUpdate: (date: DateString) => void;
-  onCancel: () => void;
 };
 
 type TimerFormAttributes = {
@@ -100,13 +98,8 @@ type TimerFormAttributes = {
   notes: string;
 };
 
-export const TimerForm = ({
-  defaultValues,
-  afterCreate,
-  afterUpdate,
-  onCancel,
-}: TimerFormProps) => {
-  const { appContext } = useAppContext();
+export const TimerForm = ({ defaultValues }: TimerFormProps) => {
+  const { appState, setAppState } = useAppState();
 
   const [createTimer, createTimerInFlight] =
     useMutation<TimerForm_CreateTimerMutation>(createTimerMutation);
@@ -174,7 +167,7 @@ export const TimerForm = ({
     };
   }, [defaultValues, attributes]);
 
-  // Preferred over `setAttributes` as it will error out when used before ready
+  // Preferred over `setAttributes` as it will throw error when used before ready
   const updateAttributes = (attrs: {
     date?: DateString;
     projectId?: ID;
@@ -195,11 +188,114 @@ export const TimerForm = ({
     return <LoadingScreen message="Initalising form" />;
   }
 
+  const afterSave = (viewingDate: DateString) => {
+    setAppState((s) => ({ ...s, viewingDate, tag: "viewingTimers" }));
+  };
+
+  const handleCreate = () => {
+    if (defaultValues.timerId) {
+      throw new Error("TimerForm: Tried to create a timer that alreadt exists");
+    }
+
+    if (!attributes.date || !attributes.projectId) {
+      // TODO: snack error
+      return;
+    }
+
+    createTimer({
+      variables: {
+        attributes: {
+          date: attributes.date,
+          projectId: attributes.projectId,
+          seconds: displaySeconds,
+          notes: attributes.notes ?? "",
+        },
+      },
+      onCompleted: (resp) => {
+        if (!resp.createTimer) {
+          throw new Error(
+            // TODO: FIX THE NULL RETURNS ON THE GRAPH
+            "TimerForm: createTimer did not return timer"
+          );
+        }
+
+        afterSave(resp.createTimer.timer.date);
+      },
+      updater: (store) => {
+        const connection = appState.timerConnections.find(
+          (c) => c.date === attributes.date
+        );
+        if (connection) {
+          store.get(connection.id)?.invalidateRecord();
+        }
+      },
+    });
+  };
+
+  const handleUpdate = () => {
+    if (!defaultValues.timerId) {
+      throw new Error("TimerForm: Tried to update a timer without a id");
+    }
+
+    if (!attributes.projectId) {
+      // TODO: snack error
+      return;
+    }
+
+    const optimisticResponse: TimerForm_UpdateTimerMutation["response"] = {
+      updateTimer: {
+        timer: {
+          id: defaultValues.timerId,
+          date: attributes.date,
+          seconds: displaySeconds,
+          notes: attributes.notes ?? "",
+          updatedAt: moment().toISOString(),
+          project: {
+            id: attributes.projectId,
+          },
+        },
+      },
+    };
+
+    updateTimer({
+      variables: {
+        timerId: defaultValues.timerId,
+        attributes: {
+          ...attributes,
+          seconds: displaySeconds,
+        },
+      },
+      optimisticResponse,
+      onCompleted: (resp) => {
+        if (!resp.updateTimer?.timer) {
+          throw new Error("TimerForm: updateTimer did not return timer");
+        }
+        afterSave(resp.updateTimer.timer.date);
+      },
+      updater: (store) => {
+        const dates = uniq([attributes.date, defaultValues.date]);
+        // if the date was updated
+        if (dates.length > 1) {
+          appState.timerConnections.forEach((connection) => {
+            // force refetch of timers on those dates
+            if (dates.includes(connection.date)) {
+              store.get(connection.id)?.invalidateRecord();
+            }
+          });
+        }
+      },
+    });
+  };
+
   return (
     <Column fullHeight backgroundColor="white">
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
-          <IconButton onClick={onCancel}>
+          <IconButton
+            onClick={() => {
+              setAppState((s) => ({ ...s, tag: "viewingTimers" }));
+            }}
+          >
             <Tooltip
               placement="right"
               key="Close"
@@ -285,7 +381,9 @@ export const TimerForm = ({
       <ButtonBar>
         <Button
           variant="text"
-          onClick={onCancel}
+          onClick={() => {
+            setAppState((s) => ({ ...s, tag: "viewingTimers" }));
+          }}
           size="small"
           disabled={createTimerInFlight || updateTimerInFlight}
         >
@@ -298,77 +396,7 @@ export const TimerForm = ({
           startIcon={<SaveIcon width={12} height={12} fill={colors.primary} />}
           size="small"
           color="primary"
-          onClick={() => {
-            const { timerId } = defaultValues;
-
-            if (timerId) {
-              if (!attributes.projectId) {
-                // TODO: snack error
-                return;
-              }
-
-              const optimisticResponse: TimerForm_UpdateTimerMutation["response"] =
-                {
-                  updateTimer: {
-                    timer: {
-                      id: timerId,
-                      date: attributes.date,
-                      seconds: displaySeconds,
-                      notes: attributes.notes ?? "",
-                      updatedAt: moment().toISOString(),
-                      project: {
-                        id: attributes.projectId,
-                      },
-                    },
-                  },
-                };
-
-              updateTimer({
-                variables: { timerId, attributes },
-                optimisticResponse,
-                onCompleted: (resp) => {
-                  if (!resp.updateTimer?.timer) {
-                    throw new Error(
-                      "TimerForm: updateTimer did not return timer"
-                    );
-                  }
-                  afterUpdate(resp.updateTimer.timer.date);
-                },
-              });
-            } else {
-              if (!attributes.date || !attributes.projectId) {
-                // TODO: snack error
-                return;
-              }
-              createTimer({
-                variables: {
-                  attributes: {
-                    date: attributes.date,
-                    projectId: attributes.projectId,
-                    seconds: attributes.seconds ?? 0,
-                    notes: attributes.notes ?? "",
-                  },
-                },
-                onCompleted: (resp) => {
-                  if (!resp.createTimer) {
-                    throw new Error(
-                      // TODO: FIX THE NULL RETURNS ON THE GRAPH
-                      "TimerForm: createTimer did not return timer"
-                    );
-                  }
-                  afterCreate(resp.createTimer.timer.date);
-                },
-                updater: (store) => {
-                  const connection = appContext.timerConnections.find(
-                    (c) => c.date === attributes.date
-                  );
-                  if (connection) {
-                    store.get(connection.id)?.invalidateRecord();
-                  }
-                },
-              });
-            }
-          }}
+          onClick={defaultValues.timerId ? handleUpdate : handleCreate}
         >
           {defaultValues.timerId ? "Update" : "Create"} timer
         </Button>

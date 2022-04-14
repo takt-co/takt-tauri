@@ -26,17 +26,15 @@ import { Tooltip } from "./Tooltip";
 import { DateBar } from "./DateBar";
 import { TimersScreen_Query } from "./__generated__/TimersScreen_Query.graphql";
 import { TimerCard } from "./TimerCard";
-import { useAppContext } from "../providers/AppContext";
+import { useAppState } from "../providers/AppState";
 
 export const TimersScreen = (props: {
   date: DateString;
-  setDate: (date: DateString) => void;
-  onEdit: (timer: { id: ID; seconds: number }) => void;
-  onAdd: () => void;
   recordingTimer: { id: ID; date: DateString } | null;
-  onViewSettings: () => void;
 }) => {
+  const { setAppState } = useAppState();
   const todayStr = moment().format(config.dateFormat);
+
   return (
     <Column fullWidth fullHeight>
       <Layout.TopBarRight>
@@ -45,9 +43,10 @@ export const TimersScreen = (props: {
             <IconButton
               onClick={() => {
                 if (props.recordingTimer) {
-                  props.setDate(
-                    moment(props.recordingTimer.date).format(config.dateFormat)
+                  const viewingDate = moment(props.recordingTimer.date).format(
+                    config.dateFormat
                   );
+                  setAppState((s) => ({ ...s, viewingDate }));
                 }
               }}
             >
@@ -65,7 +64,7 @@ export const TimersScreen = (props: {
           {props.date !== todayStr && (
             <IconButton
               onClick={() => {
-                props.setDate(todayStr);
+                setAppState((s) => ({ ...s, viewingDate: todayStr }));
               }}
             >
               <Tooltip placement="left" key="Today" title="Jump to today">
@@ -75,7 +74,11 @@ export const TimersScreen = (props: {
               </Tooltip>
             </IconButton>
           )}
-          <IconButton onClick={props.onViewSettings}>
+          <IconButton
+            onClick={() => {
+              setAppState((s) => ({ ...s, tag: "viewingSettings" }));
+            }}
+          >
             <Tooltip placement="left" key="Settings" title="Settings">
               <Row>
                 <SettingsIcon height={20} fill={colors.white} />
@@ -91,12 +94,18 @@ export const TimersScreen = (props: {
           onPrev={() => {
             const prevDate = moment(props.date, config.dateFormat);
             prevDate.subtract(1, "day");
-            props.setDate(prevDate.format(config.dateFormat));
+            setAppState((s) => ({
+              ...s,
+              viewingDate: prevDate.format(config.dateFormat),
+            }));
           }}
           onNext={() => {
             const nextDate = moment(props.date, config.dateFormat);
             nextDate.add(1, "day");
-            props.setDate(nextDate.format(config.dateFormat));
+            setAppState((s) => ({
+              ...s,
+              viewingDate: nextDate.format(config.dateFormat),
+            }));
           }}
         />
       </Layout.TopBarBelow>
@@ -116,8 +125,16 @@ export const TimersScreen = (props: {
         >
           <Timers
             date={props.date}
-            onEdit={props.onEdit}
-            onAdd={props.onAdd}
+            onEdit={(timer) => {
+              setAppState((s) => ({
+                ...s,
+                tag: "editingTimer",
+                timer,
+              }));
+            }}
+            onAdd={() => {
+              setAppState((s) => ({ ...s, tag: "addingTimer" }));
+            }}
             recordingTimer={props.recordingTimer}
           />
         </Suspense>
@@ -135,7 +152,9 @@ export const TimersScreen = (props: {
               style={{ marginLeft: 2 }}
             />
           }
-          onClick={props.onAdd}
+          onClick={() => {
+            setAppState((s) => ({ ...s, tag: "addingTimer" }));
+          }}
         >
           Add timer
         </Button>
@@ -185,10 +204,10 @@ const Timers = (props: {
     { date: props.date }
   );
 
-  const { setAppContext } = useAppContext();
+  const { setAppState } = useAppState();
 
   useEffect(() => {
-    setAppContext((appContext) => {
+    setAppState((appContext) => {
       const newConnection = {
         id: timersQuery.currentUser.timers.__id,
         date: props.date,
