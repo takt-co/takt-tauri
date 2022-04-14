@@ -10,7 +10,7 @@ type ProjectSelectOption = NonNull<
 >;
 
 export const ProjectSelect = (props: {
-  value: ID;
+  value?: ID;
   onChange: (value: ID) => void;
 }) => {
   const data = useLazyLoadQuery<ProjectSelect_Query>(

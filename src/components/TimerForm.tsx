@@ -13,7 +13,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { clockToSeconds, secondsToClock } from "../Clock";
+import { clockToSeconds, currentSeconds, secondsToClock } from "../Clock";
 import { Button } from "./Button";
 import {
   SaveIcon,
@@ -23,90 +23,181 @@ import {
 } from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
 import { colors } from "../TaktTheme";
-import {
-  CreateTimerAttributes,
-  TimerForm_CreateTimerMutation,
-} from "./__generated__/TimerForm_CreateTimerMutation.graphql";
+import { TimerForm_CreateTimerMutation } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
 import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
-import { ID } from "../CustomTypes";
+import { DateString, ID } from "../CustomTypes";
 import { Spacer } from "./Spacer";
 import { Layout } from "./Layout";
 import { Tooltip } from "./Tooltip";
-import { config } from "../config";
 import { ProjectSelect } from "./ProjectSelect";
 import {
   TimerForm_Query,
-  TimerForm_Query$data,
+  TimerStatus,
 } from "./__generated__/TimerForm_Query.graphql";
+import { LoadingScreen } from "./LoadingScreen";
 
-type TimerAttributes = CreateTimerAttributes & { id?: ID };
+const createTimerMutation = graphql`
+  mutation TimerForm_CreateTimerMutation($attributes: CreateTimerAttributes!) {
+    createTimer(input: { attributes: $attributes }) {
+      timer {
+        id
+        date
+      }
+    }
+  }
+`;
+
+const updateTimerMutation = graphql`
+  mutation TimerForm_UpdateTimerMutation(
+    $timerId: ID!
+    $attributes: UpdateTimerAttributes!
+  ) {
+    updateTimer(input: { timerId: $timerId, attributes: $attributes }) {
+      timer {
+        id
+        date
+        seconds
+        notes
+        updatedAt
+        project {
+          id
+        }
+      }
+    }
+  }
+`;
+
+type TimerFormDefaultValues = {
+  status: TimerStatus;
+  date: DateString;
+  seconds: number;
+  notes: string;
+} & (
+  | {
+      timerId: ID;
+      projectId: ID;
+      updatedAt: DateString;
+    }
+  | {
+      timerId: undefined;
+      projectId: undefined;
+    }
+);
 
 export type TimerFormProps = {
-  timer?: TimerForm_Query$data;
-  afterSave: (timer: TimerAttributes) => void;
+  timerId?: ID;
+  defaultValues: TimerFormDefaultValues;
+  afterCreate: (date: DateString) => void;
+  afterUpdate: (date: DateString) => void;
   onCancel: () => void;
 };
 
-export const TimerForm = (props: TimerFormProps) => {
-  const connectionId = "TODO";
+type TimerFormAttributes = {
+  projectId?: ID;
+  date: DateString;
+  seconds: number;
+  notes: string;
+};
 
-  const timer = props.timer?.node;
+export const TimerForm = ({
+  defaultValues,
+  afterCreate,
+  afterUpdate,
+  onCancel,
+}: TimerFormProps) => {
+  const [createTimer, createTimerInFlight] =
+    useMutation<TimerForm_CreateTimerMutation>(createTimerMutation);
+  const [updateTimer, updateTimerInFlight] =
+    useMutation<TimerForm_UpdateTimerMutation>(updateTimerMutation);
 
-  const defaultAttrs: TimerAttributes = {
-    id: timer?.id,
-    projectId: timer?.project?.id ?? "",
-    notes: timer?.notes ?? "",
-    date: timer?.date ?? moment().format(config.dateFormat),
-    seconds: timer?.seconds ?? 0,
+  const [attributes, setAttributes] = useState<TimerFormAttributes>();
+  const [displaySeconds, setDisplaySeconds] = useState<number>(
+    currentSeconds({
+      seconds: defaultValues.seconds,
+      status: defaultValues.status,
+      updatedAt: defaultValues.timerId ? defaultValues.updatedAt : null
+    })
+  );
+
+  // When the form default values change, set form attributes
+  useEffect(() => {
+    setAttributes({
+      projectId: defaultValues.projectId ?? undefined,
+      date: defaultValues.date,
+      seconds: defaultValues.seconds,
+      notes: defaultValues.notes,
+    });
+  }, [defaultValues]);
+
+  // Keep display in sync with form
+  useEffect(() => {
+    if (attributes) {
+      setDisplaySeconds(attributes.seconds);
+    }
+  }, [attributes?.seconds]);
+
+  // Tick up the display seconds while recording and time field hasn't been maually changed
+  useEffect(() => {
+    if (defaultValues.status !== "recording" || !defaultValues.timerId || attributes?.seconds !== defaultValues.seconds) {
+      return;
+    }
+
+    const updateClock = () => {
+      setDisplaySeconds(
+        currentSeconds({
+          status: "recording",
+          seconds: attributes.seconds,
+          updatedAt: defaultValues.updatedAt,
+        })
+      );
+    };
+
+    updateClock();
+
+    const interval = setInterval(() => {
+      if (attributes?.seconds === defaultValues.seconds) {
+        updateClock();
+      } else {
+        clearInterval(interval);
+      }
+    }, 1000);
+
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [defaultValues, attributes]);
+
+  // Preferred over `setAttributes` as it will error out when used before ready
+  const updateAttributes = (attrs: {
+    date?: DateString;
+    projectId?: ID;
+    seconds?: number;
+    notes?: string;
+  }) => {
+    setAttributes((timer) => {
+      if (!timer) {
+        throw new Error(
+          "TimerForm: Tried to update a timer attributes before they were set"
+        );
+      }
+      return { ...timer, ...attrs };
+    });
   };
 
-  const [attributes, setAttributes] = useState(defaultAttrs);
-
-  useEffect(() => {
-    setAttributes(defaultAttrs);
-  }, [props.timer]);
-
-  const [createTimer, createTimerInFlight] =
-    useMutation<TimerForm_CreateTimerMutation>(graphql`
-      mutation TimerForm_CreateTimerMutation(
-        $attributes: CreateTimerAttributes!
-        $connections: [ID!]!
-      ) {
-        createTimer(input: { attributes: $attributes }) {
-          timer @appendEdge(connections: $connections) {
-            cursor
-            node {
-              id
-              ...TimerCard_Timer
-            }
-          }
-        }
-      }
-    `);
-
-  const [updateTimer, updateTimerInFlight] =
-    useMutation<TimerForm_UpdateTimerMutation>(graphql`
-      mutation TimerForm_UpdateTimerMutation(
-        $timerId: ID!
-        $attributes: UpdateTimerAttributes!
-      ) {
-        updateTimer(input: { timerId: $timerId, attributes: $attributes }) {
-          timer {
-            ...TimerCard_Timer
-          }
-        }
-      }
-    `);
+  if (!attributes) {
+    return <LoadingScreen message="Initalising form" />;
+  }
 
   return (
     <Column fullHeight backgroundColor="white">
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
-          <IconButton onClick={props.onCancel}>
+          <IconButton onClick={onCancel}>
             <Tooltip
               placement="right"
               key="Close"
-              title={props.timer ? "Cancel edit" : "Cancel create"}
+              title={defaultValues.timerId ? "Cancel edit" : "Cancel create"}
             >
               <Row>
                 <CrossIcon height={20} fill={colors.white} />
@@ -120,7 +211,7 @@ export const TimerForm = (props: TimerFormProps) => {
         <Spacer size="tiny" vertical />
 
         <Text fontSize="large" strong>
-          {props.timer ? "Edit" : "Add"} timer
+          {defaultValues.timerId ? "Edit" : "Add"} timer
         </Text>
 
         <Spacer size="medium" vertical />
@@ -131,10 +222,10 @@ export const TimerForm = (props: TimerFormProps) => {
             size="small"
             label="Date"
             type="date"
-            value={attributes.date as string}
+            value={attributes.date}
             onChange={(ev) => {
               const date = moment(ev.target.value).format("YYYY-MM-DD");
-              setAttributes((timer) => ({ ...timer, date }));
+              updateAttributes({ date });
             }}
           />
 
@@ -156,18 +247,18 @@ export const TimerForm = (props: TimerFormProps) => {
             }
           >
             <ProjectSelect
-              value={attributes.projectId}
+              value={attributes.projectId ?? undefined}
               onChange={(projectId) => {
-                setAttributes((timer) => ({ ...timer, projectId }));
+                updateAttributes({ projectId });
               }}
             />
           </Suspense>
 
           <Row justifyContent="center">
             <TimeInput
-              value={attributes.seconds ?? 0}
+              value={displaySeconds}
               onChange={(seconds) => {
-                setAttributes((timer) => ({ ...timer, seconds }));
+                updateAttributes({ seconds });
               }}
             />
           </Row>
@@ -179,7 +270,7 @@ export const TimerForm = (props: TimerFormProps) => {
             rows={6}
             value={attributes.notes}
             onChange={(ev) => {
-              setAttributes((timer) => ({ ...timer, notes: ev.target.value }));
+              updateAttributes({ notes: ev.target.value });
             }}
           />
         </Column>
@@ -188,7 +279,7 @@ export const TimerForm = (props: TimerFormProps) => {
       <ButtonBar>
         <Button
           variant="text"
-          onClick={props.onCancel}
+          onClick={onCancel}
           size="small"
           disabled={createTimerInFlight || updateTimerInFlight}
         >
@@ -202,37 +293,70 @@ export const TimerForm = (props: TimerFormProps) => {
           size="small"
           color="primary"
           onClick={() => {
-            if (timer?.id) {
-              updateTimer({
-                variables: {
-                  timerId: timer.id,
-                  attributes,
-                },
-                optimisticResponse: {
+            const { timerId } = defaultValues;
+
+            if (timerId) {
+              if (!attributes.projectId) {
+                // TODO: snack error
+                return;
+              }
+
+              const optimisticResponse: TimerForm_UpdateTimerMutation["response"] =
+                {
                   updateTimer: {
-                    timer: attributes,
+                    timer: {
+                      id: timerId,
+                      date: attributes.date,
+                      seconds: displaySeconds,
+                      notes: attributes.notes ?? "",
+                      updatedAt: moment().toISOString(),
+                      project: {
+                        id: attributes.projectId,
+                      },
+                    },
                   },
-                },
-                onCompleted: () => {
-                  props.afterSave(attributes);
+                };
+
+              updateTimer({
+                variables: { timerId, attributes },
+                optimisticResponse,
+                onCompleted: (resp) => {
+                  if (!resp.updateTimer?.timer) {
+                    throw new Error(
+                      "TimerForm: updateTimer did not return timer"
+                    );
+                  }
+                  afterUpdate(resp.updateTimer.timer.date);
                 },
               });
             } else {
-              // eslint-disable-next-line @typescript-eslint/no-unused-vars
-              const { id, ...attrs } = attributes;
+              if (!attributes.date || !attributes.projectId) {
+                // TODO: snack error
+                return;
+              }
               createTimer({
                 variables: {
-                  attributes: attrs,
-                  connections: [connectionId],
+                  attributes: {
+                    date: attributes.date,
+                    projectId: attributes.projectId,
+                    seconds: attributes.seconds ?? 0,
+                    notes: attributes.notes ?? "",
+                  },
                 },
-                onCompleted: () => {
-                  props.afterSave(attributes);
+                onCompleted: (resp) => {
+                  if (!resp.createTimer) {
+                    throw new Error(
+                      // TODO: FIX THE NULL RETURNS ON THE GRAPH
+                      "TimerForm: createTimer did not return timer"
+                    );
+                  }
+                  afterCreate(resp.createTimer.timer.date);
                 },
               });
             }
           }}
         >
-          {props.timer ? "Update" : "Create"} timer
+          {defaultValues.timerId ? "Update" : "Create"} timer
         </Button>
       </ButtonBar>
     </Column>
@@ -338,19 +462,21 @@ const TimeInput = (props: {
 export const EditTimerForm = ({
   timerId,
   ...props
-}: TimerFormProps & {
+}: Omit<TimerFormProps, "defaultValues"> & {
   timerId: ID;
 }) => {
   const data = useLazyLoadQuery<TimerForm_Query>(
     graphql`
       query TimerForm_Query($timerId: ID!) {
         node(id: $timerId) {
+          __typename
           ... on Timer {
             id
-            status
             date
             notes
+            status
             seconds
+            updatedAt
             project {
               id
             }
@@ -363,9 +489,22 @@ export const EditTimerForm = ({
     }
   );
 
-  if (!data.node) {
+  if (data.node?.__typename !== "Timer") {
     throw new Error("EditTimerForm: Timer not found by ID");
   }
 
-  return <TimerForm {...props} timer={data} />;
+  return (
+    <TimerForm
+      {...props}
+      defaultValues={{
+        timerId: data.node.id,
+        status: data.node.status,
+        projectId: data.node.project.id,
+        date: data.node.date,
+        notes: data.node.notes,
+        seconds: data.node.seconds,
+        updatedAt: data.node.updatedAt,
+      }}
+    />
+  );
 };

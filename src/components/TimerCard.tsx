@@ -2,7 +2,7 @@ import React from "react";
 import { graphql } from "babel-plugin-relay/macro";
 import moment from "moment";
 import { useFragment, useMutation } from "react-relay";
-import { clockToSeconds, secondsToClock } from "../Clock";
+import { clockToSeconds, currentSeconds, secondsToClock } from "../Clock";
 import { ID } from "../CustomTypes";
 import { Authenticated, useAuthentication } from "../providers/Authentication";
 import { colors } from "../TaktTheme";
@@ -85,12 +85,8 @@ export const TimerCard = (props: {
       }
     `);
 
-  let diff =
-    timer.status === "recording"
-      ? moment().diff(moment(timer.updatedAt), "seconds")
-      : 0;
-  if (diff < 0) diff = 0;
-  const clock = secondsToClock(timer.seconds + diff);
+  const seconds = currentSeconds(timer);
+  const clock = secondsToClock(seconds);
 
   return (
     <Row
@@ -111,7 +107,12 @@ export const TimerCard = (props: {
                 {clock.hours}:{clock.minutes}
               </Text>
             </Row>
-            <Tooltip title="Toggle recording" placement="bottom-end">
+            <Tooltip
+              title={`${
+                timer.status === "recording" ? "Stop" : "Start"
+              } recording`}
+              placement="bottom-end"
+            >
               <RecordButton
                 recording={timer.status === "recording"}
                 onClick={() => {

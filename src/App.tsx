@@ -54,6 +54,10 @@ export const App = (props: AppProps) => {
     emit("recording", Boolean(currentUser.recordingTimer));
   }, [currentUser.recordingTimer]);
 
+  const formAfterSave = (viewingDate: DateString) => {
+    setState((s) => ({ ...s, viewingDate, tag: "viewingTimers" }));
+  };
+
   return (
     <Layout>
       <Suspense fallback={<LoadingScreen message="Gotcha!" />}>
@@ -83,13 +87,16 @@ export const App = (props: AppProps) => {
           />
         ) : state.tag === "addingTimer" ? (
           <TimerForm
-            afterSave={(timer) => {
-              setState((prevState) => ({
-                ...prevState,
-                viewingDate: timer.date,
-                tag: "viewingTimers",
-              }));
+            defaultValues={{
+              timerId: undefined,
+              projectId: undefined,
+              status: "paused",
+              date: state.viewingDate,
+              seconds: 0,
+              notes: "",
             }}
+            afterCreate={formAfterSave}
+            afterUpdate={formAfterSave}
             onCancel={() => {
               setState((prevState) => ({
                 ...prevState,
@@ -101,10 +108,17 @@ export const App = (props: AppProps) => {
           <Suspense fallback={<LoadingScreen />}>
             <EditTimerForm
               timerId={state.timer.id}
-              afterSave={(timer) => {
+              afterCreate={(date) => {
                 setState((prevState) => ({
                   ...prevState,
-                  viewingDate: timer.date,
+                  viewingDate: date,
+                  tag: "viewingTimers",
+                }));
+              }}
+              afterUpdate={(date) => {
+                setState((prevState) => ({
+                  ...prevState,
+                  viewingDate: date,
                   tag: "viewingTimers",
                 }));
               }}

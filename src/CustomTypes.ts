@@ -83,4 +83,16 @@ export type Json = JsonObject | JsonArray | JsonPrimitive;
 
 // TODO: can the type force formatting? "YYYY-MM-DD"
 export type DateString = string;
+export type DateTime = string;
 export type SecureToken = NewType<string>;
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type ExtractByTypename<
+  Kind,
+  Items extends { readonly __typename: string }
+> = Items extends any
+  ? Items["__typename"] extends Kind
+    ? Items
+    : never
+  : never;
+/* eslint-enable @typescript-eslint/no-explicit-any */
