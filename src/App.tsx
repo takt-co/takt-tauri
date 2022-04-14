@@ -13,6 +13,7 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { emit } from "@tauri-apps/api/event";
 import { App_CurrentUserQuery } from "./__generated__/App_CurrentUserQuery.graphql";
 import { Layout } from "./components/Layout";
+import { AppContext, AppContextProvider } from "./providers/AppContext";
 
 type AppState = {
   viewingDate: DateString;
@@ -29,9 +30,14 @@ type AppState = {
 type AppProps = { clearCache: () => void };
 
 export const App = (props: AppProps) => {
+  // TODO: combine state into app context?
   const [state, setState] = useState<AppState>({
     viewingDate: moment().format(config.dateFormat),
     tag: "viewingTimers",
+  });
+
+  const [appContext, setAppContext] = useState<AppContext>({
+    timerConnections: [],
   });
 
   const { currentUser } = useLazyLoadQuery<App_CurrentUserQuery>(
@@ -54,74 +60,55 @@ export const App = (props: AppProps) => {
     emit("recording", Boolean(currentUser.recordingTimer));
   }, [currentUser.recordingTimer]);
 
-  const formAfterSave = (viewingDate: DateString) => {
-    setState((s) => ({ ...s, viewingDate, tag: "viewingTimers" }));
+  const formAfterSave = (date: DateString) => {
+    setState((s) => ({ ...s, viewingDate: date, tag: "viewingTimers" }));
+  };
+
+  const formAfterCreate = (date: DateString) => {
+    // After create, we need to make sure timers screen fetches fresh data for this date
+    formAfterSave(date);
   };
 
   return (
-    <Layout>
-      <Suspense fallback={<LoadingScreen message="Gotcha!" />}>
-        {state.tag === "viewingTimers" ? (
-          <TimersScreen
-            date={state.viewingDate}
-            recordingTimer={currentUser.recordingTimer}
-            setDate={(viewingDate: DateString) => {
-              setState((prevState) => ({ ...prevState, viewingDate }));
-            }}
-            onViewSettings={() => {
-              setState((prevState) => ({
-                ...prevState,
-                tag: "viewingSettings",
-              }));
-            }}
-            onAdd={() => {
-              setState((prevState) => ({ ...prevState, tag: "addingTimer" }));
-            }}
-            onEdit={(timer) => {
-              setState((prevState) => ({
-                ...prevState,
-                tag: "editingTimer",
-                timer,
-              }));
-            }}
-          />
-        ) : state.tag === "addingTimer" ? (
-          <TimerForm
-            defaultValues={{
-              timerId: undefined,
-              projectId: undefined,
-              status: "paused",
-              date: state.viewingDate,
-              seconds: 0,
-              notes: "",
-            }}
-            afterCreate={formAfterSave}
-            afterUpdate={formAfterSave}
-            onCancel={() => {
-              setState((prevState) => ({
-                ...prevState,
-                tag: "viewingTimers",
-              }));
-            }}
-          />
-        ) : state.tag === "editingTimer" ? (
-          <Suspense fallback={<LoadingScreen />}>
-            <EditTimerForm
-              timerId={state.timer.id}
-              afterCreate={(date) => {
+    <AppContextProvider value={{ appContext, setAppContext }}>
+      <Layout>
+        <Suspense fallback={<LoadingScreen message="Gotcha!" />}>
+          {state.tag === "viewingTimers" ? (
+            <TimersScreen
+              date={state.viewingDate}
+              recordingTimer={currentUser.recordingTimer}
+              setDate={(viewingDate: DateString) => {
+                setState((prevState) => ({ ...prevState, viewingDate }));
+              }}
+              onViewSettings={() => {
                 setState((prevState) => ({
                   ...prevState,
-                  viewingDate: date,
-                  tag: "viewingTimers",
+                  tag: "viewingSettings",
                 }));
               }}
-              afterUpdate={(date) => {
+              onAdd={() => {
+                setState((prevState) => ({ ...prevState, tag: "addingTimer" }));
+              }}
+              onEdit={(timer) => {
                 setState((prevState) => ({
                   ...prevState,
-                  viewingDate: date,
-                  tag: "viewingTimers",
+                  tag: "editingTimer",
+                  timer,
                 }));
               }}
+            />
+          ) : state.tag === "addingTimer" ? (
+            <TimerForm
+              defaultValues={{
+                timerId: undefined,
+                projectId: undefined,
+                status: "paused",
+                date: state.viewingDate,
+                seconds: 0,
+                notes: "",
+              }}
+              afterCreate={formAfterCreate}
+              afterUpdate={formAfterSave}
               onCancel={() => {
                 setState((prevState) => ({
                   ...prevState,
@@ -129,27 +116,44 @@ export const App = (props: AppProps) => {
                 }));
               }}
             />
-          </Suspense>
-        ) : state.tag === "viewingSettings" ? (
-          <SettingsScreen
-            clearCache={props.clearCache}
-            onClose={() => {
-              setState((prevState) => ({ ...prevState, tag: "viewingTimers" }));
-            }}
-          />
-        ) : (
-          // Unexpected state
-          // TODO: error reporting
-          <Column
-            fullHeight
-            backgroundColor="white"
-            alignItems="center"
-            justifyContent="center"
-          >
-            <Text>Error: Unexpected app state</Text>
-          </Column>
-        )}
-      </Suspense>
-    </Layout>
+          ) : state.tag === "editingTimer" ? (
+            <Suspense fallback={<LoadingScreen />}>
+              <EditTimerForm
+                timerId={state.timer.id}
+                afterCreate={formAfterCreate}
+                afterUpdate={formAfterSave}
+                onCancel={() => {
+                  setState((prevState) => ({
+                    ...prevState,
+                    tag: "viewingTimers",
+                  }));
+                }}
+              />
+            </Suspense>
+          ) : state.tag === "viewingSettings" ? (
+            <SettingsScreen
+              clearCache={props.clearCache}
+              onClose={() => {
+                setState((prevState) => ({
+                  ...prevState,
+                  tag: "viewingTimers",
+                }));
+              }}
+            />
+          ) : (
+            // Unexpected state
+            // TODO: error reporting
+            <Column
+              fullHeight
+              backgroundColor="white"
+              alignItems="center"
+              justifyContent="center"
+            >
+              <Text>Error: Unexpected app state</Text>
+            </Column>
+          )}
+        </Suspense>
+      </Layout>
+    </AppContextProvider>
   );
 };

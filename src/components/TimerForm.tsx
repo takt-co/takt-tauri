@@ -35,6 +35,7 @@ import {
   TimerStatus,
 } from "./__generated__/TimerForm_Query.graphql";
 import { LoadingScreen } from "./LoadingScreen";
+import { useAppContext } from "../providers/AppContext";
 
 const createTimerMutation = graphql`
   mutation TimerForm_CreateTimerMutation($attributes: CreateTimerAttributes!) {
@@ -105,6 +106,8 @@ export const TimerForm = ({
   afterUpdate,
   onCancel,
 }: TimerFormProps) => {
+  const { appContext } = useAppContext();
+
   const [createTimer, createTimerInFlight] =
     useMutation<TimerForm_CreateTimerMutation>(createTimerMutation);
   const [updateTimer, updateTimerInFlight] =
@@ -354,6 +357,14 @@ export const TimerForm = ({
                     );
                   }
                   afterCreate(resp.createTimer.timer.date);
+                },
+                updater: (store) => {
+                  const connection = appContext.timerConnections.find(
+                    (c) => c.date === attributes.date
+                  );
+                  if (connection) {
+                    store.get(connection.id)?.invalidateRecord();
+                  }
                 },
               });
             }

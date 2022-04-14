@@ -26,6 +26,7 @@ import { Tooltip } from "./Tooltip";
 import { DateBar } from "./DateBar";
 import { TimersScreen_Query } from "./__generated__/TimersScreen_Query.graphql";
 import { TimerCard } from "./TimerCard";
+import { useAppContext } from "../providers/AppContext";
 
 export const TimersScreen = (props: {
   date: DateString;
@@ -183,6 +184,26 @@ const Timers = (props: {
     `,
     { date: props.date }
   );
+
+  const { setAppContext } = useAppContext();
+
+  useEffect(() => {
+    setAppContext((appContext) => {
+      const newConnection = {
+        id: timersQuery.currentUser.timers.__id,
+        date: props.date,
+      };
+
+      const existingConnections = appContext.timerConnections.filter(
+        (c) => c.date !== props.date
+      );
+
+      return {
+        ...appContext,
+        timerConnections: [newConnection, ...existingConnections],
+      };
+    });
+  }, [timersQuery]);
 
   const [archiveTimer] = useMutation<TimersScreen_ArchiveMutation>(graphql`
     mutation TimersScreen_ArchiveMutation($timerId: ID!) {
