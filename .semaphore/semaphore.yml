@@ -12,21 +12,21 @@ blocks:
       jobs:
         - name: Verify
           commands:
+            - sem-version node 16.13.0
+            - checkout
             - git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
             - git fetch
             - node ./scripts/check-version-bump.js
 
   - name: Typecheck | eslint | test | build
     task:
-      prologue:
-        commands:
-          - sem-version node 16.13.0
-          - checkout
-          - yarn install
-          - yarn generate-types
       jobs:
         - name: Verify
           commands:
+            - sem-version node 16.13.0
+            - checkout
+            - yarn install
+            - yarn generate-types
             - yarn typecheck
             - yarn eslint
             - yarn test
