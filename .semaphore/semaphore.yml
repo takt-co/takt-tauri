@@ -22,3 +22,8 @@ blocks:
             - yarn eslint
             - yarn test
             - yarn build
+        - name: Check for version bump
+          commands:
+            - git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+            - git fetch
+            - node ./scripts/check-version-bump.js
