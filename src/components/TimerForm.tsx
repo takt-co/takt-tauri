@@ -37,6 +37,7 @@ import {
 import { LoadingScreen } from "./LoadingScreen";
 import { useAppState } from "../providers/AppState";
 import { uniq } from "lodash";
+import { config } from "../config";
 
 const createTimerMutation = graphql`
   mutation TimerForm_CreateTimerMutation($attributes: CreateTimerAttributes!) {
@@ -310,8 +311,6 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
       </Layout.TopBarRight>
 
       <Column fullHeight justifyContent="space-around" padding="small">
-        <Spacer size="tiny" vertical />
-
         <Text fontSize="large" strong>
           {defaultValues.timerId ? "Edit" : "Add"} timer
         </Text>
@@ -326,8 +325,9 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
             type="date"
             value={attributes.date}
             onChange={(ev) => {
-              const date = moment(ev.target.value).format("YYYY-MM-DD");
-              updateAttributes({ date });
+              updateAttributes({
+                date: moment(ev.target.value).format(config.dateFormat)
+              });
             }}
           />
 
@@ -335,7 +335,6 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
             fallback={
               <TextField
                 size="small"
-                variant="outlined"
                 disabled
                 value="Fetching your projects..."
                 InputProps={{
@@ -369,7 +368,7 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
             label="Notes"
             fullWidth
             multiline
-            rows={6}
+            rows={5}
             value={attributes.notes}
             onChange={(ev) => {
               updateAttributes({ notes: ev.target.value });
