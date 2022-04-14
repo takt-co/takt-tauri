@@ -115,7 +115,7 @@ export const TimerForm = ({
     currentSeconds({
       seconds: defaultValues.seconds,
       status: defaultValues.status,
-      updatedAt: defaultValues.timerId ? defaultValues.updatedAt : null
+      updatedAt: defaultValues.timerId ? defaultValues.updatedAt : null,
     })
   );
 
@@ -138,7 +138,11 @@ export const TimerForm = ({
 
   // Tick up the display seconds while recording and time field hasn't been maually changed
   useEffect(() => {
-    if (defaultValues.status !== "recording" || !defaultValues.timerId || attributes?.seconds !== defaultValues.seconds) {
+    if (
+      defaultValues.status !== "recording" ||
+      !defaultValues.timerId ||
+      attributes?.seconds !== defaultValues.seconds
+    ) {
       return;
     }
 
@@ -161,7 +165,6 @@ export const TimerForm = ({
         clearInterval(interval);
       }
     }, 1000);
-
 
     return () => {
       clearInterval(interval);
