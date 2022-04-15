@@ -6,7 +6,7 @@ agent:
     type: e1-standard-2
   containers:
     - name: main
-      image: 'registry.semaphoreci.com/rust:1.51'
+      image: 'registry.semaphoreci.com/rust:1.51-node'
 
 blocks:
   - name: Release
