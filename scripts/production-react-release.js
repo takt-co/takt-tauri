@@ -13,8 +13,20 @@ exec(`aws configure set aws_access_key_id ${S3_BUILDS_KEY}`);
 exec(`aws configure set aws_secret_access_key ${S3_BUILDS_SECRET}`);
 exec(`aws configure set default_region_name ${S3_BUILDS_REGION}`);
 exec(`aws configure set default_output_format json`);
-exec(`aws s3 cp build.zip s3://takt-builds/takt-build-${version}.zip`, (error, stdout, stderr) => {
-  console.log(stdout);
+
+const filename = `takt-build-${version.replaceAll(".", "-")}.zip`;
+
+exec(`zip -r ${filename} build`, (error, stdout, stderr) => {
+  console.log({ error });
+  console.log({ stdout });
+  console.log({ stderr });
+});
+
+exec(`aws s3 cp ${filename} s3://takt-builds/`, (error, stdout, stderr) => {
+  console.log({ error });
+  console.log({ stdout });
+  console.log({ stderr });
+
   // if it was a success - update API
 
   // else - process.exit
