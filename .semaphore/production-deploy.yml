@@ -18,7 +18,8 @@ blocks:
         commands:
           - npm -v
           - node -v
-          - which npm
+          - npm install -g npm
+          - npm -v
           - npm install -g node@16.13.0
           - node -v
           # - npm install --global yarn
