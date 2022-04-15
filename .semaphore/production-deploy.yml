@@ -16,8 +16,11 @@ blocks:
       jobs:
       - name: Push code
         commands:
+          # download and install nvm
+          - wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+          - ~/.nvm install 16.13.0
+          - ~/.nvm use 16.13.0
           - node -v
-          - npm -v
           # - npm install --global yarn
           # - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
           # - source ~/.bash_profile
