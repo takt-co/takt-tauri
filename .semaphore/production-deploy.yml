@@ -6,7 +6,7 @@ agent:
     type: e1-standard-2
   containers:
     - name: main
-      image: 'registry.semaphoreci.com/rust:1.51'
+      image: 'registry.semaphoreci.com/rust:1.51-node'
 
 blocks:
   - name: Release
@@ -16,6 +16,8 @@ blocks:
       jobs:
       - name: Push code
         commands:
+          - npm -v
+          - node -v
           - npm install -g node@16.13.0
           - node -v
           # - npm install --global yarn
