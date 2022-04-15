@@ -15,6 +15,7 @@ blocks:
         - name: production-release
       prologue:
         commands:
+          - rustup default nightly
           - cargo -V
           - curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh -o install_nvm.sh
           - bash install_nvm.sh
