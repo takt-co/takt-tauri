@@ -6,7 +6,7 @@ agent:
     type: e1-standard-2
   containers:
     - name: main
-      image: 'registry.semaphoreci.com/rust:1.51-node'
+      image: 'registry.semaphoreci.com/rust:1.51'
 
 blocks:
   - name: Release
@@ -17,9 +17,8 @@ blocks:
       - name: Push code
         commands:
           # download and install nvm
-          - wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-          - ~/.nvm install 16.13.0
-          - ~/.nvm use 16.13.0
+          - node -v
+          - npm install -g node@16.13.0
           - node -v
           # - npm install --global yarn
           # - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
