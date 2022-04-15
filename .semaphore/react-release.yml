@@ -23,5 +23,3 @@ blocks:
           - yarn build
           - zip -r build.zip build
           - node ./scripts/production-react-release.js
-          # TODO: zip files
-          # TODO: upload to s3 and update app_builds API
