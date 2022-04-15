@@ -18,6 +18,7 @@ blocks:
         commands:
           # download and install nvm
           - node -v
+          - sudo chown -R 65534:0 "/root/.npm"
           - npm install -g node@16.13.0
           - node -v
           # - npm install --global yarn
