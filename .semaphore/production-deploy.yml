@@ -13,14 +13,13 @@ blocks:
     task:
       secrets:
         - name: production-release
+      prologue:
+        commands:
+          - sem-version node 16.13.0
       jobs:
       - name: Push code
         commands:
           - npm -v
-          - node -v
-          - npm install -g npm
-          - npm -v
-          - npm install -g node@16.13.0
           - node -v
           # - npm install --global yarn
           # - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
