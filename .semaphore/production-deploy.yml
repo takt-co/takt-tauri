@@ -1,15 +1,18 @@
 version: v1.0
-name: Heroku deployment
+name: App build release
+
 agent:
   machine:
     type: e1-standard-2
-    os_image: ubuntu1804
+  containers:
+    - name: main
+      image: 'registry.semaphoreci.com/rust:1.35'
 
 blocks:
-  - name: Deploy
+  - name: Release
     task:
       secrets:
-        - name: heroku-http
+        - name: production-release
       jobs:
       - name: Push code
         commands:
@@ -18,5 +21,4 @@ blocks:
           - yarn install
           - yarn generate-types
           - yarn tauri build
-          - yarn build
           - node ./scripts/production-release.js
