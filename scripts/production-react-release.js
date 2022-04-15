@@ -8,11 +8,21 @@ console.log("==========================");
 const { S3_BUILDS_KEY, S3_BUILDS_SECRET, S3_BUILDS_REGION } = process.env;
 console.log("...Configuring AWS:", { S3_BUILDS_KEY, S3_BUILDS_SECRET, S3_BUILDS_REGION });
 
-exec(`aws configure set aws_access_key_id ${S3_BUILDS_KEY}`);
-exec(`aws configure set aws_secret_access_key ${S3_BUILDS_SECRET}`);
-exec(`aws configure set default_region_name ${S3_BUILDS_REGION}`);
-exec(`aws configure set default_output_format json`);
-exec('aws s3 cp build.zip s3://takt-builds/')
+exec(`aws configure set aws_access_key_id ${S3_BUILDS_KEY}`, (error, stdout, stderr) => {
+  console.log("...", stdout);
+});
+exec(`aws configure set aws_secret_access_key ${S3_BUILDS_SECRET}`, (error, stdout, stderr) => {
+  console.log("...", stdout);
+});
+exec(`aws configure set default_region_name ${S3_BUILDS_REGION}`, (error, stdout, stderr) => {
+  console.log("...", stdout);
+});
+exec(`aws configure set default_output_format json`, (error, stdout, stderr) => {
+  console.log("...", stdout);
+});
+exec('aws s3 cp build.zip s3://takt-builds/', (error, stdout, stderr) => {
+  console.log("...", stdout);
+});
 
 // exec(
 //   "git diff --name-only $(git rev-parse --abbrev-ref HEAD) origin/main",
