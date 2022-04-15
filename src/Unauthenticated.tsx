@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { useAuthentication } from "./providers/Authentication";
 import { Column, Row } from "./components/Flex";
-import { TopBar } from "./components/TopBar";
 import { Text } from "./components/Typography";
 import { IconButton, InputAdornment, TextField } from "@mui/material";
 import { Button } from "./components/Button";
@@ -9,6 +8,7 @@ import LogoSrc from "./assets/logo.png";
 import { LoginIcon, PasswordHidden, PasswordShowing } from "./components/Icons";
 import { colors } from "./TaktTheme";
 import { Spacer } from "./components/Spacer";
+import { Layout } from "./components/Layout";
 
 export const Unauthenticated = () => {
   const authentication = useAuthentication();
@@ -31,28 +31,20 @@ export const Unauthenticated = () => {
   };
 
   return (
-    <Column
-      alignItems="center"
-      justifyContent="flex-start"
-      fullWidth
-      fullHeight
-      style={{ borderRadius: 5, height: "100vh" }}
-    >
-      <TopBar
-        left={
-          <Row padding="smaller">
-            <img alt="Takt" src={LogoSrc} height={20} />
-          </Row>
-        }
-      />
+    <Layout>
+      <Layout.TopBarLeft>
+        <Row padding="smaller">
+          <img alt="Takt" src={LogoSrc} height={20} />
+        </Row>
+      </Layout.TopBarLeft>
       <Column
         fullWidth
+        fullHeight
         padding="large"
         backgroundColor="white"
         alignItems="flex-start"
         justifyContent="center"
         gap="small"
-        style={{ borderRadius: "0 0 5px 5px", height: "calc(100vh - 65px)" }}
       >
         <Column>
           <Text fontSize="large" strong>
@@ -67,6 +59,7 @@ export const Unauthenticated = () => {
         <TextField
           label="Username"
           fullWidth
+          autoFocus
           autoCapitalize="false"
           value={loginDetails.username}
           sx={{ root: { borderRadius: 0 } }}
@@ -127,6 +120,6 @@ export const Unauthenticated = () => {
           </Button>
         </Row>
       </Column>
-    </Column>
+    </Layout>
   );
 };

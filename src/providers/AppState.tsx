@@ -26,8 +26,9 @@ const AppState = createContext<{
     viewingDate: "",
     timerConnections: [],
   },
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  setAppState: () => {},
+  setAppState: () => {
+    // Update state...
+  },
 });
 
 export const AppStateProvider = AppState.Provider;

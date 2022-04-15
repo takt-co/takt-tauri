@@ -1,12 +1,9 @@
 import React from "react";
-import { Column, Row } from "./Flex";
+import { Column } from "./Flex";
 import { TopBar } from "./TopBar";
 import { createTeleporter } from "react-teleporter";
-import { IconButton } from "@mui/material";
-import { colors } from "../TaktTheme";
-import { ProjectsIcon } from "./Icons";
-import { Tooltip } from "./Tooltip";
 
+export const TopBarLeft = createTeleporter();
 export const TopBarRight = createTeleporter();
 export const TopBarBelow = createTeleporter();
 
@@ -20,15 +17,7 @@ export const Layout = (props: { children: React.ReactNode }) => {
       }}
     >
       <TopBar
-        left={
-          <Row paddingHorizontal="tiny" alignItems="center">
-            <IconButton>
-              <Tooltip title="Manage projects" key="Projects" placement="right">
-                <ProjectsIcon height={20} fill={colors.white} />
-              </Tooltip>
-            </IconButton>
-          </Row>
-        }
+        left={<TopBarLeft.Target />}
         right={<TopBarRight.Target />}
         below={<TopBarBelow.Target />}
       />
@@ -37,5 +26,6 @@ export const Layout = (props: { children: React.ReactNode }) => {
   );
 };
 
+Layout.TopBarLeft = TopBarLeft.Source;
 Layout.TopBarRight = TopBarRight.Source;
 Layout.TopBarBelow = TopBarBelow.Source;

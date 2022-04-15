@@ -326,7 +326,7 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
             value={attributes.date}
             onChange={(ev) => {
               updateAttributes({
-                date: moment(ev.target.value).format(config.dateFormat)
+                date: moment(ev.target.value).format(config.dateFormat),
               });
             }}
           />
