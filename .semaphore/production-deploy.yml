@@ -16,6 +16,7 @@ blocks:
       jobs:
       - name: Push code
         commands:
+          - npm install --global yarn
           - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
           - sem-version node 16.13.0
           - checkout
