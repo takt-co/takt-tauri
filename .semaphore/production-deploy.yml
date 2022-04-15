@@ -15,7 +15,13 @@ blocks:
         - name: production-release
       prologue:
         commands:
-          - sem-version node 16.13.0
+          # install nvm
+          - curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh -o install_nvm.sh
+          - bash install_nvm.sh
+          - source ~/.bash_profile
+          - command -v nvm
+          - nvm install 16.13.0
+          - nvm use 16.13.0
       jobs:
       - name: Push code
         commands:
