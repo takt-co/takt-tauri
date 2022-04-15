@@ -1,6 +1,7 @@
 // /* eslint-disable no-console */
 const { exec } = require("child_process");
 const packageJson = require("../package.json");
+const fetch = require("node-fetch");
 
 const version = packageJson.version;
 const {
