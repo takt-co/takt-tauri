@@ -46,42 +46,40 @@ export const App = (props: AppProps) => {
   return (
     <AppStateProvider value={{ appState, setAppState }}>
       <Layout>
-        <Suspense fallback={<LoadingScreen message="Gotcha!" />}>
-          {appState.tag === "viewingTimers" ? (
-            <TimersScreen
-              date={appState.viewingDate}
-              recordingTimer={currentUser.recordingTimer}
-            />
-          ) : appState.tag === "addingTimer" ? (
-            <TimerForm
-              defaultValues={{
-                timerId: undefined,
-                projectId: undefined,
-                status: "paused",
-                date: appState.viewingDate,
-                seconds: 0,
-                notes: "",
-              }}
-            />
-          ) : appState.tag === "editingTimer" ? (
-            <Suspense fallback={<LoadingScreen />}>
-              <EditTimerForm timerId={appState.timer.id} />
-            </Suspense>
-          ) : appState.tag === "viewingSettings" ? (
-            <SettingsScreen clearCache={props.clearCache} />
-          ) : (
-            // Unexpected state
-            // TODO: error reporting
-            <Column
-              fullHeight
-              backgroundColor="white"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text>Error: Unexpected app state</Text>
-            </Column>
-          )}
-        </Suspense>
+        {appState.tag === "viewingTimers" ? (
+          <TimersScreen
+            date={appState.viewingDate}
+            recordingTimer={currentUser.recordingTimer}
+          />
+        ) : appState.tag === "addingTimer" ? (
+          <TimerForm
+            defaultValues={{
+              timerId: undefined,
+              projectId: undefined,
+              status: "paused",
+              date: appState.viewingDate,
+              seconds: 0,
+              notes: "",
+            }}
+          />
+        ) : appState.tag === "editingTimer" ? (
+          <Suspense fallback={<LoadingScreen />}>
+            <EditTimerForm timerId={appState.timer.id} />
+          </Suspense>
+        ) : appState.tag === "viewingSettings" ? (
+          <SettingsScreen clearCache={props.clearCache} />
+        ) : (
+          // Unexpected state
+          // TODO: error reporting
+          <Column
+            fullHeight
+            backgroundColor="white"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text>Error: Unexpected app state</Text>
+          </Column>
+        )}
       </Layout>
     </AppStateProvider>
   );

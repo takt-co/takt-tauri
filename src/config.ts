@@ -4,6 +4,8 @@ const production = {
   dateFormat: "YYYY-MM-DD",
   apiBaseUrl: "https://takt-rails.herokuapp.com",
   isDevelopment,
+  version:
+    process.env.REACT_APP_VERSION ?? (process.env.PACKAGE_VERSION as string),
 };
 
 type Config = typeof production;

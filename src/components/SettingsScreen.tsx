@@ -83,7 +83,11 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
               }
             }}
           />
-          <Spacer size="small" />
+          <Spacer size="tiny" />
+          <Row justifyContent="flex-end" paddingHorizontal="smaller">
+            <Text fontSize="small" color={colors.gray}>v{config.version}</Text>
+          </Row>
+          <Spacer size="smaller" />
         </Column>
       </Column>
     </Column>
