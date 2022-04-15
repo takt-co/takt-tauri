@@ -6,8 +6,7 @@ import React, {
   useState,
 } from "react";
 import { ID, SecureToken } from "../CustomTypes";
-import axios, { AxiosInstance } from "axios";
-import { config } from "../config";
+import { api } from "../api";
 
 const tokenStorageKey = "secureToken";
 
@@ -43,18 +42,6 @@ const defaultState: AuthenticationState = {
 };
 
 const AuthenticationContext = createContext<AuthenticationState>(defaultState);
-
-const api = (token?: string): AxiosInstance => {
-  return axios.create({
-    baseURL: config.apiBaseUrl,
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: token != null ? `Token ${token}` : "",
-    },
-    timeout: 15000,
-  });
-};
 
 const verifySecureToken: (
   token: SecureToken | null

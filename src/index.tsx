@@ -11,16 +11,31 @@ import { createRelayEnvironment } from "./providers/Relay";
 import { LoadingScreen } from "./components/LoadingScreen";
 import { Unauthenticated as UnauthenticatedScreen } from "./Unauthenticated";
 import { App } from "./App";
-import { Column } from "./components/Flex";
+import { Column, Row } from "./components/Flex";
 import { TopBar } from "./components/TopBar";
 import ErrorBoundary from "./ErrorBoundry";
+import { Layout } from "./components/Layout";
+import LogoSrc from "./assets/logo.png";
+
+const AppLoadingScreen = (props: { message: string }) => {
+  return (
+    <Layout>
+      <Layout.TopBarLeft>
+        <Row padding="smaller">
+          <img alt="Takt" src={LogoSrc} height={20} />
+        </Row>
+      </Layout.TopBarLeft>
+      <LoadingScreen message={props.message} />
+    </Layout>
+  );
+};
 
 const Takt = () => {
   const auth = useAuthentication();
 
   switch (auth.tag) {
     case "loading":
-      return <LoadingScreen />;
+      return <AppLoadingScreen message="Fetching user..." />;
     case "unauthenticated":
       return <UnauthenticatedScreen />;
     case "authenticated":

@@ -1,5 +1,5 @@
 import React, { Suspense, useEffect, useState } from "react";
-import { Column } from "./components/Flex";
+import { Column, Row } from "./components/Flex";
 import { Text } from "./components/Typography";
 import moment from "moment";
 import { EditTimerForm, TimerForm } from "./components/TimerForm";
@@ -13,6 +13,10 @@ import { emit } from "@tauri-apps/api/event";
 import { App_CurrentUserQuery } from "./__generated__/App_CurrentUserQuery.graphql";
 import { Layout } from "./components/Layout";
 import { AppState, AppStateProvider } from "./providers/AppState";
+import { IconButton } from "@mui/material";
+import { ProjectsIcon } from "./components/Icons";
+import { colors } from "./TaktTheme";
+import { Tooltip } from "./components/Tooltip";
 
 type AppProps = { clearCache: () => void };
 
@@ -46,42 +50,50 @@ export const App = (props: AppProps) => {
   return (
     <AppStateProvider value={{ appState, setAppState }}>
       <Layout>
-        <Suspense fallback={<LoadingScreen message="Gotcha!" />}>
-          {appState.tag === "viewingTimers" ? (
-            <TimersScreen
-              date={appState.viewingDate}
-              recordingTimer={currentUser.recordingTimer}
-            />
-          ) : appState.tag === "addingTimer" ? (
-            <TimerForm
-              defaultValues={{
-                timerId: undefined,
-                projectId: undefined,
-                status: "paused",
-                date: appState.viewingDate,
-                seconds: 0,
-                notes: "",
-              }}
-            />
-          ) : appState.tag === "editingTimer" ? (
-            <Suspense fallback={<LoadingScreen />}>
-              <EditTimerForm timerId={appState.timer.id} />
-            </Suspense>
-          ) : appState.tag === "viewingSettings" ? (
-            <SettingsScreen clearCache={props.clearCache} />
-          ) : (
-            // Unexpected state
-            // TODO: error reporting
-            <Column
-              fullHeight
-              backgroundColor="white"
-              alignItems="center"
-              justifyContent="center"
-            >
-              <Text>Error: Unexpected app state</Text>
-            </Column>
-          )}
-        </Suspense>
+        <Layout.TopBarLeft>
+          <Row paddingHorizontal="tiny" alignItems="center">
+            <IconButton>
+              <Tooltip title="Manage projects" key="Projects" placement="right">
+                <ProjectsIcon height={20} fill={colors.white} />
+              </Tooltip>
+            </IconButton>
+          </Row>
+        </Layout.TopBarLeft>
+
+        {appState.tag === "viewingTimers" ? (
+          <TimersScreen
+            date={appState.viewingDate}
+            recordingTimer={currentUser.recordingTimer}
+          />
+        ) : appState.tag === "addingTimer" ? (
+          <TimerForm
+            defaultValues={{
+              timerId: undefined,
+              projectId: undefined,
+              status: "paused",
+              date: appState.viewingDate,
+              seconds: 0,
+              notes: "",
+            }}
+          />
+        ) : appState.tag === "editingTimer" ? (
+          <Suspense fallback={<LoadingScreen />}>
+            <EditTimerForm timerId={appState.timer.id} />
+          </Suspense>
+        ) : appState.tag === "viewingSettings" ? (
+          <SettingsScreen clearCache={props.clearCache} />
+        ) : (
+          // Unexpected state
+          // TODO: error reporting
+          <Column
+            fullHeight
+            backgroundColor="white"
+            alignItems="center"
+            justifyContent="center"
+          >
+            <Text>Error: Unexpected app state</Text>
+          </Column>
+        )}
       </Layout>
     </AppStateProvider>
   );

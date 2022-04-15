@@ -3,7 +3,7 @@ const { exec } = require("child_process");
 const packageJson = require("../package.json");
 const tauriJson = require("../src-tauri/tauri.conf.json");
 
-if (packageJson.version !== tauriJson.package.version) {
+if (tauriJson.package.version !== packageJson.version) {
   process.stderr.write(
     "app.json and package.json are out of sync! These should match so new version detection works correctly.",
   );
@@ -29,7 +29,7 @@ exec(
         process.stderr.write(
           [
             `This pull-request introduces ✨changes✨ to application code.`,
-            `You need increment the "version" number in public/app.json and package.json, so that existing apps know to fetch the new update 🌍`,
+            `You need increment the "version" number in src-tauri/tauri.conf.json and package.json, so that existing apps know to fetch the new update 🌍`,
             `The following files were touched 👆:`,
             stdout
               .split("\n")
