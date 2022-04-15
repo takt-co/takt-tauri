@@ -16,16 +16,13 @@ blocks:
       jobs:
       - name: Push code
         commands:
-          - sem-version node 16.13.0
           - node -v
-          - npm install --global yarn
-          - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-          - source ~/.bash_profile
-          - source ~/.zshrc
-          - source ~/.profile
-          - source ~/.bashrc
-          - checkout
-          - yarn install
-          - yarn generate-types
-          - yarn tauri build
-          - node ./scripts/production-release.js
+          - npm -v
+          # - npm install --global yarn
+          # - curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+          # - source ~/.bash_profile
+          # - checkout
+          # - yarn install
+          # - yarn generate-types
+          # - yarn tauri build
+          # - node ./scripts/production-release.js
