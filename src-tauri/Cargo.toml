@@ -12,7 +12,7 @@ rust-version = "1.57"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [build-dependencies]
-gdk = { git = "https://github.com/gtk-rs/gtk3-rs.git", package = "gdk" }
+gdk = { version = "0.15.0", git = "https://github.com/gtk-rs/gtk3-rs.git", package = "gdk" }
 tauri-build = { version = "1.0.0-rc.4", features = [] }
 
 [dependencies]
