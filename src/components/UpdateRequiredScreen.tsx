@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { DateTime } from "../CustomTypes";
 import { Column, Row } from "./Flex";
 import { Layout } from "./Layout";
@@ -8,6 +8,7 @@ import { Button } from "./Button";
 import { config } from "../config";
 import { colors } from "../TaktTheme";
 import { Spacer } from "./Spacer";
+import { emit } from "@tauri-apps/api/event";
 
 export type TaktBuild = {
   version: string;
@@ -16,6 +17,8 @@ export type TaktBuild = {
 };
 
 export const UpdateRequiredScreen = (props: { latestBuild: TaktBuild }) => {
+  const [updating, setUpdating] = useState(false);
+
   return (
     <Layout>
       <Layout.TopBarLeft>
@@ -31,10 +34,8 @@ export const UpdateRequiredScreen = (props: { latestBuild: TaktBuild }) => {
         justifyContent="center"
         alignItems="flex-start"
       >
-        <Text fontSize="large">🚀</Text>
-        <Spacer size="small" />
         <Text fontSize="large" strong>
-          Update available
+          🚀 Update available.
         </Text>
         <Spacer size="medium" />
         <Text fontSize="small" color={colors.gray}>
@@ -45,7 +46,17 @@ export const UpdateRequiredScreen = (props: { latestBuild: TaktBuild }) => {
           <strong>Latest version:</strong> v{props.latestBuild.version}
         </Text>
         <Spacer size="medium" />
-        <Button variant="outlined">Update now</Button>
+        <Button
+          variant="outlined"
+          loading={updating}
+          disabled={updating}
+          onClick={() => {
+            setUpdating(true);
+            emit("update", props.latestBuild.url);
+          }}
+        >
+          {updating ? "Updating..." : "Update now"}
+        </Button>
       </Column>
     </Layout>
   );

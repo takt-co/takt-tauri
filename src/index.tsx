@@ -44,10 +44,12 @@ const Takt = () => {
     api()
       .get<TaktBuild>("/")
       .then((resp) => {
+        console.log("set build", resp.data);
         setLatestBuild(resp.data);
       })
       .catch(() => {
         // TODO: error reporting
+        console.log("failed to fetch build");
         setLatestBuild({ version: "0.0.0", url: "", releasedAt: "" });
       });
   }, []);
@@ -55,8 +57,8 @@ const Takt = () => {
   const updateAvailable = useMemo(() => {
     if (!latestBuild) return false;
 
-    const [a, b, c] = config.version.split(".").map(parseInt);
-    const [x, y, z] = latestBuild.version.split(".").map(parseInt);
+    const [a, b, c] = config.version.split(".");
+    const [x, y, z] = latestBuild.version.split(".");
 
     if (x > a) return true;
     if (y > b) return true;
