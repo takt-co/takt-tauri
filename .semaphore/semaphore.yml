@@ -1,11 +1,9 @@
 version: v1.0
 name: CI
-
 agent:
   machine:
     type: e1-standard-2
     os_image: ubuntu2004
-
 blocks:
   - name: Check for version bump
     task:
@@ -14,10 +12,16 @@ blocks:
           commands:
             - sem-version node 16.13.0
             - checkout
-            - git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*
+            - 'git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*'
             - git fetch
             - node ./scripts/check-version-bump.js
-
+      env_vars:
+        - name: S3_BUILDS_KEY
+          value: AKIAUMO4TJKWWGUC54V6
+        - name: S3_BUILDS_SECRET
+          value: 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
+        - name: S3_REGION
+          value: eu-west-1
   - name: Typecheck | eslint | test | build
     task:
       jobs:
