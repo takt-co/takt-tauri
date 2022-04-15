@@ -15,17 +15,18 @@ blocks:
         - name: production-release
       prologue:
         commands:
+          - cargo -V
           - curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh -o install_nvm.sh
           - bash install_nvm.sh
           - source ~/.bashrc
           - nvm install 16.13.0
           - nvm use 16.13.0
-      jobs:
-      - name: Push code
-        commands:
           - npm install --global yarn
           - checkout
           - yarn install
           - yarn generate-types
+      jobs:
+      - name: Push code
+        commands:
           - yarn tauri build
           - node ./scripts/production-release.js
