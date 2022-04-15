@@ -24,4 +24,4 @@ yarn-debug.log*
 yarn-error.log*
 
 __generated__
-secrets.ts
+takt-build-*.zip
