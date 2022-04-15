@@ -9,7 +9,7 @@ use tauri::{
   PhysicalPosition,
   TrayIcon,
   SystemTray,
-  SystemTrayEvent
+  SystemTrayEvent,
 };
 
 fn main() {
@@ -17,17 +17,6 @@ fn main() {
     .setup(|app| {
       let window = app.get_window("main").unwrap();
       let tray = app.tray_handle();
-
-      window.listen("update", move |event| {
-        println!("download: {}", event.payload().unwrap());
-        // download the new zip
-        // unzip to location
-        // delete downloaded zip
-        // verify files somehow?
-        // delete old files
-        // move files to proper location
-        // reload
-      });
 
       window.listen("recording", move |event| {
         if event.payload() == Some("true") {

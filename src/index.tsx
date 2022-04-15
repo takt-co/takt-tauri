@@ -1,4 +1,4 @@
-import React, { Suspense, useEffect, useMemo, useState } from "react";
+import React, { Suspense, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import { RelayEnvironmentProvider } from "react-relay";
 import { DialogProvider } from "./providers/Dialog";
@@ -14,14 +14,8 @@ import { App } from "./App";
 import { Column, Row } from "./components/Flex";
 import { TopBar } from "./components/TopBar";
 import ErrorBoundary from "./ErrorBoundry";
-import { api } from "./api";
-import { config } from "./config";
 import { Layout } from "./components/Layout";
 import LogoSrc from "./assets/logo.png";
-import {
-  TaktBuild,
-  UpdateRequiredScreen,
-} from "./components/UpdateRequiredScreen";
 
 const AppLoadingScreen = (props: { message: string }) => {
   return (
@@ -38,40 +32,6 @@ const AppLoadingScreen = (props: { message: string }) => {
 
 const Takt = () => {
   const auth = useAuthentication();
-  const [latestBuild, setLatestBuild] = useState<TaktBuild>();
-
-  useEffect(() => {
-    api()
-      .get<TaktBuild>("/")
-      .then((resp) => {
-        console.log("set build", resp.data);
-        setLatestBuild(resp.data);
-      })
-      .catch(() => {
-        // TODO: error reporting
-        console.log("failed to fetch build");
-        setLatestBuild({ version: "0.0.0", url: "", releasedAt: "" });
-      });
-  }, []);
-
-  const updateAvailable = useMemo(() => {
-    if (!latestBuild) return false;
-
-    const [a, b, c] = config.version.split(".");
-    const [x, y, z] = latestBuild.version.split(".");
-
-    if (x > a) return true;
-    if (y > b) return true;
-    return z > c;
-  }, [latestBuild]);
-
-  if (!latestBuild) {
-    return <AppLoadingScreen message="Checking for update..." />;
-  }
-
-  if (updateAvailable) {
-    return <UpdateRequiredScreen latestBuild={latestBuild} />;
-  }
 
   switch (auth.tag) {
     case "loading":
