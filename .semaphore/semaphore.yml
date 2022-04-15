@@ -1,5 +1,6 @@
 version: v1.0
 name: CI
+
 agent:
   machine:
     type: e1-standard-2
@@ -32,7 +33,7 @@ blocks:
             - yarn build
 
 promotions:
-  - name: Production deploy
-    pipeline_file: production-deploy.yml
+  - name: React Release
+    pipeline_file: react-release.yml
     auto_promote:
       when: "result = 'passed' and branch = 'main'"
