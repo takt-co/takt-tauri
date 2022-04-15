@@ -18,7 +18,7 @@ blocks:
           # install nvm
           - curl -sL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh -o install_nvm.sh
           - bash install_nvm.sh
-          - source ~/.bash_profile
+          - source ~/.bashrc
           - command -v nvm
           - nvm install 16.13.0
           - nvm use 16.13.0
