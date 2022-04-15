@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const { exec } = require("child_process");
-const tauriJson = require("../src-tauri/tauri.conf.json");
 const packageJson = require("../package.json");
+const tauriJson = require("../src-tauri/tauri.conf.json");
 
 if (tauriJson.package.version !== packageJson.version) {
   process.stderr.write(
