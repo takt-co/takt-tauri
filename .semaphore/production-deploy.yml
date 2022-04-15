@@ -1,0 +1,22 @@
+version: v1.0
+name: Heroku deployment
+agent:
+  machine:
+    type: e1-standard-2
+    os_image: ubuntu1804
+
+blocks:
+  - name: Deploy
+    task:
+      secrets:
+        - name: heroku-http
+      jobs:
+      - name: Push code
+        commands:
+          - sem-version node 16.13.0
+          - checkout
+          - yarn install
+          - yarn generate-types
+          - yarn tauri build
+          - yarn build
+          - node ./scripts/production-release.js

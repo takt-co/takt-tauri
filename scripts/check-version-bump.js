@@ -1,13 +1,13 @@
 /* eslint-disable no-console */
 const { exec } = require("child_process");
-const appJson = require("../public/app.json");
 const packageJson = require("../package.json");
+const tauriJson = require("../src-tauri/tauri.conf.json");
 
-if (appJson.version !== packageJson.version) {
+if (packageJson.version !== tauriJson.package.version) {
   process.stderr.write(
     "app.json and package.json are out of sync! These should match so new version detection works correctly.",
   );
-  return process.exit(1);
+  process.exit(1);
 }
 
 exec(
@@ -24,7 +24,7 @@ exec(
       // It's possible a commit might touch the app code and this file
       // without including a version bump, but its unlikely
       const hasVersionBump =
-        stdout.includes("app.json") && stdout.includes("package.json");
+        stdout.includes("src-tauri/tauri.conf.json") && stdout.includes("package.json");
       if (hasAppCodeChanges && !hasVersionBump) {
         process.stderr.write(
           [

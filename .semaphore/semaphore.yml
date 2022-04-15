@@ -31,3 +31,9 @@ blocks:
             - yarn eslint
             - yarn test
             - yarn build
+
+promotions:
+  - name: Production deploy
+    pipeline_file: production-deploy.yml
+    auto_promote:
+      when: "result = 'passed' and branch = 'main'"
