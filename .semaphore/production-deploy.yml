@@ -6,7 +6,7 @@ agent:
     type: e1-standard-2
   containers:
     - name: main
-      image: 'registry.semaphoreci.com/rust:1.51-node'
+      image: 'registry.semaphoreci.com/rust:1.51'
 
 blocks:
   - name: Release
@@ -16,9 +16,6 @@ blocks:
       jobs:
       - name: Push code
         commands:
-          # download and install nvm
-          - node -v
-          - sudo chown -R 65534:0 "/root/.npm"
           - npm install -g node@16.13.0
           - node -v
           # - npm install --global yarn
