@@ -5,7 +5,7 @@ const tauriJson = require("../src-tauri/tauri.conf.json");
 
 if (tauriJson.package.version !== packageJson.version) {
   process.stderr.write(
-    "app.json and package.json are out of sync! These should match so new version detection works correctly.",
+    "tauri.conf.json and package.json are out of sync! These should match so new version detection works correctly.",
   );
   process.exit(1);
 }
@@ -24,12 +24,12 @@ exec(
       // It's possible a commit might touch the app code and this file
       // without including a version bump, but its unlikely
       const hasVersionBump =
-        stdout.includes("src-tauri/tauri.conf.json") && stdout.includes("package.json");
+        stdout.includes("tauri.conf.json") && stdout.includes("package.json");
       if (hasAppCodeChanges && !hasVersionBump) {
         process.stderr.write(
           [
             `This pull-request introduces ✨changes✨ to application code.`,
-            `You need increment the "version" number in src-tauri/tauri.conf.json and package.json, so that existing apps know to fetch the new update 🌍`,
+            `You need increment the "version" number in tauri.conf.json and package.json, so that existing apps know to fetch the new update 🌍`,
             `The following files were touched 👆:`,
             stdout
               .split("\n")
