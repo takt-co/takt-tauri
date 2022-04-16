@@ -51,7 +51,8 @@
     "typecheck": "tsc",
     "clean-generated": "find . -name '__generated__' -type d -prune -exec rm -rf '{}' +",
     "pre-commit": "echo 'TODO: fix pre-commit linting'",
-    "pre-push": "yarn test"
+    "pre-push": "yarn test",
+    "production-release": "node ./scripts/production-release"
   },
   "relay": {
     "src": "./src/",
