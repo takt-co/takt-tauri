@@ -11,7 +11,7 @@ if (tauriJson.package.version !== packageJson.version) {
 }
 
 exec(
-  "git diff --name-only $(git rev-parse --abbrev-ref HEAD) origin/main",
+  "git diff --name-only $(git rev-parse --abbrev-ref HEAD) origin/master",
   (error, stdout, stderr) => {
     if (error) {
       console.error(error);
