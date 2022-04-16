@@ -7,7 +7,18 @@ agent:
     os_image: ubuntu2004
 
 blocks:
-  - name: Version check | Typecheck | eslint | test | build
+  - name: Check for version bump
+    task:
+      jobs:
+        - name: Verify
+          commands:
+            - sem-version node 16.13.0
+            - checkout
+            - 'git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*'
+            - git fetch
+            - node ./scripts/check-version-bump.js
+
+  - name: Typecheck | eslint | test | build
     task:
       jobs:
         - name: Verify
@@ -15,7 +26,6 @@ blocks:
             - sem-version node 16.13.0
             - checkout
             - yarn install
-            - node ./scripts/check-version-bump.js
             - yarn generate-types
             - yarn typecheck
             - yarn eslint
