@@ -2,7 +2,7 @@
 require('dotenv').config();
 const { exec } = require("child_process");
 const packageJson = require("../package.json");
-const fetch = require("node-fetch");
+const fetch = require("../node_modules/node-fetch");
 const version = packageJson.version;
 const filename = `Takt_${version}_aarch64.dmg`;
 const filepath = `src-tauri/target/release/bundle/dmg/${filename}`;
