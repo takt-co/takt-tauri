@@ -1,48 +1,35 @@
 /* eslint-disable no-console */
-const { exec } = require("child_process");
 const packageJson = require("../package.json");
 const tauriJson = require("../src-tauri/tauri.conf.json");
+const fetch = require("../node_modules/node-fetch");
 
-if (tauriJson.package.version !== packageJson.version) {
+const version = packageJson.version;
+
+if (tauriJson.package.version !== version) {
   process.stderr.write(
-    "app.json and package.json are out of sync! These should match so new version detection works correctly.",
+    "🔴 package.json and src-tauri/tauri.conf.json versions are out of sync",
   );
   process.exit(1);
 }
 
-exec(
-  "git diff --name-only $(git rev-parse --abbrev-ref HEAD) origin/main",
-  (error, stdout, stderr) => {
-    if (error) {
-      console.error(error);
-      return process.exit(error.code);
-    } else if (stderr) {
-      console.error(stderr);
+fetch("https://takt-rails.herokuapp.com", {
+  method: 'GET',
+  headers: {
+    "Content-Type": "application/json",
+  }
+}).then((resp) => {
+  resp.json().then(latest => {
+    const [a, b, c] = latest.version.split(".").map(i => parseInt(i));
+    const [x, y, z] = version.split(".").map(i => parseInt(i));
+
+    if (a > x || b > y || c >= z) {
+      console.error("🔴 version already released");
       return process.exit(1);
     } else {
-      const hasAppCodeChanges = stdout.includes(".tsx");
-      // It's possible a commit might touch the app code and this file
-      // without including a version bump, but its unlikely
-      const hasVersionBump =
-        stdout.includes("src-tauri/tauri.conf.json") && stdout.includes("package.json");
-      if (hasAppCodeChanges && !hasVersionBump) {
-        process.stderr.write(
-          [
-            `This pull-request introduces ✨changes✨ to application code.`,
-            `You need increment the "version" number in src-tauri/tauri.conf.json and package.json, so that existing apps know to fetch the new update 🌍`,
-            `The following files were touched 👆:`,
-            stdout
-              .split("\n")
-              .filter((line) => line.includes(".tsx"))
-              .join("\n"),
-            "",
-            "Add a new commit which increments the version numbers and try again 👮",
-          ].join("\n"),
-        );
-        return process.exit(1);
-      } else {
-        return process.exit(0);
-      }
+      console.error("🟢 version bumped");
+      return process.exit(0);
     }
-  },
-);
+  });
+}).catch(() => {
+  return process.exit(1);
+});
