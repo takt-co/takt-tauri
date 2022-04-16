@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 const packageJson = require("../package.json");
 const tauriJson = require("../src-tauri/tauri.conf.json");
-const fetch = require("node-fetch");
+const fetch = require("../node_modules/node-fetch");
 
 const version = packageJson.version;
 
