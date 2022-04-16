@@ -1,9 +1,7 @@
 /* eslint-disable no-console */
-const { exec } = require("child_process");
 const packageJson = require("../package.json");
 const tauriJson = require("../src-tauri/tauri.conf.json");
-
-import fetch from 'node-fetch';
+const fetch = require("node-fetch");
 
 const version = packageJson.version;
 
