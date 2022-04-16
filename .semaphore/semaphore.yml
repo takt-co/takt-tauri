@@ -14,6 +14,7 @@ blocks:
           commands:
             - sem-version node 16.13.0
             - checkout
+            - npm install node-fetch
             - 'git config remote.origin.fetch +refs/heads/*:refs/remotes/origin/*'
             - git fetch
             - node ./scripts/check-version-bump.js
