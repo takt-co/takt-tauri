@@ -24,7 +24,7 @@ exec(
       // It's possible a commit might touch the app code and this file
       // without including a version bump, but its unlikely
       const hasVersionBump =
-        stdout.includes("app.json") && stdout.includes("package.json");
+        stdout.includes("tauri.conf.json") && stdout.includes("package.json");
       if (hasAppCodeChanges && !hasVersionBump) {
         process.stderr.write(
           [
