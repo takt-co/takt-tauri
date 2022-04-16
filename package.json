@@ -1,6 +1,6 @@
 {
   "name": "takt-tauri",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.8.2",
@@ -52,7 +52,7 @@
     "clean-generated": "find . -name '__generated__' -type d -prune -exec rm -rf '{}' +",
     "pre-commit": "echo 'TODO: fix pre-commit linting'",
     "pre-push": "yarn test",
-    "production-release": "node ./scripts/production-release"
+    "deploy": "node ./scripts/production-release"
   },
   "relay": {
     "src": "./src/",
