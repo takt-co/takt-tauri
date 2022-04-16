@@ -12,7 +12,7 @@ console.log("---");
 
 // Ensure the version is valid
 exec('git fetch --dry-run', (error, stdout, stderr) => {
-  if (stdout.includes("origin/main")) {
+  if (stderr.includes("origin/main")) {
     console.error("🔴 you can only release from the `origin/main` branch, which must be up to date.");
     return process.exit(1);
   }
