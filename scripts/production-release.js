@@ -13,13 +13,13 @@ console.log("---");
 exec('git fetch --dry-run', (error, stdout, stderr) => {
   if (stderr.includes("origin/main")) {
     console.error("🔴 you can only release from the `origin/main` branch, which must be up to date.");
-    // return process.exit(1);
+    return process.exit(1);
   }
 
   exec('git status -uno', (error, stdout, stderr) => {
     if (!stdout.includes("Your branch is up to date with 'origin/main'")) {
       console.error("🔴 you can only release from the `origin/main` branch, which must be up to date.");
-      // return process.exit(1);
+      return process.exit(1);
     }
 
     fetch("https://takt-rails.herokuapp.com", {
