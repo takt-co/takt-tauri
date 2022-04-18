@@ -1,6 +1,6 @@
 {
   "package": {
-    "productName": "Takt MacOS",
+    "productName": "Takt",
     "version": "0.1.9"
   },
   "build": {
@@ -23,7 +23,7 @@
       ],
       "resources": [],
       "externalBin": [],
-      "copyright": "",
+      "copyright": "Copyright (c) Cyntax Software LTD 2022. All rights reserved.",
       "category": "DeveloperTool",
       "shortDescription": "",
       "longDescription": "",
