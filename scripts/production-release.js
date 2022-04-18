@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 require('dotenv').config();
 const { exec } = require("child_process");
 const packageJson = require("../package.json");
@@ -38,7 +37,7 @@ exec('git fetch --dry-run', (error, stdout, stderr) => {
           return process.exit(1);
         }
 
-        exec('yarn tauri build', (_error, stdout, _stderr) => {
+        exec(`yarn build`, (_error, stdout, _stderr) => {
           if (stdout.includes(filepath)) {
             console.log("🟢 build successful");
           } else {
