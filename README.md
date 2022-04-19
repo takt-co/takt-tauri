@@ -15,19 +15,20 @@ Note: [`takt-rails`](https://github.com/takt-co/takt-rails) is expected to be ru
 # Install packages
 $ yarn install
 
-# Run Tauri and React app
-$ yarn tauri dev
-
-# Setup dotenv variables
-# FETCH_SCHEMA_TOKEN is required for `fetch-schema` command
-$ cp .env.example .env && code .env
-
-# Fetch an updated schema from the API
-$ yarn fetch-schema
-
 # Generate types from the schema
 $ yarn generate-types
 
-# Build a production release
-$ yarn tauri build
+# Run Tauri and React app
+$ yarn tauri dev
+```
+
+#### Fetching schema
+If you make changes to `takt-rails` which effect the schema, you'll need to fetch a fresh copy for this repo to `generate-types`.
+
+```sh
+# FETCH_SCHEMA_TOKEN env var required for fetching schema
+$ cp .env.example .env
+
+# Fetch an updated schema from the API
+$ yarn fetch-schema
 ```
