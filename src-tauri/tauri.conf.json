@@ -10,7 +10,7 @@
     "beforeBuildCommand": "yarn build"
   },
   "tauri": {
-    "macOSPrivateApi": true,
+    "macOSPrivateApi": false,
     "bundle": {
       "active": true,
       "targets": "all",
@@ -32,7 +32,7 @@
       },
       "macOS": {
         "frameworks": [],
-        "minimumSystemVersion": "10.9",
+        "minimumSystemVersion": "10.15",
         "useBootstrapper": false,
         "exceptionDomain": "",
         "signingIdentity": null,
