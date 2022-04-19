@@ -22,12 +22,6 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - name: Webhook
-        uses: joelwmale/webhook-action@master
-        with:
-          url: ${{ secrets.RELEASE_WEBHOOK_URL }}
-          headers: '{"Authorization": "Token ${{ secrets.CLIENT_APPLICATION_TOKEN }}"}'
-          body: null
       - name: install app dependencies and build it
         run: yarn && yarn generate-types && yarn build
       - uses: tauri-apps/tauri-action@v0
@@ -46,9 +40,3 @@ jobs:
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: false
           prerelease: false
-      - name: Webhook
-        uses: joelwmale/webhook-action@master
-        with:
-          url: ${{ secrets.RELEASE_WEBHOOK_URL }}
-          headers: '{"Authorization": "Token ${{ secrets.CLIENT_APPLICATION_TOKEN }}"}'
-          body: null
