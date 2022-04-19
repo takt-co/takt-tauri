@@ -1,6 +1,6 @@
 {
   "name": "takt-tauri",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "private": true,
   "dependencies": {
     "@emotion/react": "^11.8.2",
@@ -51,9 +51,7 @@
     "typecheck": "tsc",
     "clean-generated": "find . -name '__generated__' -type d -prune -exec rm -rf '{}' +",
     "pre-commit": "echo 'TODO: fix pre-commit linting'",
-    "pre-push": "yarn test",
-    "build-release": "CI=true dotenv -e .env -- yarn tauri build -v --target universal-apple-darwin",
-    "release": "node ./scripts/production-release"
+    "pre-push": "yarn test"
   },
   "relay": {
     "src": "./src/",
