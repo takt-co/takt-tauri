@@ -13,6 +13,11 @@ use tauri::{
 };
 
 fn main() {
+  let _guard = sentry::init(("https://9b44882a84be4a2ab62475d9a675a034@o284609.ingest.sentry.io/6356710", sentry::ClientOptions {
+    release: sentry::release_name!(),
+    ..Default::default()
+  }));
+
   tauri::Builder::default()
     .setup(|app| {
       let window = app.get_window("main").unwrap();
