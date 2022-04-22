@@ -1,7 +1,7 @@
 {
   "package": {
     "productName": "Takt",
-    "version": "0.1.17"
+    "version": "0.1.16"
   },
   "build": {
     "distDir": "../build",
@@ -48,7 +48,7 @@
     "updater": {
       "active": true,
       "endpoints": ["https://takt-rails.herokuapp.com/latest-release"],
-      "dialog": false,
+      "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENGREE2MkJBMDUzRDNBOTYKUldTV09qMEZ1bUxhendxWlE1QXkvS3NqMmpHbTJ0ekNkaWNORUVtbGFVVm56QWZINXZ5TFNHczAK"
     },
     "allowlist": {
