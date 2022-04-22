@@ -18,6 +18,11 @@ import { IconButton } from "@mui/material";
 import { Tooltip } from "./Tooltip";
 import { useAppState } from "../providers/AppState";
 
+import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
+import { relaunch } from "@tauri-apps/api/process";
+import { useDialog } from "../providers/Dialog";
+import { LoadingScreen } from "./LoadingScreen";
+
 export const SettingsScreen = (props: { clearCache: () => void }) => {
   const authentication = useAuthentication();
   if (authentication.tag !== "authenticated") {
@@ -25,7 +30,13 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
   }
 
   const { setAppState } = useAppState();
+  const dialog = useDialog();
   const [cacheCleared, setCacheCleared] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<"idle" | "installing">("idle");
+
+  if (updateStatus === "installing") {
+    return <LoadingScreen message="Installing update" />;
+  }
 
   return (
     <Column fullHeight backgroundColor="white">
@@ -52,6 +63,30 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
       </Row>
       <Column fullHeight justifyContent="space-between">
         <Column>
+          <Setting
+            Icon={CleanUpIcon}
+            label="Check for update"
+            onClick={() => {
+              checkUpdate().then(({ shouldUpdate, manifest }) => {
+                if (shouldUpdate) {
+                  dialog.confirm({
+                    title: "Update available",
+                    body: `Do you want to update to v${manifest?.version}?`,
+                    onConfirm: () => {
+                      setUpdateStatus("installing");
+                      installUpdate().then(() => {
+                        relaunch();
+                      }).catch((err) => {
+                        console.error(err);
+                        // TODO: snack error
+                        setUpdateStatus("idle");
+                      });
+                    }
+                  });
+                }
+              });
+            }}
+          />
           <Setting
             label={cacheCleared ? "Cache cleared" : "Clear cache"}
             Icon={CleanUpIcon}
