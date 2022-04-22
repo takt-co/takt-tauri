@@ -47,7 +47,7 @@
     },
     "updater": {
       "active": true,
-      "endpoints": ["http://localhost:3001/latest-release"],
+      "endpoints": ["https://takt-rails.herokuapp.com/latest-release"],
       "dialog": false,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEI0OUY0NEEwRUMyMDVGNzMKUldSelh5RHNvRVNmdE5hR3ZtckVkbFpDZEZYejJDK2dWeWRVa05UQzdYckROWXFyT2dMVTEwNHAK"
     },
