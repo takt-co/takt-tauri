@@ -7,6 +7,7 @@ import {
   IconProps,
   LoginIcon,
   PowerIcon,
+  UpdateIcon,
 } from "./Icons";
 import { Text } from "./Typography";
 import { Spacer } from "./Spacer";
@@ -14,10 +15,9 @@ import { useAuthentication } from "../providers/Authentication";
 import { process } from "@tauri-apps/api";
 import { config } from "../config";
 import { Layout } from "./Layout";
-import { IconButton } from "@mui/material";
+import { CircularProgress, IconButton } from "@mui/material";
 import { Tooltip } from "./Tooltip";
 import { useAppState } from "../providers/AppState";
-
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
 import { relaunch } from "@tauri-apps/api/process";
 import { useDialog } from "../providers/Dialog";
@@ -32,7 +32,18 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
   const { setAppState } = useAppState();
   const dialog = useDialog();
   const [cacheCleared, setCacheCleared] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<"idle" | "installing">("idle");
+  const [updateStatus, setUpdateStatus] = useState<
+    "idle" | "checking" | "installing"
+  >("idle");
+
+  const handleUpdateError = (err?: Error) => {
+    dialog.alert({
+      title: "Something went wrong",
+      body: err?.message ?? "Please try again",
+    });
+
+    setUpdateStatus("idle");
+  };
 
   if (updateStatus === "installing") {
     return <LoadingScreen message="Installing update" />;
@@ -64,9 +75,11 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
       <Column fullHeight justifyContent="space-between">
         <Column>
           <Setting
-            Icon={CleanUpIcon}
+            Icon={UpdateIcon}
             label="Check for update"
+            loading={updateStatus === "checking"}
             onClick={() => {
+              setUpdateStatus("checking");
               checkUpdate().then(({ shouldUpdate, manifest }) => {
                 if (shouldUpdate) {
                   dialog.confirm({
@@ -74,14 +87,23 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
                     body: `Do you want to update to v${manifest?.version}?`,
                     onConfirm: () => {
                       setUpdateStatus("installing");
-                      installUpdate().then(() => {
-                        relaunch();
-                      }).catch((err) => {
-                        console.error(err);
-                        // TODO: snack error
-                        setUpdateStatus("idle");
-                      });
-                    }
+                      try {
+                        installUpdate()
+                          .then(relaunch)
+                          .catch((err) => {
+                            handleUpdateError(err);
+                          });
+                      } catch {
+                        handleUpdateError();
+                      }
+                    },
+                  });
+                } else {
+                  setUpdateStatus("idle");
+                  // TODO: snack
+                  dialog.alert({
+                    title: "Up to date",
+                    body: "You're on the latest version",
                   });
                 }
               });
@@ -133,6 +155,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
 
 const Setting = (props: {
   label: string;
+  loading?: boolean;
   Icon: React.FunctionComponent<IconProps>;
   onClick: () => void;
   iconProps?: IconProps;
@@ -147,16 +170,22 @@ const Setting = (props: {
     onClick={props.disabled ? undefined : props.onClick}
     hoverStyle={{ cursor: "pointer", backgroundColor: colors.offWhite }}
   >
-    <props.Icon
-      {...{
-        width: 20,
-        height: 20,
-        fill: props.disabled ? colors.gray : colors.darkGray,
-        ...props.iconProps,
-      }}
-    />
-    <Text color={props.disabled ? colors.gray : colors.darkGray}>
-      {props.label}
-    </Text>
+    {props.loading ? (
+      <CircularProgress size={20} />
+    ) : (
+      <props.Icon
+        {...{
+          width: 20,
+          height: 20,
+          fill: props.disabled ? colors.gray : colors.darkGray,
+          ...props.iconProps,
+        }}
+      />
+    )}
+    <Column>
+      <Text color={props.disabled ? colors.gray : colors.darkGray}>
+        {props.label}
+      </Text>
+    </Column>
   </Row>
 );
