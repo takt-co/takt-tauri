@@ -7,6 +7,7 @@ import {
   IconProps,
   LoginIcon,
   PowerIcon,
+  UpdateIcon,
 } from "./Icons";
 import { Text } from "./Typography";
 import { Spacer } from "./Spacer";
@@ -17,6 +18,10 @@ import { Layout } from "./Layout";
 import { CircularProgress, IconButton } from "@mui/material";
 import { Tooltip } from "./Tooltip";
 import { useAppState } from "../providers/AppState";
+import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
+import { relaunch } from "@tauri-apps/api/process";
+import { useDialog } from "../providers/Dialog";
+import { LoadingScreen } from "./LoadingScreen";
 
 export const SettingsScreen = (props: { clearCache: () => void }) => {
   const authentication = useAuthentication();
@@ -25,7 +30,20 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
   }
 
   const { setAppState } = useAppState();
+  const dialog = useDialog();
   const [cacheCleared, setCacheCleared] = useState(false);
+  const [updateStatus, setUpdateStatus] = useState<"idle" | "checking" | "installing">("idle");
+
+  const handleUpdateError = (error: Error) => {
+    dialog.alert({
+      title: "Something went wrong",
+      body: error.message,
+    });
+  };
+
+  if (updateStatus === "installing") {
+    return <LoadingScreen message="Installing..." />;
+  }
 
   return (
     <Column fullHeight backgroundColor="white">
@@ -52,6 +70,37 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
       </Row>
       <Column fullHeight justifyContent="space-between">
         <Column>
+          <Setting
+            label={updateStatus === "idle" ? "Check for update" : "Checking..."}
+            Icon={UpdateIcon}
+            disabled={cacheCleared}
+            onClick={() => {
+              setUpdateStatus("checking");
+              checkUpdate().then(({ shouldUpdate, manifest }) => {
+                if (shouldUpdate) {
+                  dialog.confirm({
+                    title: "Update available",
+                    body: `Would you like to update to v${manifest?.version}?`,
+                    onConfirm: () => {
+                      setUpdateStatus("installing");
+                      installUpdate().then(() => {
+                        relaunch().catch(handleUpdateError);
+                      }).catch(handleUpdateError);
+                    },
+                    onCancel: () => {
+                      setUpdateStatus("idle");
+                    }
+                  });
+                } else {
+                  dialog.alert({
+                    title: "Up to date",
+                    body: "You are on the latest version."
+                  });
+                  setUpdateStatus("idle");
+                }
+              }).catch(handleUpdateError);
+            }}
+          />
           <Setting
             label={cacheCleared ? "Cache cleared" : "Clear cache"}
             Icon={CleanUpIcon}
