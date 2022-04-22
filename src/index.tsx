@@ -16,6 +16,18 @@ import { TopBar } from "./components/TopBar";
 import ErrorBoundary from "./ErrorBoundry";
 import { Layout } from "./components/Layout";
 import LogoSrc from "./assets/logo.png";
+import * as Sentry from "@sentry/react";
+import { BrowserTracing } from "@sentry/tracing";
+
+Sentry.init({
+  dsn: "https://cc6d1d6a31e84f499878486d74402a85@o284609.ingest.sentry.io/6356892",
+  integrations: [new BrowserTracing()],
+
+  // Set tracesSampleRate to 1.0 to capture 100%
+  // of transactions for performance monitoring.
+  // We recommend adjusting this value in production
+  tracesSampleRate: 1.0,
+});
 
 const AppLoadingScreen = (props: { message: string }) => {
   return (
