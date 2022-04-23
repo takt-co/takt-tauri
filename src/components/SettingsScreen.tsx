@@ -20,8 +20,8 @@ import { Tooltip } from "./Tooltip";
 import { useAppState } from "../providers/AppState";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
 import { relaunch } from "@tauri-apps/api/process";
-import { useDialog } from "../providers/Dialog";
 import { LoadingScreen } from "./LoadingScreen";
+import { useSnacks } from "../providers/Snacks";
 
 export const SettingsScreen = (props: { clearCache: () => void }) => {
   const authentication = useAuthentication();
@@ -30,16 +30,19 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
   }
 
   const { setAppState } = useAppState();
-  const dialog = useDialog();
+  const snacks = useSnacks();
   const [cacheCleared, setCacheCleared] = useState(false);
-  const [updateStatus, setUpdateStatus] = useState<"idle" | "checking" | "installing">("idle");
+  const [updateStatus, setUpdateStatus] = useState<
+    "idle" | "checking" | "installing"
+  >("idle");
 
   const handleUpdateError = () => {
     // TODO: error reporting!
     setUpdateStatus("idle");
-    dialog.alert({
+    snacks.alert({
       title: "Something went wrong",
-      body: "Sorry for the inconvenience. Please try again later.",
+      body: "Please try again later",
+      severity: "error"
     });
   };
 
@@ -78,29 +81,33 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
             disabled={cacheCleared}
             onClick={() => {
               setUpdateStatus("checking");
-              checkUpdate().then(({ shouldUpdate, manifest }) => {
-                if (shouldUpdate) {
-                  dialog.confirm({
-                    title: "Update available",
-                    body: `Would you like to update to v${manifest?.version}?`,
-                    onConfirm: () => {
-                      setUpdateStatus("installing");
-                      installUpdate().then(() => {
-                        relaunch().catch(handleUpdateError);
-                      }).catch(handleUpdateError);
-                    },
-                    onCancel: () => {
-                      setUpdateStatus("idle");
-                    }
-                  });
-                } else {
-                  dialog.alert({
-                    title: "Up to date",
-                    body: "You are on the latest version."
-                  });
-                  setUpdateStatus("idle");
-                }
-              }).catch(handleUpdateError);
+              checkUpdate()
+                .then(({ shouldUpdate, manifest }) => {
+                  if (shouldUpdate) {
+                    snacks.alert({
+                      title: "Update available",
+                      body: `Would you like to update to v${manifest?.version}?`,
+                      severity: "info",
+                      actions: [{
+                        label: "Update now",
+                        onClick: () => {
+                          setUpdateStatus("installing");
+                          installUpdate().then(() => {
+                            relaunch().catch(handleUpdateError);
+                          }).catch(handleUpdateError);
+                        }
+                      }]
+                    });
+                  } else {
+                    setUpdateStatus("idle");
+                    snacks.alert({
+                      title: "Up to date",
+                      body: "You are on the latest version.",
+                      severity: "info"
+                    });
+                  }
+                })
+                .catch(handleUpdateError);
             }}
           />
           <Setting

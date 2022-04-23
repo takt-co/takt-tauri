@@ -13,7 +13,12 @@ import { Row } from "./Flex";
 
 export const Tooltip = styled(
   ({ className, children, ...props }: TooltipProps) => (
-    <MaterialTooltip TransitionComponent={Fade} arrow {...props} classes={{ popper: className }}>
+    <MaterialTooltip
+      TransitionComponent={Fade}
+      arrow
+      {...props}
+      classes={{ popper: className }}
+    >
       <Row>{children}</Row>
     </MaterialTooltip>
   )

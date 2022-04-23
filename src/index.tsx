@@ -1,7 +1,6 @@
 import React, { Suspense, useMemo, useState } from "react";
 import ReactDOM from "react-dom";
 import { RelayEnvironmentProvider } from "react-relay";
-import { DialogProvider } from "./providers/Dialog";
 import {
   Authenticated,
   AuthenticationProvider,
@@ -18,6 +17,7 @@ import { Layout } from "./components/Layout";
 import LogoSrc from "./assets/logo.png";
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
+import { SnackbarProvider } from "./providers/Snacks";
 
 Sentry.init({
   dsn: "https://cc6d1d6a31e84f499878486d74402a85@o284609.ingest.sentry.io/6356892",
@@ -80,14 +80,14 @@ const AuthenticatedScreen = () => {
           </Column>
         }
       >
-        <DialogProvider>
+        <SnackbarProvider>
           <App
             clearCache={() => {
               // Incrementing this key will force the environment to be recreated
               setEnvironmentKey((key) => key + 1);
             }}
           />
-        </DialogProvider>
+        </SnackbarProvider>
       </Suspense>
     </RelayEnvironmentProvider>
   );

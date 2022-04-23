@@ -6,7 +6,7 @@ import {
   SxProps,
   Theme,
 } from "@mui/material";
-import { Color, colors, darken } from "../TaktTheme";
+import { alpha, Color, colors, darken } from "../TaktTheme";
 import { FontSize, fontSizes } from "./Typography";
 
 export type ButtonVariant = "text" | "contained" | "outlined";
@@ -42,7 +42,7 @@ export const Button = (
       color: colors[color ?? "primary"],
       "&:hover": {
         borderColor: darken(color ?? "primary", 0.1),
-        backgroundColor: colors.white,
+        backgroundColor: alpha(color ?? "white", 0.2),
       },
     };
   }
