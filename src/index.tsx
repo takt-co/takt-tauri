@@ -29,25 +29,12 @@ Sentry.init({
   tracesSampleRate: 1.0,
 });
 
-const AppLoadingScreen = (props: { message: string }) => {
-  return (
-    <Layout>
-      <Layout.TopBarLeft>
-        <Row padding="smaller">
-          <img alt="Takt" src={LogoSrc} height={20} />
-        </Row>
-      </Layout.TopBarLeft>
-      <LoadingScreen message={props.message} />
-    </Layout>
-  );
-};
-
 const Takt = () => {
   const auth = useAuthentication();
 
   switch (auth.tag) {
     case "loading":
-      return <AppLoadingScreen message="Fetching user..." />;
+      return <Loading />;
     case "unauthenticated":
       return <UnauthenticatedScreen />;
     case "authenticated":
@@ -56,6 +43,17 @@ const Takt = () => {
       throw new Error("Unexpected authentication state");
   }
 };
+
+const Loading = () => (
+  <Layout>
+    <Layout.TopBarLeft>
+      <Row padding="smaller">
+        <img alt="Takt" src={LogoSrc} height={20} />
+      </Row>
+    </Layout.TopBarLeft>
+    <LoadingScreen message="Fetching user..." />
+  </Layout>
+);
 
 const AuthenticatedScreen = () => {
   const auth = useAuthentication() as Authenticated;
