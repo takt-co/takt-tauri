@@ -9,7 +9,7 @@ use tauri::{
   PhysicalPosition,
   TrayIcon,
   SystemTray,
-  SystemTrayEvent
+  SystemTrayEvent,
 };
 
 fn main() {
