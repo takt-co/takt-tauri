@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, useTheme } from "@mui/material";
 import { Column } from "./Flex";
-import { colors } from "../TaktTheme";
 import { Text } from "./Typography";
 import { useIsMounted } from "../hooks/useIsMounted";
 
@@ -14,6 +13,7 @@ export const LoadingScreen = (props: {
   Warmdown?: () => JSX.Element;
 }) => {
   const isMounted = useIsMounted();
+  const theme = useTheme();
   const [warmingDown, setWarmingDown] = useState(Boolean(props.Warmdown));
 
   useEffect(() => {
@@ -40,15 +40,17 @@ export const LoadingScreen = (props: {
       fullHeight
       alignItems="center"
       justifyContent="center"
-      backgroundColor="white"
       gap="small"
+      style={{
+        background: "white"
+      }}
     >
       <CircularProgress
         thickness={5}
         size={30}
-        sx={{ circle: { stroke: colors.gray } }}
+        sx={{ circle: { stroke: String(theme.palette.grey) } }}
       />
-      {props.message && <Text color={colors.gray}>{props.message}</Text>}
+      {props.message && <Text color={theme.palette.grey}>{props.message}</Text>}
     </Column>
   );
 };

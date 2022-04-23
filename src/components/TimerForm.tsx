@@ -12,6 +12,7 @@ import {
   MenuItem,
   Select,
   TextField,
+  useTheme,
 } from "@mui/material";
 import { clockToSeconds, currentSeconds, secondsToClock } from "../Clock";
 import { Button } from "./Button";
@@ -22,7 +23,6 @@ import {
   CrossIcon,
 } from "../components/Icons";
 import { ButtonBar } from "./ButtonBar";
-import { colors } from "../TaktTheme";
 import { TimerForm_CreateTimerMutation } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
 import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
 import { DateString, ID } from "../CustomTypes";
@@ -101,6 +101,7 @@ type TimerFormAttributes = {
 
 export const TimerForm = ({ defaultValues }: TimerFormProps) => {
   const { appState, setAppState } = useAppState();
+  const theme = useTheme();
 
   const [createTimer, createTimerInFlight] =
     useMutation<TimerForm_CreateTimerMutation>(createTimerMutation);
@@ -289,7 +290,7 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
   };
 
   return (
-    <Column fullHeight backgroundColor="white">
+    <Column fullHeight style={{ background: "white" }}>
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
           <IconButton
@@ -303,7 +304,7 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
               title={defaultValues.timerId ? "Cancel edit" : "Cancel create"}
             >
               <Row>
-                <CrossIcon height={20} fill={colors.white} />
+                <CrossIcon height={20} fill="white" />
               </Row>
             </Tooltip>
           </IconButton>
@@ -392,7 +393,13 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
           variant="outlined"
           loading={createTimerInFlight || updateTimerInFlight}
           disableElevation
-          startIcon={<SaveIcon width={12} height={12} fill={colors.primary} />}
+          startIcon={
+            <SaveIcon
+              width={12}
+              height={12}
+              fill={theme.palette.primary.main}
+            />
+          }
           size="small"
           color="primary"
           onClick={defaultValues.timerId ? handleUpdate : handleCreate}
@@ -419,6 +426,7 @@ const TimeInput = (props: {
   const hourOptions = buildTimeOptions(24);
   const minuteOptions = buildTimeOptions(60);
   const clock = secondsToClock(props.value);
+  const theme = useTheme();
 
   return (
     <Row
@@ -439,7 +447,11 @@ const TimeInput = (props: {
           props.onChange(seconds);
         }}
       >
-        <MinusCircled width={30} height={30} fill={colors.primary} />
+        <MinusCircled
+          width={30}
+          height={30}
+          fill={theme.palette.primary.main}
+        />
       </Button>
       <FormControl fullWidth>
         <InputLabel>Hrs</InputLabel>
@@ -494,7 +506,11 @@ const TimeInput = (props: {
           props.onChange(seconds);
         }}
       >
-        <PlusCircled width={30} height={30} fill={colors.primary} />
+        <PlusCircled
+          width={30}
+          height={30}
+          fill={theme.palette.primary.main}
+        />
       </Button>
     </Row>
   );

@@ -1,5 +1,4 @@
 import React, { CSSProperties, forwardRef, ReactNode, useState } from "react";
-import { Color, colors } from "../TaktTheme";
 import { spacing, Spacing } from "./Spacer";
 
 type DivProps = React.DetailedHTMLProps<
@@ -22,7 +21,6 @@ export type FlexProps = DivProps & {
   paddingHorizontal?: Spacing;
   paddingVertical?: Spacing;
   scrollable?: boolean;
-  backgroundColor?: Color;
   rounded?: boolean;
   hidden?: boolean;
   forwardRef?: React.ForwardedRef<HTMLDivElement>;
@@ -32,7 +30,6 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
   (
     {
       alignItems,
-      backgroundColor,
       children,
       className,
       fullWidth,
@@ -82,9 +79,6 @@ export const Column = forwardRef<HTMLDivElement, FlexProps>(
           gap: gap ? spacing[gap] : 0,
           justifyContent,
           padding: padding ? spacing[padding] : 0,
-          backgroundColor: backgroundColor
-            ? colors[backgroundColor]
-            : undefined,
           borderRadius: rounded ? 5 : 0,
           ...(paddingHorizontal
             ? {

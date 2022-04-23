@@ -6,9 +6,9 @@ import LogoSrc from "../assets/logo.png";
 import { Text } from "./Typography";
 import { Button } from "./Button";
 import { config } from "../config";
-import { colors } from "../TaktTheme";
 import { Spacer } from "./Spacer";
 import { emit } from "@tauri-apps/api/event";
+import { useTheme } from "@mui/material";
 
 export type TaktBuild = {
   version: string;
@@ -18,6 +18,7 @@ export type TaktBuild = {
 
 export const UpdateRequiredScreen = (props: { latestBuild: TaktBuild }) => {
   const [updating, setUpdating] = useState(false);
+  const theme = useTheme();
 
   return (
     <Layout>
@@ -29,7 +30,6 @@ export const UpdateRequiredScreen = (props: { latestBuild: TaktBuild }) => {
 
       <Column
         fullHeight
-        backgroundColor="white"
         padding="medium"
         justifyContent="center"
         alignItems="flex-start"
@@ -38,11 +38,11 @@ export const UpdateRequiredScreen = (props: { latestBuild: TaktBuild }) => {
           🚀 Update available.
         </Text>
         <Spacer size="medium" />
-        <Text fontSize="small" color={colors.gray}>
+        <Text fontSize="small" color={theme.palette.grey}>
           <strong>Current version:</strong> v{config.version}
         </Text>
         <Spacer size="tiny" />
-        <Text fontSize="small" color={colors.gray}>
+        <Text fontSize="small" color={theme.palette.grey}>
           <strong>Latest version:</strong> v{props.latestBuild.version}
         </Text>
         <Spacer size="medium" />

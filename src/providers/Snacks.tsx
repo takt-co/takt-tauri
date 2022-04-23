@@ -35,7 +35,7 @@ export function useSnacks() {
           label: string;
           onClick: () => void;
         }>;
-        severity?: AlertProps["severity"]
+        severity?: AlertProps["severity"];
       }): void {
         snackbar.enqueueSnackbar(args.title, {
           content(key, message) {
@@ -47,10 +47,12 @@ export function useSnacks() {
                   snackbar.closeSnackbar();
                 }}
               >
-                <Text strong>{message}</Text>
-                <Spacer size="tiny" />
+                <Text strong fontSize="detail">{message}</Text>
                 {args.body && (
-                  <Text fontSize="detail">{args.body}</Text>
+                  <>
+                    <Spacer size="tiny" />
+                    <Text fontSize="detail">{args.body}</Text>
+                  </>
                 )}
                 {args.actions && args.actions.length > 0 && (
                   <>
@@ -62,7 +64,7 @@ export function useSnacks() {
                           onClick={onClick}
                           size="small"
                           variant="outlined"
-                          color="white"
+                          sx={{ borderColor: "white", color: "white", ":hover": { borderColor: "white" } }}
                         >
                           {label}
                         </Button>
@@ -75,6 +77,7 @@ export function useSnacks() {
           },
         });
       },
+      close: snackbar.closeSnackbar,
     }),
     [snackbar]
   );

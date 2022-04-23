@@ -15,7 +15,6 @@ import { Layout } from "./components/Layout";
 import { AppState, AppStateProvider } from "./providers/AppState";
 import { IconButton } from "@mui/material";
 import { ProjectsIcon } from "./components/Icons";
-import { colors } from "./TaktTheme";
 import { Tooltip } from "./components/Tooltip";
 
 type AppProps = { clearCache: () => void };
@@ -54,7 +53,7 @@ export const App = (props: AppProps) => {
           <Row paddingHorizontal="tiny" alignItems="center">
             <IconButton>
               <Tooltip title="Manage projects" key="Projects" placement="right">
-                <ProjectsIcon height={20} fill={colors.white} />
+                <ProjectsIcon height={20} fill="white" />
               </Tooltip>
             </IconButton>
           </Row>
@@ -85,12 +84,7 @@ export const App = (props: AppProps) => {
         ) : (
           // Unexpected state
           // TODO: error reporting
-          <Column
-            fullHeight
-            backgroundColor="white"
-            alignItems="center"
-            justifyContent="center"
-          >
+          <Column fullHeight alignItems="center" justifyContent="center">
             <Text>Error: Unexpected app state</Text>
           </Column>
         )}

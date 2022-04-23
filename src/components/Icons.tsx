@@ -1,5 +1,4 @@
 import React, { SVGAttributes } from "react";
-import { HexColor } from "../TaktTheme";
 
 export type IconProps = SVGAttributes<SVGElement>;
 
@@ -163,7 +162,7 @@ export const ClockIcon = (props: IconProps) => (
 
 export const TodayIcon = (
   props: IconProps & {
-    dotColor?: HexColor;
+    dotColor?: string;
   }
 ) => (
   <svg viewBox="0 0 24 24" {...props}>

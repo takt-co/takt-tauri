@@ -1,7 +1,6 @@
 import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
 import { useLazyLoadQuery, useMutation } from "react-relay";
-import { colors, darken } from "../TaktTheme";
 import { DateString, ID } from "../CustomTypes";
 import { Button } from "./Button";
 import { ButtonBar } from "./ButtonBar";
@@ -19,7 +18,7 @@ import { graphql } from "babel-plugin-relay/macro";
 import { TimersScreen_ArchiveMutation } from "./__generated__/TimersScreen_ArchiveMutation.graphql";
 import { Authenticated, useAuthentication } from "../providers/Authentication";
 import { Layout } from "./Layout";
-import { IconButton } from "@mui/material";
+import { IconButton, useTheme } from "@mui/material";
 import { config } from "../config";
 import { Tooltip } from "./Tooltip";
 import { DateBar } from "./DateBar";
@@ -33,10 +32,11 @@ export const TimersScreen = (props: {
   recordingTimer: { id: ID; date: DateString } | null;
 }) => {
   const { setAppState } = useAppState();
+  const theme = useTheme();
   const todayStr = moment().format(config.dateFormat);
 
   return (
-    <Column fullWidth fullHeight>
+    <Column fullWidth fullHeight style={{ background: "white" }}>
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
           {props.recordingTimer && props.recordingTimer.date !== props.date && (
@@ -56,7 +56,7 @@ export const TimersScreen = (props: {
                 title="Jump to recording timer"
               >
                 <Row>
-                  <ClockIcon height={24} fill={colors.white} />
+                  <ClockIcon height={24} fill="white" />
                 </Row>
               </Tooltip>
             </IconButton>
@@ -69,7 +69,7 @@ export const TimersScreen = (props: {
             >
               <Tooltip placement="left" key="Today" title="Jump to today">
                 <Row>
-                  <TodayIcon height={24} fill={colors.white} />
+                  <TodayIcon height={24} fill="white" />
                 </Row>
               </Tooltip>
             </IconButton>
@@ -81,7 +81,7 @@ export const TimersScreen = (props: {
           >
             <Tooltip placement="left" key="Settings" title="Settings">
               <Row>
-                <SettingsIcon height={20} fill={colors.white} />
+                <SettingsIcon height={20} fill="white" />
               </Row>
             </Tooltip>
           </IconButton>
@@ -113,7 +113,6 @@ export const TimersScreen = (props: {
       <Column
         fullHeight
         style={{ height: "calc(100vh - 170px)", overflow: "auto" }}
-        backgroundColor="white"
       >
         <Suspense
           fallback={
@@ -148,7 +147,7 @@ export const TimersScreen = (props: {
             <AddIcon
               width={12}
               height={12}
-              fill={colors.primary}
+              fill={theme.palette.primary.main}
               style={{ marginLeft: 2 }}
             />
           }
@@ -265,31 +264,34 @@ const Timers = (props: {
                   title: "Delete timer",
                   body: "Are you sure you want to delete this timer?",
                   severity: "warning",
-                  actions: [{
-                    label: "Delete now",
-                    onClick: () => {
-                      archiveTimer({
-                        variables: { timerId: timer.id },
-                        optimisticResponse: {
-                          archiveTimer: {
-                            timer: {
-                              id: timer.id,
-                              seconds: timer.seconds,
-                              status: "deleted",
-                              lastActionAt: moment().toISOString(),
-                              user: {
-                                id: auth.currentUserId,
-                                recordingTimer:
-                                  props.recordingTimer?.id === timer.id
-                                    ? null
-                                    : props.recordingTimer?.id,
+                  actions: [
+                    {
+                      label: "Delete now",
+                      onClick: () => {
+                        archiveTimer({
+                          variables: { timerId: timer.id },
+                          optimisticResponse: {
+                            archiveTimer: {
+                              timer: {
+                                id: timer.id,
+                                seconds: timer.seconds,
+                                status: "deleted",
+                                lastActionAt: moment().toISOString(),
+                                user: {
+                                  id: auth.currentUserId,
+                                  recordingTimer:
+                                    props.recordingTimer?.id === timer.id
+                                      ? null
+                                      : props.recordingTimer?.id,
+                                },
                               },
                             },
                           },
-                        },
-                      });
-                    }
-                  }]
+                        });
+                        snacks.close();
+                      },
+                    },
+                  ],
                 });
               }}
             />
@@ -304,16 +306,11 @@ const Timers = (props: {
 };
 
 export const TimersEmptyState = () => {
+  const theme = useTheme();
   return (
-    <Column
-      fullHeight
-      justifyContent="center"
-      alignItems="center"
-      gap="small"
-      backgroundColor="white"
-    >
-      <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
-      <Text color={colors.gray}>No timers on this date</Text>
+    <Column fullHeight justifyContent="center" alignItems="center" gap="small">
+      <TimerOffIcon width={30} fill={`${theme.palette.grey}`} />
+      <Text color={theme.palette.grey}>No timers on this date</Text>
     </Column>
   );
 };

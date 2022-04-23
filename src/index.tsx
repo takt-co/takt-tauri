@@ -18,6 +18,7 @@ import LogoSrc from "./assets/logo.png";
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
 import { SnackbarProvider } from "./providers/Snacks";
+import { createTheme, ThemeProvider } from "@mui/material";
 
 Sentry.init({
   dsn: "https://cc6d1d6a31e84f499878486d74402a85@o284609.ingest.sentry.io/6356892",
@@ -80,26 +81,42 @@ const AuthenticatedScreen = () => {
           </Column>
         }
       >
-        <SnackbarProvider>
-          <App
-            clearCache={() => {
-              // Incrementing this key will force the environment to be recreated
-              setEnvironmentKey((key) => key + 1);
-            }}
-          />
-        </SnackbarProvider>
+        <App
+          clearCache={() => {
+            // Incrementing this key will force the environment to be recreated
+            setEnvironmentKey((key) => key + 1);
+          }}
+        />
       </Suspense>
     </RelayEnvironmentProvider>
   );
 };
 
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: "#20639B",
+    },
+    secondary: {
+      main: "#d97927",
+    },
+    error: {
+      main: "#e53935",
+    },
+  },
+});
+
 ReactDOM.render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <AuthenticationProvider>
-        <Takt />
-      </AuthenticationProvider>
-    </ErrorBoundary>
+    <ThemeProvider theme={theme}>
+      <SnackbarProvider>
+        <ErrorBoundary>
+          <AuthenticationProvider>
+            <Takt />
+          </AuthenticationProvider>
+        </ErrorBoundary>
+      </SnackbarProvider>
+    </ThemeProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

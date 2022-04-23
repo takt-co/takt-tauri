@@ -1,5 +1,5 @@
+import { useTheme } from "@mui/material";
 import React from "react";
-import { colors } from "../TaktTheme";
 import { Column, Row } from "./Flex";
 
 export const TopBar = (props: {
@@ -7,6 +7,7 @@ export const TopBar = (props: {
   right?: React.ReactNode;
   below?: React.ReactNode;
 }) => {
+  const theme = useTheme();
   return (
     <Column fullWidth>
       <Column fullWidth>
@@ -22,7 +23,7 @@ export const TopBar = (props: {
               height: 0,
               borderLeft: "10px solid transparent",
               borderRight: "10px solid transparent",
-              borderBottom: `10px solid ${colors.primary}`,
+              borderBottom: `10px solid ${theme.palette.primary.main}`,
               borderRadius: 5,
             }}
           />
@@ -31,12 +32,12 @@ export const TopBar = (props: {
           justifyContent="space-between"
           alignItems="center"
           paddingVertical="smaller"
-          backgroundColor="primary"
           style={{
             height: 46,
             borderRadius: "5px 5px 0 0",
             marginTop: -1,
             WebkitUserSelect: "none",
+            backgroundColor: theme.palette.primary.main,
           }}
         >
           <Column>{props.left}</Column>
