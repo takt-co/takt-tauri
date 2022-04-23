@@ -1,5 +1,6 @@
 import React from "react";
 import {
+  Fade,
   styled,
   Tooltip as MaterialTooltip,
   tooltipClasses,
@@ -12,7 +13,7 @@ import { Row } from "./Flex";
 
 export const Tooltip = styled(
   ({ className, children, ...props }: TooltipProps) => (
-    <MaterialTooltip arrow {...props} classes={{ popper: className }}>
+    <MaterialTooltip TransitionComponent={Fade} arrow {...props} classes={{ popper: className }}>
       <Row>{children}</Row>
     </MaterialTooltip>
   )

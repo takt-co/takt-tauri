@@ -34,10 +34,12 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
   const [cacheCleared, setCacheCleared] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<"idle" | "checking" | "installing">("idle");
 
-  const handleUpdateError = (error: Error) => {
+  const handleUpdateError = () => {
+    // TODO: error reporting!
+    setUpdateStatus("idle");
     dialog.alert({
       title: "Something went wrong",
-      body: JSON.stringify(error),
+      body: "Sorry for the inconvenience. Please try again later.",
     });
   };
 
