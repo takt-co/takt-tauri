@@ -46,7 +46,7 @@
     "dev": "yarn lint-staged && yarn tauri dev",
     "tauri": "tauri",
     "generate-types": "yarn clean-generated && relay-compiler",
-    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"http://localhost:3001/graphql\" > schema.graphql && node scripts/add-directives-to-graphql-schema.js",
+    "fetch-schema": "dotenv -e .env -- cross-var get-graphql-schema --header \"Authorization=Bearer %FETCH_SCHEMA_TOKEN%\" \"http://localhost:3001/graphql\" > schema.graphql",
     "build-types": "yarn fetch-schema && yarn generate-types",
     "prepare": "husky install",
     "lint": "yarn prettier src --write && yarn eslint --fix",
