@@ -78,7 +78,6 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
           <Setting
             label={updateStatus === "idle" ? "Check for update" : "Checking..."}
             Icon={UpdateIcon}
-            disabled={cacheCleared}
             onClick={() => {
               setUpdateStatus("checking");
               checkUpdate()
