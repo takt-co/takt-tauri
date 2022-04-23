@@ -37,7 +37,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
   const handleUpdateError = (error: Error) => {
     dialog.alert({
       title: "Something went wrong",
-      body: error.message,
+      body: JSON.stringify(error),
     });
   };
 
