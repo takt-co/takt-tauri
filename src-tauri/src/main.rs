@@ -10,6 +10,10 @@ use tauri::{
   TrayIcon,
   SystemTray,
   SystemTrayEvent,
+  CustomMenuItem,
+  Menu,
+  MenuItem,
+  Submenu
 };
 
 fn main() {
@@ -17,6 +21,15 @@ fn main() {
     release: sentry::release_name!(),
     ..Default::default()
   }));
+
+  let menu = Menu::new()
+    .add_native_item(MenuItem::Copy)
+    .add_submenu(
+      Submenu::new(
+        "File",
+        Menu::new()
+          .add_item(CustomMenuItem::new("inspect".to_string(), "Inspect")))
+    );
 
   tauri::Builder::default()
     .setup(|app| {
@@ -36,6 +49,15 @@ fn main() {
       });
 
       Ok(())
+    })
+    .menu(menu)
+    .on_menu_event(|event| {
+      match event.menu_item_id() {
+        "inspect" => {
+          // event.window().inspect();
+        }
+        _ => {}
+      }
     })
     .system_tray(SystemTray::new())
     .on_system_tray_event(|app, event| match event {
