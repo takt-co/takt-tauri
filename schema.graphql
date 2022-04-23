@@ -1,5 +1,3 @@
-directive @fetchable(field_name: String) on OBJECT
-
 type Account implements Node {
   id: ID!
   name: String!

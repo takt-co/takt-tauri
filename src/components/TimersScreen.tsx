@@ -16,7 +16,6 @@ import {
 import { LoadingScreen } from "./LoadingScreen";
 import { Text } from "./Typography";
 import { graphql } from "babel-plugin-relay/macro";
-import { useDialog } from "../providers/Dialog";
 import { TimersScreen_ArchiveMutation } from "./__generated__/TimersScreen_ArchiveMutation.graphql";
 import { Authenticated, useAuthentication } from "../providers/Authentication";
 import { Layout } from "./Layout";
@@ -27,6 +26,7 @@ import { DateBar } from "./DateBar";
 import { TimersScreen_Query } from "./__generated__/TimersScreen_Query.graphql";
 import { TimerCard } from "./TimerCard";
 import { useAppState } from "../providers/AppState";
+import { useSnacks } from "../providers/Snacks";
 
 export const TimersScreen = (props: {
   date: DateString;
@@ -169,7 +169,7 @@ const Timers = (props: {
   onAdd: () => void;
   recordingTimer: { id: ID; date: DateString } | null;
 }) => {
-  const dialog = useDialog();
+  const snacks = useSnacks();
   const auth = useAuthentication() as Authenticated;
   const [timeNow, setTimeNow] = useState(moment());
 
@@ -261,33 +261,35 @@ const Timers = (props: {
               timer={timer}
               onEdit={props.onEdit}
               onDelete={(timer) => {
-                dialog.confirm({
+                snacks.alert({
                   title: "Delete timer",
                   body: "Are you sure you want to delete this timer?",
-                  confirmColor: "warning",
-                  confirmLabel: "Delete",
-                  onConfirm: () => {
-                    archiveTimer({
-                      variables: { timerId: timer.id },
-                      optimisticResponse: {
-                        archiveTimer: {
-                          timer: {
-                            id: timer.id,
-                            seconds: timer.seconds,
-                            status: "deleted",
-                            lastActionAt: moment().toISOString(),
-                            user: {
-                              id: auth.currentUserId,
-                              recordingTimer:
-                                props.recordingTimer?.id === timer.id
-                                  ? null
-                                  : props.recordingTimer?.id,
+                  severity: "warning",
+                  actions: [{
+                    label: "Delete now",
+                    onClick: () => {
+                      archiveTimer({
+                        variables: { timerId: timer.id },
+                        optimisticResponse: {
+                          archiveTimer: {
+                            timer: {
+                              id: timer.id,
+                              seconds: timer.seconds,
+                              status: "deleted",
+                              lastActionAt: moment().toISOString(),
+                              user: {
+                                id: auth.currentUserId,
+                                recordingTimer:
+                                  props.recordingTimer?.id === timer.id
+                                    ? null
+                                    : props.recordingTimer?.id,
+                              },
                             },
                           },
                         },
-                      },
-                    });
-                  },
+                      });
+                    }
+                  }]
                 });
               }}
             />

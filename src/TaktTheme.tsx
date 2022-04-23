@@ -11,6 +11,11 @@ export const darken = (color: Color, amount: number) =>
 export const lighten = (color: Color, amount: number) =>
   colord(colors[color]).lighten(amount).toHex() as HexColor;
 
+export const alpha = (color: Color, alpha: number) => {
+  const { r, g, b } = colord(colors[color]).toRgb();
+  return `rgba(${r},${g},${b},${alpha})`;
+};
+
 export const colors = {
   primary: "#20639B" as HexColor,
   darkPrimary: "#173F5F" as HexColor,
