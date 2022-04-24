@@ -20,22 +20,17 @@ export const Unauthenticated = () => {
   const snacks = useSnacks();
 
   const [showingPassword, setShowingPassword] = useState(false);
+  const [inFlight, setInFlight] = useState(false);
   const [loginDetails, setLoginDetails] = useState({
     username: "",
     password: "",
   });
-  const [inFlight, setInFlight] = useState(false);
 
   const handleLogin = () => {
     setInFlight(true);
     authentication.login(loginDetails).then((success) => {
       setInFlight(false);
-      if (success) {
-        snacks.alert({
-          severity: "success",
-          title: `🎉 Welcome back ${loginDetails.username}`
-        });
-      } else {
+      if (!success) {
         snacks.alert({
           severity: "error",
           title: "Login failed"

@@ -212,7 +212,7 @@ export const TimerCard = (props: {
           </Button>
           <Button
             variant="text"
-            color="warning"
+            color="error"
             size="small"
             onClick={() => {
               props.onDelete({ id: timer.id, seconds: clockToSeconds(clock) });

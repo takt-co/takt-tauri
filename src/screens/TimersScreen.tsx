@@ -276,8 +276,8 @@ const Timers = (props: {
               onDelete={(timer) => {
                 snacks.alert({
                   title: "Delete timer",
-                  body: "Are you sure you want to delete this timer?",
-                  severity: "warning",
+                  body: "Are you sure you want to delete this?",
+                  severity: "error",
                   actions: [
                     {
                       label: "Delete now",
