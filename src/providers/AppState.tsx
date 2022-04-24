@@ -9,7 +9,7 @@ export type AppState = {
   }>;
 } & (
   | {
-      tag: "viewingTimers" | "addingTimer" | "viewingSettings";
+      tag: "viewingTimers" | "addingTimer" | "viewingProjects" | "viewingSettings";
     }
   | {
       tag: "editingTimer";

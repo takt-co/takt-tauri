@@ -2,28 +2,29 @@ import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { DateString, ID } from "../CustomTypes";
-import { Button } from "./Button";
-import { ButtonBar } from "./ButtonBar";
-import { Column, Row } from "./Flex";
+import { Button } from "../components/Button";
+import { ButtonBar } from "../components/ButtonBar";
+import { Column, Row } from "../components/Flex";
 import {
   AddIcon,
   ClockIcon,
+  ProjectsIcon,
   SettingsIcon,
   TimerOffIcon,
   TodayIcon,
-} from "./Icons";
-import { LoadingScreen } from "./LoadingScreen";
-import { Text } from "./Typography";
+} from "../components/Icons";
+import { LoadingScreen } from "../components/LoadingScreen";
+import { Text } from "../components/Typography";
 import { graphql } from "babel-plugin-relay/macro";
 import { TimersScreen_ArchiveMutation } from "./__generated__/TimersScreen_ArchiveMutation.graphql";
 import { Authenticated, useAuthentication } from "../providers/Authentication";
-import { Layout } from "./Layout";
+import { Layout } from "../components/Layout";
 import { IconButton, useTheme } from "@mui/material";
 import { config } from "../config";
-import { Tooltip } from "./Tooltip";
-import { DateBar } from "./DateBar";
+import { Tooltip } from "../components/Tooltip";
+import { DateBar } from "../components/DateBar";
 import { TimersScreen_Query } from "./__generated__/TimersScreen_Query.graphql";
-import { TimerCard } from "./TimerCard";
+import { TimerCard } from "../components/TimerCard";
 import { useAppState } from "../providers/AppState";
 import { useSnacks } from "../providers/Snacks";
 
@@ -37,6 +38,19 @@ export const TimersScreen = (props: {
 
   return (
     <Column fullWidth fullHeight style={{ background: "white" }}>
+      <Layout.TopBarLeft>
+        <Row paddingHorizontal="tiny" alignItems="center">
+          <IconButton
+            onClick={() => {
+              setAppState((state) => ({ ...state, tag: "viewingProjects" }));
+            }}
+          >
+            <Tooltip title="Projects" key="Projects" placement="right">
+              <ProjectsIcon height={20} fill="white" />
+            </Tooltip>
+          </IconButton>
+        </Row>
+      </Layout.TopBarLeft>
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
           {props.recordingTimer && props.recordingTimer.date !== props.date && (

@@ -2,10 +2,10 @@ import React, { Suspense, useEffect, useState } from "react";
 import { Column, Row } from "./components/Flex";
 import { Text } from "./components/Typography";
 import moment from "moment";
-import { EditTimerForm, TimerForm } from "./components/TimerForm";
-import { TimersScreen } from "./components/TimersScreen";
+import { EditTimerFormScreen, TimerFormScreen } from "./screens/TimerFormScreen";
+import { TimersScreen } from "./screens/TimersScreen";
 import { config } from "./config";
-import { SettingsScreen } from "./components/SettingsScreen";
+import { SettingsScreen } from "./screens/SettingsScreen";
 import { useLazyLoadQuery } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
 import { LoadingScreen } from "./components/LoadingScreen";
@@ -13,9 +13,7 @@ import { emit } from "@tauri-apps/api/event";
 import { App_CurrentUserQuery } from "./__generated__/App_CurrentUserQuery.graphql";
 import { Layout } from "./components/Layout";
 import { AppState, AppStateProvider } from "./providers/AppState";
-import { IconButton } from "@mui/material";
-import { ProjectsIcon } from "./components/Icons";
-import { Tooltip } from "./components/Tooltip";
+import { ProjectsScreen } from "./screens/ProjectsScreen";
 
 type AppProps = { clearCache: () => void };
 
@@ -49,23 +47,13 @@ export const App = (props: AppProps) => {
   return (
     <AppStateProvider value={{ appState, setAppState }}>
       <Layout>
-        <Layout.TopBarLeft>
-          <Row paddingHorizontal="tiny" alignItems="center">
-            <IconButton>
-              <Tooltip title="Manage projects" key="Projects" placement="right">
-                <ProjectsIcon height={20} fill="white" />
-              </Tooltip>
-            </IconButton>
-          </Row>
-        </Layout.TopBarLeft>
-
         {appState.tag === "viewingTimers" ? (
           <TimersScreen
             date={appState.viewingDate}
             recordingTimer={currentUser.recordingTimer}
           />
         ) : appState.tag === "addingTimer" ? (
-          <TimerForm
+          <TimerFormScreen
             defaultValues={{
               timerId: undefined,
               projectId: undefined,
@@ -77,10 +65,12 @@ export const App = (props: AppProps) => {
           />
         ) : appState.tag === "editingTimer" ? (
           <Suspense fallback={<LoadingScreen />}>
-            <EditTimerForm timerId={appState.timer.id} />
+            <EditTimerFormScreen timerId={appState.timer.id} />
           </Suspense>
         ) : appState.tag === "viewingSettings" ? (
           <SettingsScreen clearCache={props.clearCache} />
+        ) : appState.tag === "viewingProjects" ? (
+          <ProjectsScreen />
         ) : (
           // Unexpected state
           // TODO: error reporting

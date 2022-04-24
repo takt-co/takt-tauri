@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Column, Row } from "./Flex";
+import { Column, Row } from "../components/Flex";
 import {
   CleanUpIcon,
   CrossIcon,
@@ -7,19 +7,19 @@ import {
   LoginIcon,
   PowerIcon,
   UpdateIcon,
-} from "./Icons";
-import { Text } from "./Typography";
-import { Spacer } from "./Spacer";
+} from "../components/Icons";
+import { Text } from "../components/Typography";
+import { Spacer } from "../components/Spacer";
 import { useAuthentication } from "../providers/Authentication";
 import { process } from "@tauri-apps/api";
 import { config } from "../config";
-import { Layout } from "./Layout";
+import { Layout } from "../components/Layout";
 import { CircularProgress, IconButton, useTheme } from "@mui/material";
-import { Tooltip } from "./Tooltip";
+import { Tooltip } from "../components/Tooltip";
 import { useAppState } from "../providers/AppState";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
 import { relaunch } from "@tauri-apps/api/process";
-import { LoadingScreen } from "./LoadingScreen";
+import { LoadingScreen } from "../components/LoadingScreen";
 import { useSnacks } from "../providers/Snacks";
 
 export const SettingsScreen = (props: { clearCache: () => void }) => {
@@ -52,6 +52,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
 
   return (
     <Column fullHeight style={{ background: "white" }}>
+      <Layout.TopBarLeft />
       <Layout.TopBarRight>
         <Row paddingHorizontal="tiny">
           <IconButton
