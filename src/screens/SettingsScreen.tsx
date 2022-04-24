@@ -78,6 +78,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
         <Column>
           <Setting
             label={updateStatus === "idle" ? "Check for update" : "Checking..."}
+            hint="Check if a newer version of Takt is available"
             Icon={UpdateIcon}
             onClick={() => {
               setUpdateStatus("checking");
@@ -116,6 +117,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
           />
           <Setting
             label={cacheCleared ? "Cache cleared" : "Clear cache"}
+            hint="You won't be signed out"
             Icon={CleanUpIcon}
             disabled={cacheCleared}
             onClick={() => {
@@ -125,6 +127,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
           />
           <Setting
             label="Sign out"
+            hint={`Signed in as: ${authentication.currentUser.username}`}
             Icon={LoginIcon}
             iconProps={{
               width: 16,
@@ -160,6 +163,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
 
 const Setting = (props: {
   label: string;
+  hint?: string;
   loading?: boolean;
   Icon: React.FunctionComponent<IconProps>;
   onClick: () => void;
@@ -172,7 +176,7 @@ const Setting = (props: {
     <Row
       padding="small"
       gap="small"
-      alignItems="center"
+      alignItems={props.hint ? "flex-start" : "center"}
       fullWidth
       onClick={props.disabled ? undefined : props.onClick}
       hoverStyle={{
@@ -194,7 +198,7 @@ const Setting = (props: {
           }}
         />
       )}
-      <Column>
+      <Column gap="tiny">
         <Text
           color={
             props.disabled ? theme.palette.text.disabled : theme.palette.text.primary
@@ -202,6 +206,14 @@ const Setting = (props: {
         >
           {props.label}
         </Text>
+        {props.hint && (
+          <Text
+            fontSize="small"
+            color={theme.palette.text.disabled}
+          >
+            {props.hint}
+          </Text>
+        )}
       </Column>
     </Row>
   );

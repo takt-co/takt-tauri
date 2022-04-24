@@ -131,7 +131,7 @@ export const TimerCard = (props: {
                             seconds: clockToSeconds(clock),
                             updatedAt: moment().toISOString(),
                             user: {
-                              id: auth.currentUserId,
+                              id: auth.currentUser.id,
                               recordingTimer: null,
                             },
                           },
@@ -152,7 +152,7 @@ export const TimerCard = (props: {
                             seconds: timer.seconds,
                             updatedAt: moment().toISOString(),
                             user: {
-                              id: auth.currentUserId,
+                              id: auth.currentUser.id,
                               recordingTimer: {
                                 id: timer.id,
                               },

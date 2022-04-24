@@ -292,7 +292,7 @@ const Timers = (props: {
                                 status: "deleted",
                                 lastActionAt: moment().toISOString(),
                                 user: {
-                                  id: auth.currentUserId,
+                                  id: auth.currentUser.id,
                                   recordingTimer:
                                     props.recordingTimer?.id === timer.id
                                       ? null

@@ -13,7 +13,8 @@ const tokenStorageKey = "secureToken";
 type AuthResponse = {
   data: {
     secureToken: SecureToken;
-    currentUserId: ID;
+    id: ID;
+    username: string;
   };
 };
 
@@ -31,7 +32,7 @@ export type Unauthenticated = {
 export type Authenticated = {
   tag: "authenticated";
   secureToken: SecureToken;
-  currentUserId: ID;
+  currentUser: { id: ID; username: string; };
   logout: () => Promise<void>;
 };
 
@@ -85,14 +86,14 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
         api()
           .post("/authorise", loginDetails)
           .then((resp) => {
-            const { secureToken, currentUserId } = resp.data;
+            const { secureToken, id, username } = resp.data;
 
             if (secureToken) {
               localStorage.setItem(tokenStorageKey, secureToken);
               setState({
                 tag: "authenticated",
                 secureToken,
-                currentUserId,
+                currentUser: { id, username },
                 logout,
               });
               resolve(true);
@@ -112,7 +113,7 @@ export const AuthenticationProvider = (props: { children: ReactNode }) => {
         setState({
           tag: "authenticated",
           secureToken: auth.data.secureToken,
-          currentUserId: auth.data.currentUserId,
+          currentUser: { id: auth.data.id, username: auth.data.username },
           logout,
         });
       } else {
