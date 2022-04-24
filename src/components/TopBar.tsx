@@ -14,9 +14,8 @@ export const TopBar = (props: {
         <Row
           alignItems="center"
           justifyContent="center"
-          style={{ marginTop: 0 }}
         >
-          <div
+          <span
             style={{
               display: "inline-block",
               width: 0,

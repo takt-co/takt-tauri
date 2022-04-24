@@ -95,14 +95,20 @@ const AuthenticatedScreen = () => {
 const theme = createTheme({
   palette: {
     primary: {
-      main: "#20639B",
+      main: "#3778A9",
     },
     secondary: {
-      main: "#d97927",
+      main: "#EFCB68",
     },
     error: {
-      main: "#e53935",
+      main: "#FE5E41",
     },
+    info: {
+      main: "#C0D6DF",
+    },
+    success: {
+      main: "#00A878",
+    }
   },
 });
 

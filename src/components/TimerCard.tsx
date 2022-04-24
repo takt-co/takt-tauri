@@ -184,7 +184,7 @@ export const TimerCard = (props: {
 
         <Column
           style={{ borderLeft: `1px solid ${theme.palette.grey[400]}` }}
-          paddingHorizontal="tiny"
+          paddingHorizontal="smaller"
         >
           <Text
             fontSize="detail"
@@ -200,7 +200,7 @@ export const TimerCard = (props: {
           </Text>
         </Column>
 
-        <Row gap="tiny">
+        <Row gap="smaller">
           <Button
             variant="outlined"
             size="small"

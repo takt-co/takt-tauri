@@ -8,7 +8,6 @@ import {
   useTheme,
 } from "@mui/material";
 import { fontSizes } from "./Typography";
-import { spacing } from "./Spacer";
 import { Row } from "./Flex";
 
 export const Tooltip = styled(
@@ -32,7 +31,7 @@ export const Tooltip = styled(
     },
     [`& .${tooltipClasses.tooltip}`]: {
       fontSize: fontSizes.small,
-      padding: `${spacing.tiny}px ${spacing.smaller}px`,
+      padding: 8,
       backgroundColor: theme.palette.text.secondary,
     },
   };

@@ -33,7 +33,7 @@ export const Unauthenticated = () => {
       if (success) {
         snacks.alert({
           severity: "success",
-          title: "Welcome back!"
+          title: `🎉 Welcome back ${loginDetails.username}`
         });
       } else {
         snacks.alert({

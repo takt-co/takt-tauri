@@ -30,7 +30,6 @@ fn main() {
     .on_system_tray_event(|app, event| match event {
       SystemTrayEvent::LeftClick {
         position,
-        size,
         ..
       } => {
         let window = app.get_window("main").unwrap();
@@ -43,9 +42,9 @@ fn main() {
           window.set_position(
             Position::Physical(
               PhysicalPosition {
-                // TODO: 323 = random number (due to retina?). May change between devices?
-                x: (position.x as i32 - (size.width as i32 / 2)) - 323,
-                y: 0
+                // TODO: 361 = random number (due to retina?). May change between devices?
+                x: (position.x as i32 - (361 as i32)),
+                y: 0,
               }
             )
           ).unwrap();
