@@ -32,7 +32,7 @@ export type Unauthenticated = {
 export type Authenticated = {
   tag: "authenticated";
   secureToken: SecureToken;
-  currentUser: { id: ID; username: string; };
+  currentUser: { id: ID; username: string };
   logout: () => Promise<void>;
 };
 

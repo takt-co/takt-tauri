@@ -11,14 +11,13 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { Unauthenticated as UnauthenticatedScreen } from "./Unauthenticated";
 import { App } from "./App";
 import { Column, Row } from "./components/Flex";
-import { TopBar } from "./components/TopBar";
 import ErrorBoundary from "./ErrorBoundry";
 import { Layout } from "./components/Layout";
 import LogoSrc from "./assets/logo.png";
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
 import { SnackbarProvider } from "./providers/Snacks";
-import { createTheme, ThemeProvider } from "@mui/material";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 Sentry.init({
   dsn: "https://cc6d1d6a31e84f499878486d74402a85@o284609.ingest.sentry.io/6356892",
@@ -47,11 +46,11 @@ const Takt = () => {
 
 const Loading = () => (
   <Layout>
-    <Layout.TopBarLeft>
+    <Layout.TopBar>
       <Row padding="smaller">
         <img alt="Takt" src={LogoSrc} height={20} />
       </Row>
-    </Layout.TopBarLeft>
+    </Layout.TopBar>
     <LoadingScreen message="Fetching user..." />
   </Layout>
 );
@@ -76,8 +75,7 @@ const AuthenticatedScreen = () => {
               borderRadius: 5,
             }}
           >
-            <TopBar />
-            <LoadingScreen message="Loading user" />
+            <LoadingScreen message="Loading..." />
           </Column>
         }
       >
@@ -92,35 +90,9 @@ const AuthenticatedScreen = () => {
   );
 };
 
-const theme = createTheme({
-  palette: {
-    primary: {
-      light: "#84B3D7",
-      main: "#3778A9",
-      dark: "#1E415C"
-    },
-    warning: {
-      main: "#EEC659",
-    },
-    error: {
-      light: "#FE8671",
-      main: "#F42601",
-      dark: "#A21901"
-    },
-    success: {
-      main: "#00A878",
-    },
-    info: {
-      light: "#84B3D7",
-      main: "#3778A9",
-      dark: "#1E415C"
-    }
-  },
-});
-
 ReactDOM.render(
   <React.StrictMode>
-    <ThemeProvider theme={theme}>
+    <ThemeProvider>
       <SnackbarProvider>
         <ErrorBoundary>
           <AuthenticationProvider>

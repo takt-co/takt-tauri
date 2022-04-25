@@ -33,7 +33,7 @@ export const Unauthenticated = () => {
       if (!success) {
         snacks.alert({
           severity: "error",
-          title: "Login failed"
+          title: "Login failed",
         });
       }
     });
@@ -41,11 +41,11 @@ export const Unauthenticated = () => {
 
   return (
     <Layout>
-      <Layout.TopBarLeft>
+      <Layout.TopBar>
         <Row padding="smaller">
           <img alt="Takt" src={LogoSrc} height={20} />
         </Row>
-      </Layout.TopBarLeft>
+      </Layout.TopBar>
       <Column
         fullWidth
         fullHeight
@@ -107,9 +107,15 @@ export const Unauthenticated = () => {
                   }}
                 >
                   {showingPassword ? (
-                    <PasswordShowing width={20} fill={theme.palette.primary.main} />
+                    <PasswordShowing
+                      width={20}
+                      fill={theme.palette.primary.main}
+                    />
                   ) : (
-                    <PasswordHidden width={20} fill={theme.palette.primary.main} />
+                    <PasswordHidden
+                      width={20}
+                      fill={theme.palette.primary.main}
+                    />
                   )}
                 </IconButton>
               </InputAdornment>

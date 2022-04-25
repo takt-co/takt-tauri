@@ -45,7 +45,7 @@ export function useSnacks() {
                 style={{
                   width: "100%",
                   height: "100vh",
-                  paddingBottom: 3
+                  paddingBottom: 3,
                 }}
                 onClick={() => {
                   snackbar.closeSnackbar();
@@ -62,7 +62,9 @@ export function useSnacks() {
                   }}
                   sx={{ mb: 0 }}
                 >
-                  <Text strong fontSize="detail">{message}</Text>
+                  <Text strong fontSize="detail">
+                    {message}
+                  </Text>
                   {args.body && (
                     <>
                       <Spacer size="tiny" />
@@ -79,7 +81,11 @@ export function useSnacks() {
                             onClick={onClick}
                             size="small"
                             variant="outlined"
-                            sx={{ borderColor: "white", color: "white", ":hover": { borderColor: "white" } }}
+                            sx={{
+                              borderColor: "white",
+                              color: "white",
+                              ":hover": { borderColor: "white" },
+                            }}
                           >
                             {label}
                           </Button>

@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Column, Row } from "../components/Flex";
 import {
   CleanUpIcon,
-  CrossIcon,
   IconProps,
   LoginIcon,
   PowerIcon,
@@ -13,10 +12,7 @@ import { Spacer } from "../components/Spacer";
 import { useAuthentication } from "../providers/Authentication";
 import { process } from "@tauri-apps/api";
 import { config } from "../config";
-import { Layout } from "../components/Layout";
-import { CircularProgress, IconButton, useTheme } from "@mui/material";
-import { Tooltip } from "../components/Tooltip";
-import { useAppState } from "../providers/AppState";
+import { CircularProgress, useTheme } from "@mui/material";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
 import { relaunch } from "@tauri-apps/api/process";
 import { LoadingScreen } from "../components/LoadingScreen";
@@ -28,7 +24,6 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
     throw new Error("Rendered SettingsScreen while not authenticated");
   }
 
-  const { setAppState } = useAppState();
   const snacks = useSnacks();
   const theme = useTheme();
   const [cacheCleared, setCacheCleared] = useState(false);
@@ -52,23 +47,6 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
 
   return (
     <Column fullHeight style={{ background: "white" }}>
-      <Layout.TopBarLeft />
-      <Layout.TopBarRight>
-        <Row paddingHorizontal="tiny">
-          <IconButton
-            onClick={() => {
-              setAppState((s) => ({ ...s, tag: "viewingTimers" }));
-            }}
-          >
-            <Tooltip placement="right" key="Close" title="Close settings">
-              <Row>
-                <CrossIcon height={20} fill="white" />
-              </Row>
-            </Tooltip>
-          </IconButton>
-        </Row>
-      </Layout.TopBarRight>
-
       <Row padding="small">
         <Text fontSize="large" strong>
           Settings
@@ -201,16 +179,15 @@ const Setting = (props: {
       <Column gap="tiny">
         <Text
           color={
-            props.disabled ? theme.palette.text.disabled : theme.palette.text.primary
+            props.disabled
+              ? theme.palette.text.disabled
+              : theme.palette.text.primary
           }
         >
           {props.label}
         </Text>
         {props.hint && (
-          <Text
-            fontSize="small"
-            color={theme.palette.text.disabled}
-          >
+          <Text fontSize="small" color={theme.palette.text.disabled}>
             {props.hint}
           </Text>
         )}

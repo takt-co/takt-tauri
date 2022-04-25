@@ -9,7 +9,7 @@ export type AppState = {
   }>;
 } & (
   | {
-      tag: "viewingTimers" | "addingTimer" | "viewingProjects" | "viewingSettings";
+      tag: "timers" | "addingTimer" | "projects" | "reporting" | "settings";
     }
   | {
       tag: "editingTimer";
@@ -22,7 +22,7 @@ const AppState = createContext<{
   setAppState: React.Dispatch<React.SetStateAction<AppState>>;
 }>({
   appState: {
-    tag: "viewingTimers",
+    tag: "timers",
     viewingDate: "",
     timerConnections: [],
   },

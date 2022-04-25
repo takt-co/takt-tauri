@@ -9,7 +9,10 @@ import { Button } from "./Button";
 import { Column, Row } from "./Flex";
 import { Tooltip } from "./Tooltip";
 import { Text } from "./Typography";
-import { TimerCard_StartRecordingMutation, TimerCard_StartRecordingMutation$data } from "./__generated__/TimerCard_StartRecordingMutation.graphql";
+import {
+  TimerCard_StartRecordingMutation,
+  TimerCard_StartRecordingMutation$data,
+} from "./__generated__/TimerCard_StartRecordingMutation.graphql";
 import { TimerCard_StopRecordingMutation } from "./__generated__/TimerCard_StopRecordingMutation.graphql";
 import { TimerCard_Timer$key } from "./__generated__/TimerCard_Timer.graphql";
 import { useTheme } from "@mui/material";
@@ -92,7 +95,7 @@ export const TimerCard = (props: {
   return (
     <Row
       key={timer.id}
-      style={{ borderBottom: `1px solid ${theme.palette.grey[200]}` }}
+      style={{ borderBottom: `1px solid ${theme.palette.grey[300]}` }}
       justifyContent="space-between"
       alignItems="flex-start"
       padding="small"

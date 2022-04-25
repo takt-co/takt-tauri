@@ -2,8 +2,8 @@ import React, { DetailedHTMLProps, HTMLAttributes } from "react";
 
 export const spacing = {
   tiny: 4,
-  smaller: 12,
-  small: 18,
+  smaller: 10,
+  small: 16,
   medium: 24,
   large: 32,
   larger: 48,

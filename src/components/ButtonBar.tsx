@@ -16,7 +16,8 @@ export const ButtonBar = ({
       padding="smaller"
       gap="smaller"
       style={{
-        borderTop: `1px solid ${theme.palette.divider}`,
+        borderTop: `1px solid ${theme.palette.grey[300]}`,
+        background: theme.palette.grey[100],
         ...style,
       }}
       {...rest}

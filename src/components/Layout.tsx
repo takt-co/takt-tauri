@@ -1,13 +1,13 @@
 import React from "react";
-import { Column } from "./Flex";
-import { TopBar } from "./TopBar";
+import { Column, Row } from "./Flex";
 import { createTeleporter } from "react-teleporter";
+import { useTheme } from "@mui/material";
 
-export const TopBarLeft = createTeleporter();
-export const TopBarRight = createTeleporter();
-export const TopBarBelow = createTeleporter();
+export const TopBar = createTeleporter();
 
 export const Layout = (props: { children: React.ReactNode }) => {
+  const theme = useTheme();
+
   return (
     <Column
       style={{
@@ -16,16 +16,38 @@ export const Layout = (props: { children: React.ReactNode }) => {
         borderRadius: 5,
       }}
     >
-      <TopBar
-        left={<TopBarLeft.Target />}
-        right={<TopBarRight.Target />}
-        below={<TopBarBelow.Target />}
-      />
-      {props.children}
+      <Row alignItems="center" justifyContent="center">
+        <span
+          style={{
+            display: "inline-block",
+            width: 0,
+            height: 0,
+            borderLeft: "10px solid transparent",
+            borderRight: "10px solid transparent",
+            borderBottom: `10px solid ${theme.palette.primary.main}`,
+            borderRadius: 5,
+          }}
+        />
+      </Row>
+
+      <Row
+        justifyContent="space-between"
+        alignItems="center"
+        paddingVertical="smaller"
+        style={{
+          height: 46,
+          borderRadius: "5px 5px 0 0",
+          marginTop: -1,
+          WebkitUserSelect: "none",
+          backgroundColor: theme.palette.primary.main,
+        }}
+      >
+        <TopBar.Target style={{ width: "100%" }} />
+      </Row>
+
+      <Column fullHeight>{props.children}</Column>
     </Column>
   );
 };
 
-Layout.TopBarLeft = TopBarLeft.Source;
-Layout.TopBarRight = TopBarRight.Source;
-Layout.TopBarBelow = TopBarBelow.Source;
+Layout.TopBar = TopBar.Source;

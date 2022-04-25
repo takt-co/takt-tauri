@@ -3,7 +3,7 @@ import { Column, Row } from "../components/Flex";
 import { Text } from "../components/Typography";
 import { useAuthentication } from "../providers/Authentication";
 
-export const ProjectsScreen = () => {
+export const ReportingScreen = () => {
   const authentication = useAuthentication();
   if (authentication.tag !== "authenticated") {
     throw new Error("Rendered SettingsScreen while not authenticated");
@@ -13,7 +13,7 @@ export const ProjectsScreen = () => {
     <Column fullHeight style={{ background: "white" }}>
       <Row padding="small">
         <Text fontSize="large" strong>
-          Projects
+          Reporting
         </Text>
       </Row>
     </Column>

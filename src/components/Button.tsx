@@ -5,6 +5,7 @@ import {
   CircularProgress,
   SxProps,
   Theme,
+  useTheme,
 } from "@mui/material";
 import { FontSize, fontSizes } from "./Typography";
 
@@ -16,6 +17,7 @@ export const Button = (
     fontSize?: FontSize;
   }
 ) => {
+  const theme = useTheme();
   const { loading, fontSize, startIcon, variant, ...rest } = props;
 
   const styles: SxProps<Theme> = {
@@ -32,6 +34,10 @@ export const Button = (
             size={12}
             sx={{
               svg: {
+                color:
+                  variant === "contained"
+                    ? "white"
+                    : theme.palette.primary.main,
                 width: 12,
               },
             }}

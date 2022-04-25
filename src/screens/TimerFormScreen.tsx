@@ -7,7 +7,6 @@ import { Text } from "../components/Typography";
 import {
   CircularProgress,
   FormControl,
-  IconButton,
   InputLabel,
   MenuItem,
   Select,
@@ -16,19 +15,12 @@ import {
 } from "@mui/material";
 import { clockToSeconds, currentSeconds, secondsToClock } from "../Clock";
 import { Button } from "../components/Button";
-import {
-  SaveIcon,
-  MinusCircled,
-  PlusCircled,
-  CrossIcon,
-} from "../components/Icons";
+import { SaveIcon, MinusCircled, PlusCircled } from "../components/Icons";
 import { ButtonBar } from "../components/ButtonBar";
 import { TimerFormScreen_CreateTimerMutation } from "./__generated__/TimerFormScreen_CreateTimerMutation.graphql";
 import { TimerFormScreen_UpdateTimerMutation } from "./__generated__/TimerFormScreen_UpdateTimerMutation.graphql";
 import { DateString, ID } from "../CustomTypes";
 import { Spacer } from "../components/Spacer";
-import { Layout } from "../components/Layout";
-import { Tooltip } from "../components/Tooltip";
 import { ProjectSelect } from "../components/ProjectSelect";
 import {
   TimerFormScreen_Query,
@@ -38,9 +30,12 @@ import { LoadingScreen } from "../components/LoadingScreen";
 import { useAppState } from "../providers/AppState";
 import { uniq } from "lodash";
 import { config } from "../config";
+import { useSnacks } from "../providers/Snacks";
 
 const createTimerMutation = graphql`
-  mutation TimerFormScreen_CreateTimerMutation($attributes: CreateTimerAttributes!) {
+  mutation TimerFormScreen_CreateTimerMutation(
+    $attributes: CreateTimerAttributes!
+  ) {
     createTimer(input: { attributes: $attributes }) {
       timer {
         id
@@ -102,6 +97,7 @@ type TimerFormAttributes = {
 export const TimerFormScreen = ({ defaultValues }: TimerFormProps) => {
   const { appState, setAppState } = useAppState();
   const theme = useTheme();
+  const snacks = useSnacks();
 
   const [createTimer, createTimerInFlight] =
     useMutation<TimerFormScreen_CreateTimerMutation>(createTimerMutation);
@@ -191,7 +187,7 @@ export const TimerFormScreen = ({ defaultValues }: TimerFormProps) => {
   }
 
   const afterSave = (viewingDate: DateString) => {
-    setAppState((s) => ({ ...s, viewingDate, tag: "viewingTimers" }));
+    setAppState((s) => ({ ...s, viewingDate, tag: "timers" }));
   };
 
   const handleCreate = () => {
@@ -199,8 +195,19 @@ export const TimerFormScreen = ({ defaultValues }: TimerFormProps) => {
       throw new Error("TimerForm: Tried to create a timer that alreadt exists");
     }
 
-    if (!attributes.date || !attributes.projectId) {
-      // TODO: snack error
+    if (!attributes.date) {
+      snacks.alert({
+        title: "Please add a date",
+        severity: "warning",
+      });
+      return;
+    }
+
+    if (!attributes.projectId) {
+      snacks.alert({
+        title: "Please select a project",
+        severity: "warning",
+      });
       return;
     }
 
@@ -244,20 +251,21 @@ export const TimerFormScreen = ({ defaultValues }: TimerFormProps) => {
       return;
     }
 
-    const optimisticResponse: TimerFormScreen_UpdateTimerMutation["response"] = {
-      updateTimer: {
-        timer: {
-          id: defaultValues.timerId,
-          date: attributes.date,
-          seconds: displaySeconds,
-          notes: attributes.notes ?? "",
-          updatedAt: moment().toISOString(),
-          project: {
-            id: attributes.projectId,
+    const optimisticResponse: TimerFormScreen_UpdateTimerMutation["response"] =
+      {
+        updateTimer: {
+          timer: {
+            id: defaultValues.timerId,
+            date: attributes.date,
+            seconds: displaySeconds,
+            notes: attributes.notes ?? "",
+            updatedAt: moment().toISOString(),
+            project: {
+              id: attributes.projectId,
+            },
           },
         },
-      },
-    };
+      };
 
     updateTimer({
       variables: {
@@ -291,27 +299,6 @@ export const TimerFormScreen = ({ defaultValues }: TimerFormProps) => {
 
   return (
     <Column fullHeight style={{ background: "white" }}>
-      <Layout.TopBarLeft />
-      <Layout.TopBarRight>
-        <Row paddingHorizontal="tiny">
-          <IconButton
-            onClick={() => {
-              setAppState((s) => ({ ...s, tag: "viewingTimers" }));
-            }}
-          >
-            <Tooltip
-              placement="right"
-              key="Close"
-              title={defaultValues.timerId ? "Cancel edit" : "Cancel create"}
-            >
-              <Row>
-                <CrossIcon height={20} fill="white" />
-              </Row>
-            </Tooltip>
-          </IconButton>
-        </Row>
-      </Layout.TopBarRight>
-
       <Column fullHeight justifyContent="space-around" padding="small">
         <Text fontSize="large" strong>
           {defaultValues.timerId ? "Edit" : "Add"} timer
@@ -383,7 +370,7 @@ export const TimerFormScreen = ({ defaultValues }: TimerFormProps) => {
         <Button
           variant="text"
           onClick={() => {
-            setAppState((s) => ({ ...s, tag: "viewingTimers" }));
+            setAppState((s) => ({ ...s, tag: "timers" }));
           }}
           size="small"
           disabled={createTimerInFlight || updateTimerInFlight}
@@ -391,14 +378,14 @@ export const TimerFormScreen = ({ defaultValues }: TimerFormProps) => {
           Cancel
         </Button>
         <Button
-          variant="outlined"
+          variant="contained"
           loading={createTimerInFlight || updateTimerInFlight}
           disableElevation
           startIcon={
             <SaveIcon
               width={12}
               height={12}
-              fill={theme.palette.primary.main}
+              fill={theme.palette.common.white}
             />
           }
           size="small"
@@ -507,11 +494,7 @@ const TimeInput = (props: {
           props.onChange(seconds);
         }}
       >
-        <PlusCircled
-          width={30}
-          height={30}
-          fill={theme.palette.primary.main}
-        />
+        <PlusCircled width={30} height={30} fill={theme.palette.primary.main} />
       </Button>
     </Row>
   );

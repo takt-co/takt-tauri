@@ -42,7 +42,7 @@ export const LoadingScreen = (props: {
       justifyContent="center"
       gap="small"
       style={{
-        background: "white"
+        background: "white",
       }}
     >
       <CircularProgress
