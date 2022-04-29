@@ -1,5 +1,5 @@
+import { Color, useTheme } from "@mui/material";
 import React, { CSSProperties } from "react";
-import { HexColor } from "../TaktTheme";
 
 export const fontSizes = {
   small: 12,
@@ -11,18 +11,22 @@ export const fontSizes = {
 
 export type FontSize = keyof typeof fontSizes;
 
-type TextProps = React.DetailedHTMLProps<
-  React.HTMLAttributes<HTMLParagraphElement>,
-  HTMLParagraphElement
+type TextProps = Omit<
+  React.DetailedHTMLProps<
+    React.HTMLAttributes<HTMLParagraphElement>,
+    HTMLParagraphElement
+  >,
+  "color"
 > & {
   style?: CSSProperties;
-  color?: HexColor;
+  color?: string | Color;
   fontSize?: FontSize;
   strong?: boolean;
 };
 
 export const Text = (props: TextProps) => {
   const { style, strong, color, fontSize: textFontSize, ...rest } = props;
+  const theme = useTheme();
 
   return (
     <p
@@ -30,7 +34,7 @@ export const Text = (props: TextProps) => {
         fontSize: textFontSize ? fontSizes[textFontSize] : fontSizes.body,
         fontWeight: strong ? "bold" : "normal",
         WebkitUserSelect: "none",
-        color: color,
+        color: `${color ?? theme.palette.text}`,
         margin: style?.margin ?? 0,
         padding: style?.padding ?? 0,
         ...style,

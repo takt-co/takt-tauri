@@ -5,14 +5,17 @@ import { useFragment, useMutation } from "react-relay";
 import { clockToSeconds, currentSeconds, secondsToClock } from "../Clock";
 import { ID } from "../CustomTypes";
 import { Authenticated, useAuthentication } from "../providers/Authentication";
-import { colors } from "../TaktTheme";
 import { Button } from "./Button";
 import { Column, Row } from "./Flex";
 import { Tooltip } from "./Tooltip";
 import { Text } from "./Typography";
-import { TimerCard_StartRecordingMutation } from "./__generated__/TimerCard_StartRecordingMutation.graphql";
+import {
+  TimerCard_StartRecordingMutation,
+  TimerCard_StartRecordingMutation$data,
+} from "./__generated__/TimerCard_StartRecordingMutation.graphql";
 import { TimerCard_StopRecordingMutation } from "./__generated__/TimerCard_StopRecordingMutation.graphql";
 import { TimerCard_Timer$key } from "./__generated__/TimerCard_Timer.graphql";
+import { useTheme } from "@mui/material";
 
 export const TimerCard = (props: {
   timer: TimerCard_Timer$key;
@@ -21,6 +24,7 @@ export const TimerCard = (props: {
   currentRecordingId?: ID;
 }) => {
   const auth = useAuthentication() as Authenticated;
+  const theme = useTheme();
   const timer = useFragment(
     graphql`
       fragment TimerCard_Timer on Timer {
@@ -91,7 +95,7 @@ export const TimerCard = (props: {
   return (
     <Row
       key={timer.id}
-      style={{ borderBottom: `1px solid ${colors.offWhite}` }}
+      style={{ borderBottom: `1px solid ${theme.palette.grey[300]}` }}
       justifyContent="space-between"
       alignItems="flex-start"
       padding="small"
@@ -130,7 +134,7 @@ export const TimerCard = (props: {
                             seconds: clockToSeconds(clock),
                             updatedAt: moment().toISOString(),
                             user: {
-                              id: auth.currentUserId,
+                              id: auth.currentUser.id,
                               recordingTimer: null,
                             },
                           },
@@ -142,16 +146,16 @@ export const TimerCard = (props: {
                       optimisticResponse,
                     });
                   } else if (timer.status === "paused") {
-                    const optimisticResponse: TimerCard_StartRecordingMutation["response"] =
+                    const optimisticResponse: TimerCard_StartRecordingMutation$data =
                       {
                         startRecording: {
                           timer: {
-                            ...timer,
+                            id: timer.id,
                             status: "recording",
                             seconds: timer.seconds,
                             updatedAt: moment().toISOString(),
                             user: {
-                              id: auth.currentUserId,
+                              id: auth.currentUser.id,
                               recordingTimer: {
                                 id: timer.id,
                               },
@@ -182,22 +186,24 @@ export const TimerCard = (props: {
         </Row>
 
         <Column
-          style={{ borderLeft: `1px solid ${colors.gray}` }}
-          paddingHorizontal="tiny"
+          style={{ borderLeft: `1px solid ${theme.palette.grey[400]}` }}
+          paddingHorizontal="smaller"
         >
           <Text
             fontSize="detail"
             style={{
               whiteSpace: "pre-wrap",
               lineHeight: 1.5,
-              color: timer.notes ? colors.darkGray : colors.gray,
+              color: timer.notes
+                ? theme.palette.text.primary
+                : theme.palette.text.disabled,
             }}
           >
             {timer.notes || "No notes"}
           </Text>
         </Column>
 
-        <Row gap="tiny">
+        <Row gap="smaller">
           <Button
             variant="outlined"
             size="small"
@@ -209,7 +215,7 @@ export const TimerCard = (props: {
           </Button>
           <Button
             variant="text"
-            color="warning"
+            color="error"
             size="small"
             onClick={() => {
               props.onDelete({ id: timer.id, seconds: clockToSeconds(clock) });
@@ -224,6 +230,7 @@ export const TimerCard = (props: {
 };
 
 const RecordButton = (props: { recording: boolean; onClick: () => void }) => {
+  const theme = useTheme();
   return (
     <span
       onClick={props.onClick}
@@ -231,7 +238,9 @@ const RecordButton = (props: { recording: boolean; onClick: () => void }) => {
         display: "block",
         width: 16,
         height: 16,
-        backgroundColor: props.recording ? colors.warning : colors.gray,
+        backgroundColor: String(
+          props.recording ? theme.palette.error.main : theme.palette.grey[500]
+        ),
         borderRadius: 100,
         cursor: "pointer",
       }}

@@ -9,7 +9,9 @@ use tauri::{
   PhysicalPosition,
   TrayIcon,
   SystemTray,
-  SystemTrayEvent
+  SystemTrayEvent,
+  Menu,
+  MenuItem
 };
 
 fn main() {
@@ -18,7 +20,38 @@ fn main() {
     ..Default::default()
   }));
 
+  // This should fix the cmd+c+v etc, but doesn't seem to be working
+  let menu = Menu::new().add_native_item(MenuItem::Copy);
+  let tray = SystemTray::new();
+
   tauri::Builder::default()
+    .menu(menu)
+    .system_tray(tray)
+    .on_system_tray_event(|app, event| match event {
+      SystemTrayEvent::LeftClick {
+        position,
+        ..
+      } => {
+        let window = app.get_window("main").unwrap();
+
+        if window.is_visible().unwrap() {
+          window.hide().unwrap();
+        } else {
+          window.show().unwrap();
+          window.set_focus().unwrap();
+          window.set_position(
+            Position::Physical(
+              PhysicalPosition {
+                // TODO: 361 = random number (due to retina?). May change between devices?
+                x: (position.x as i32 - (361 as i32)),
+                y: 0,
+              }
+            )
+          ).unwrap();
+        }
+      }
+      _ => {}
+    })
     .setup(|app| {
       let window = app.get_window("main").unwrap();
       let tray = app.tray_handle();
@@ -36,33 +69,6 @@ fn main() {
       });
 
       Ok(())
-    })
-    .system_tray(SystemTray::new())
-    .on_system_tray_event(|app, event| match event {
-      SystemTrayEvent::LeftClick {
-        position,
-        size,
-        ..
-      } => {
-        let window = app.get_window("main").unwrap();
-
-        if window.is_visible().unwrap() {
-          window.hide().unwrap();
-        } else {
-          window.show().unwrap();
-          window.set_focus().unwrap();
-          window.set_position(
-            Position::Physical(
-              PhysicalPosition {
-                // NOTE: 323 = random number (due to retina?). May change between devices?
-                x: (position.x as i32 - (size.width as i32 / 2)) - 323,
-                y: 0
-              }
-            )
-          ).unwrap();
-        }
-      }
-      _ => {}
     })
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

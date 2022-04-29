@@ -1,26 +1,21 @@
 import React, { useState } from "react";
-import { colors } from "../TaktTheme";
-import { Column, Row } from "./Flex";
+import { Column, Row } from "../components/Flex";
 import {
   CleanUpIcon,
-  CrossIcon,
   IconProps,
   LoginIcon,
   PowerIcon,
   UpdateIcon,
-} from "./Icons";
-import { Text } from "./Typography";
-import { Spacer } from "./Spacer";
+} from "../components/Icons";
+import { Text } from "../components/Typography";
+import { Spacer } from "../components/Spacer";
 import { useAuthentication } from "../providers/Authentication";
 import { process } from "@tauri-apps/api";
 import { config } from "../config";
-import { Layout } from "./Layout";
-import { CircularProgress, IconButton } from "@mui/material";
-import { Tooltip } from "./Tooltip";
-import { useAppState } from "../providers/AppState";
+import { CircularProgress, useTheme } from "@mui/material";
 import { checkUpdate, installUpdate } from "@tauri-apps/api/updater";
 import { relaunch } from "@tauri-apps/api/process";
-import { LoadingScreen } from "./LoadingScreen";
+import { LoadingScreen } from "../components/LoadingScreen";
 import { useSnacks } from "../providers/Snacks";
 
 export const SettingsScreen = (props: { clearCache: () => void }) => {
@@ -29,8 +24,8 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
     throw new Error("Rendered SettingsScreen while not authenticated");
   }
 
-  const { setAppState } = useAppState();
   const snacks = useSnacks();
+  const theme = useTheme();
   const [cacheCleared, setCacheCleared] = useState(false);
   const [updateStatus, setUpdateStatus] = useState<
     "idle" | "checking" | "installing"
@@ -40,9 +35,9 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
     // TODO: error reporting!
     setUpdateStatus("idle");
     snacks.alert({
-      title: "Something went wrong",
-      body: "Please try again later",
-      severity: "error"
+      title: "Whoops!",
+      body: "Something went wrong, please try again later",
+      severity: "error",
     });
   };
 
@@ -51,23 +46,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
   }
 
   return (
-    <Column fullHeight backgroundColor="white">
-      <Layout.TopBarRight>
-        <Row paddingHorizontal="tiny">
-          <IconButton
-            onClick={() => {
-              setAppState((s) => ({ ...s, tag: "viewingTimers" }));
-            }}
-          >
-            <Tooltip placement="right" key="Close" title="Close settings">
-              <Row>
-                <CrossIcon height={20} fill={colors.white} />
-              </Row>
-            </Tooltip>
-          </IconButton>
-        </Row>
-      </Layout.TopBarRight>
-
+    <Column fullHeight style={{ background: "white" }}>
       <Row padding="small">
         <Text fontSize="large" strong>
           Settings
@@ -77,8 +56,8 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
         <Column>
           <Setting
             label={updateStatus === "idle" ? "Check for update" : "Checking..."}
+            hint="Check if a newer version of Takt is available"
             Icon={UpdateIcon}
-            disabled={cacheCleared}
             onClick={() => {
               setUpdateStatus("checking");
               checkUpdate()
@@ -88,22 +67,26 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
                       title: "Update available",
                       body: `Would you like to update to v${manifest?.version}?`,
                       severity: "info",
-                      actions: [{
-                        label: "Update now",
-                        onClick: () => {
-                          setUpdateStatus("installing");
-                          installUpdate().then(() => {
-                            relaunch().catch(handleUpdateError);
-                          }).catch(handleUpdateError);
-                        }
-                      }]
+                      actions: [
+                        {
+                          label: "Update now",
+                          onClick: () => {
+                            setUpdateStatus("installing");
+                            installUpdate()
+                              .then(() => {
+                                relaunch().catch(handleUpdateError);
+                              })
+                              .catch(handleUpdateError);
+                          },
+                        },
+                      ],
                     });
                   } else {
                     setUpdateStatus("idle");
                     snacks.alert({
                       title: "Up to date",
                       body: "You are on the latest version.",
-                      severity: "info"
+                      severity: "info",
                     });
                   }
                 })
@@ -112,6 +95,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
           />
           <Setting
             label={cacheCleared ? "Cache cleared" : "Clear cache"}
+            hint="You won't be signed out"
             Icon={CleanUpIcon}
             disabled={cacheCleared}
             onClick={() => {
@@ -121,6 +105,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
           />
           <Setting
             label="Sign out"
+            hint={`Signed in as: ${authentication.currentUser.username}`}
             Icon={LoginIcon}
             iconProps={{
               width: 16,
@@ -143,7 +128,7 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
           />
           <Spacer size="tiny" />
           <Row justifyContent="flex-end" paddingHorizontal="smaller">
-            <Text fontSize="small" color={colors.gray}>
+            <Text fontSize="small" color={theme.palette.text.disabled}>
               v{config.version}
             </Text>
           </Row>
@@ -156,37 +141,57 @@ export const SettingsScreen = (props: { clearCache: () => void }) => {
 
 const Setting = (props: {
   label: string;
+  hint?: string;
   loading?: boolean;
   Icon: React.FunctionComponent<IconProps>;
   onClick: () => void;
   iconProps?: IconProps;
   disabled?: boolean;
   helperText?: string;
-}) => (
-  <Row
-    padding="small"
-    gap="small"
-    alignItems="center"
-    fullWidth
-    onClick={props.disabled ? undefined : props.onClick}
-    hoverStyle={{ cursor: "pointer", backgroundColor: colors.offWhite }}
-  >
-    {props.loading ? (
-      <CircularProgress size={20} />
-    ) : (
-      <props.Icon
-        {...{
-          width: 20,
-          height: 20,
-          fill: props.disabled ? colors.gray : colors.darkGray,
-          ...props.iconProps,
-        }}
-      />
-    )}
-    <Column>
-      <Text color={props.disabled ? colors.gray : colors.darkGray}>
-        {props.label}
-      </Text>
-    </Column>
-  </Row>
-);
+}) => {
+  const theme = useTheme();
+  return (
+    <Row
+      padding="small"
+      gap="small"
+      alignItems={props.hint ? "flex-start" : "center"}
+      fullWidth
+      onClick={props.disabled ? undefined : props.onClick}
+      hoverStyle={{
+        cursor: "pointer",
+        backgroundColor: theme.palette.grey[100],
+      }}
+    >
+      {props.loading ? (
+        <CircularProgress size={20} />
+      ) : (
+        <props.Icon
+          {...{
+            width: 20,
+            height: 20,
+            fill: props.disabled
+              ? theme.palette.text.disabled
+              : theme.palette.text.primary,
+            ...props.iconProps,
+          }}
+        />
+      )}
+      <Column gap="tiny">
+        <Text
+          color={
+            props.disabled
+              ? theme.palette.text.disabled
+              : theme.palette.text.primary
+          }
+        >
+          {props.label}
+        </Text>
+        {props.hint && (
+          <Text fontSize="small" color={theme.palette.text.disabled}>
+            {props.hint}
+          </Text>
+        )}
+      </Column>
+    </Row>
+  );
+};

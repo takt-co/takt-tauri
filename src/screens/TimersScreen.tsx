@@ -1,30 +1,27 @@
 import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
 import { useLazyLoadQuery, useMutation } from "react-relay";
-import { colors, darken } from "../TaktTheme";
 import { DateString, ID } from "../CustomTypes";
-import { Button } from "./Button";
-import { ButtonBar } from "./ButtonBar";
-import { Column, Row } from "./Flex";
+import { Button } from "../components/Button";
+import { ButtonBar } from "../components/ButtonBar";
+import { Column, Row } from "../components/Flex";
 import {
   AddIcon,
   ClockIcon,
-  SettingsIcon,
   TimerOffIcon,
   TodayIcon,
-} from "./Icons";
-import { LoadingScreen } from "./LoadingScreen";
-import { Text } from "./Typography";
+} from "../components/Icons";
+import { LoadingScreen } from "../components/LoadingScreen";
+import { Text } from "../components/Typography";
 import { graphql } from "babel-plugin-relay/macro";
 import { TimersScreen_ArchiveMutation } from "./__generated__/TimersScreen_ArchiveMutation.graphql";
 import { Authenticated, useAuthentication } from "../providers/Authentication";
-import { Layout } from "./Layout";
-import { IconButton } from "@mui/material";
+import { IconButton, useTheme } from "@mui/material";
 import { config } from "../config";
-import { Tooltip } from "./Tooltip";
-import { DateBar } from "./DateBar";
+import { Tooltip } from "../components/Tooltip";
+import { DateBar } from "../components/DateBar";
 import { TimersScreen_Query } from "./__generated__/TimersScreen_Query.graphql";
-import { TimerCard } from "./TimerCard";
+import { TimerCard } from "../components/TimerCard";
 import { useAppState } from "../providers/AppState";
 import { useSnacks } from "../providers/Snacks";
 
@@ -33,87 +30,34 @@ export const TimersScreen = (props: {
   recordingTimer: { id: ID; date: DateString } | null;
 }) => {
   const { setAppState } = useAppState();
+  const theme = useTheme();
   const todayStr = moment().format(config.dateFormat);
 
   return (
-    <Column fullWidth fullHeight>
-      <Layout.TopBarRight>
-        <Row paddingHorizontal="tiny">
-          {props.recordingTimer && props.recordingTimer.date !== props.date && (
-            <IconButton
-              onClick={() => {
-                if (props.recordingTimer) {
-                  const viewingDate = moment(props.recordingTimer.date).format(
-                    config.dateFormat
-                  );
-                  setAppState((s) => ({ ...s, viewingDate }));
-                }
-              }}
-            >
-              <Tooltip
-                placement="left"
-                key="Today"
-                title="Jump to recording timer"
-              >
-                <Row>
-                  <ClockIcon height={24} fill={colors.white} />
-                </Row>
-              </Tooltip>
-            </IconButton>
-          )}
-          {props.date !== todayStr && (
-            <IconButton
-              onClick={() => {
-                setAppState((s) => ({ ...s, viewingDate: todayStr }));
-              }}
-            >
-              <Tooltip placement="left" key="Today" title="Jump to today">
-                <Row>
-                  <TodayIcon height={24} fill={colors.white} />
-                </Row>
-              </Tooltip>
-            </IconButton>
-          )}
-          <IconButton
-            onClick={() => {
-              setAppState((s) => ({ ...s, tag: "viewingSettings" }));
-            }}
-          >
-            <Tooltip placement="left" key="Settings" title="Settings">
-              <Row>
-                <SettingsIcon height={20} fill={colors.white} />
-              </Row>
-            </Tooltip>
-          </IconButton>
-        </Row>
-      </Layout.TopBarRight>
-
-      <Layout.TopBarBelow>
-        <DateBar
-          date={props.date}
-          onPrev={() => {
-            const prevDate = moment(props.date, config.dateFormat);
-            prevDate.subtract(1, "day");
-            setAppState((s) => ({
-              ...s,
-              viewingDate: prevDate.format(config.dateFormat),
-            }));
-          }}
-          onNext={() => {
-            const nextDate = moment(props.date, config.dateFormat);
-            nextDate.add(1, "day");
-            setAppState((s) => ({
-              ...s,
-              viewingDate: nextDate.format(config.dateFormat),
-            }));
-          }}
-        />
-      </Layout.TopBarBelow>
+    <Column fullWidth fullHeight style={{ background: "white" }}>
+      <DateBar
+        date={props.date}
+        onPrev={() => {
+          const prevDate = moment(props.date, config.dateFormat);
+          prevDate.subtract(1, "day");
+          setAppState((s) => ({
+            ...s,
+            viewingDate: prevDate.format(config.dateFormat),
+          }));
+        }}
+        onNext={() => {
+          const nextDate = moment(props.date, config.dateFormat);
+          nextDate.add(1, "day");
+          setAppState((s) => ({
+            ...s,
+            viewingDate: nextDate.format(config.dateFormat),
+          }));
+        }}
+      />
 
       <Column
         fullHeight
-        style={{ height: "calc(100vh - 170px)", overflow: "auto" }}
-        backgroundColor="white"
+        style={{ height: "calc(100vh - 165px)", overflow: "auto" }}
       >
         <Suspense
           fallback={
@@ -140,7 +84,42 @@ export const TimersScreen = (props: {
         </Suspense>
       </Column>
 
-      <ButtonBar justifyContent="flex-end">
+      <ButtonBar justifyContent="space-between">
+        <Row gap="tiny">
+          {props.date !== todayStr && (
+            <IconButton
+              size="small"
+              onClick={() => {
+                setAppState((s) => ({ ...s, viewingDate: todayStr }));
+              }}
+            >
+              <Tooltip placement="left" key="Today" title="Jump to today">
+                <TodayIcon height={24} fill={theme.palette.text.secondary} />
+              </Tooltip>
+            </IconButton>
+          )}
+
+          {props.recordingTimer && props.recordingTimer.date !== props.date && (
+            <IconButton
+              onClick={() => {
+                if (props.recordingTimer) {
+                  const viewingDate = moment(props.recordingTimer.date).format(
+                    config.dateFormat
+                  );
+                  setAppState((s) => ({ ...s, viewingDate }));
+                }
+              }}
+            >
+              <Tooltip
+                placement="left"
+                key="Today"
+                title="Jump to recording timer"
+              >
+                <ClockIcon height={20} fill={theme.palette.text.secondary} />
+              </Tooltip>
+            </IconButton>
+          )}
+        </Row>
         <Button
           variant="outlined"
           size="small"
@@ -148,7 +127,7 @@ export const TimersScreen = (props: {
             <AddIcon
               width={12}
               height={12}
-              fill={colors.primary}
+              fill={theme.palette.primary.main}
               style={{ marginLeft: 2 }}
             />
           }
@@ -263,33 +242,36 @@ const Timers = (props: {
               onDelete={(timer) => {
                 snacks.alert({
                   title: "Delete timer",
-                  body: "Are you sure you want to delete this timer?",
+                  body: "Are you sure you want to delete this?",
                   severity: "warning",
-                  actions: [{
-                    label: "Delete now",
-                    onClick: () => {
-                      archiveTimer({
-                        variables: { timerId: timer.id },
-                        optimisticResponse: {
-                          archiveTimer: {
-                            timer: {
-                              id: timer.id,
-                              seconds: timer.seconds,
-                              status: "deleted",
-                              lastActionAt: moment().toISOString(),
-                              user: {
-                                id: auth.currentUserId,
-                                recordingTimer:
-                                  props.recordingTimer?.id === timer.id
-                                    ? null
-                                    : props.recordingTimer?.id,
+                  actions: [
+                    {
+                      label: "Delete now",
+                      onClick: () => {
+                        archiveTimer({
+                          variables: { timerId: timer.id },
+                          optimisticResponse: {
+                            archiveTimer: {
+                              timer: {
+                                id: timer.id,
+                                seconds: timer.seconds,
+                                status: "deleted",
+                                lastActionAt: moment().toISOString(),
+                                user: {
+                                  id: auth.currentUser.id,
+                                  recordingTimer:
+                                    props.recordingTimer?.id === timer.id
+                                      ? null
+                                      : props.recordingTimer?.id,
+                                },
                               },
                             },
                           },
-                        },
-                      });
-                    }
-                  }]
+                        });
+                        snacks.close();
+                      },
+                    },
+                  ],
                 });
               }}
             />
@@ -304,16 +286,11 @@ const Timers = (props: {
 };
 
 export const TimersEmptyState = () => {
+  const theme = useTheme();
   return (
-    <Column
-      fullHeight
-      justifyContent="center"
-      alignItems="center"
-      gap="small"
-      backgroundColor="white"
-    >
-      <TimerOffIcon width={30} fill={darken("gray", 0.2)} />
-      <Text color={colors.gray}>No timers on this date</Text>
+    <Column fullHeight justifyContent="center" alignItems="center" gap="small">
+      <TimerOffIcon width={30} fill={`${theme.palette.text.primary}`} />
+      <Text color={theme.palette.text.primary}>No timers on this date</Text>
     </Column>
   );
 };

@@ -40,7 +40,7 @@ export const ProjectSelect = (props: {
     <FormControl fullWidth size="small">
       <InputLabel>Project</InputLabel>
       <Select
-        value={props.value}
+        value={props.value ?? ""}
         size="small"
         label="Project"
         onChange={(ev) => {

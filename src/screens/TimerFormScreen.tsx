@@ -2,45 +2,40 @@ import React, { Suspense, useEffect, useState } from "react";
 import moment from "moment";
 import { useLazyLoadQuery, useMutation } from "react-relay";
 import { graphql } from "babel-plugin-relay/macro";
-import { Column, Row } from "./Flex";
-import { Text } from "./Typography";
+import { Column, Row } from "../components/Flex";
+import { Text } from "../components/Typography";
 import {
   CircularProgress,
   FormControl,
-  IconButton,
   InputLabel,
   MenuItem,
   Select,
   TextField,
+  useTheme,
 } from "@mui/material";
 import { clockToSeconds, currentSeconds, secondsToClock } from "../Clock";
-import { Button } from "./Button";
-import {
-  SaveIcon,
-  MinusCircled,
-  PlusCircled,
-  CrossIcon,
-} from "../components/Icons";
-import { ButtonBar } from "./ButtonBar";
-import { colors } from "../TaktTheme";
-import { TimerForm_CreateTimerMutation } from "./__generated__/TimerForm_CreateTimerMutation.graphql";
-import { TimerForm_UpdateTimerMutation } from "./__generated__/TimerForm_UpdateTimerMutation.graphql";
+import { Button } from "../components/Button";
+import { SaveIcon, MinusCircled, PlusCircled } from "../components/Icons";
+import { ButtonBar } from "../components/ButtonBar";
+import { TimerFormScreen_CreateTimerMutation } from "./__generated__/TimerFormScreen_CreateTimerMutation.graphql";
+import { TimerFormScreen_UpdateTimerMutation } from "./__generated__/TimerFormScreen_UpdateTimerMutation.graphql";
 import { DateString, ID } from "../CustomTypes";
-import { Spacer } from "./Spacer";
-import { Layout } from "./Layout";
-import { Tooltip } from "./Tooltip";
-import { ProjectSelect } from "./ProjectSelect";
+import { Spacer } from "../components/Spacer";
+import { ProjectSelect } from "../components/ProjectSelect";
 import {
-  TimerForm_Query,
+  TimerFormScreen_Query,
   TimerStatus,
-} from "./__generated__/TimerForm_Query.graphql";
-import { LoadingScreen } from "./LoadingScreen";
+} from "./__generated__/TimerFormScreen_Query.graphql";
+import { LoadingScreen } from "../components/LoadingScreen";
 import { useAppState } from "../providers/AppState";
 import { uniq } from "lodash";
 import { config } from "../config";
+import { useSnacks } from "../providers/Snacks";
 
 const createTimerMutation = graphql`
-  mutation TimerForm_CreateTimerMutation($attributes: CreateTimerAttributes!) {
+  mutation TimerFormScreen_CreateTimerMutation(
+    $attributes: CreateTimerAttributes!
+  ) {
     createTimer(input: { attributes: $attributes }) {
       timer {
         id
@@ -51,7 +46,7 @@ const createTimerMutation = graphql`
 `;
 
 const updateTimerMutation = graphql`
-  mutation TimerForm_UpdateTimerMutation(
+  mutation TimerFormScreen_UpdateTimerMutation(
     $timerId: ID!
     $attributes: UpdateTimerAttributes!
   ) {
@@ -99,13 +94,15 @@ type TimerFormAttributes = {
   notes: string;
 };
 
-export const TimerForm = ({ defaultValues }: TimerFormProps) => {
+export const TimerFormScreen = ({ defaultValues }: TimerFormProps) => {
   const { appState, setAppState } = useAppState();
+  const theme = useTheme();
+  const snacks = useSnacks();
 
   const [createTimer, createTimerInFlight] =
-    useMutation<TimerForm_CreateTimerMutation>(createTimerMutation);
+    useMutation<TimerFormScreen_CreateTimerMutation>(createTimerMutation);
   const [updateTimer, updateTimerInFlight] =
-    useMutation<TimerForm_UpdateTimerMutation>(updateTimerMutation);
+    useMutation<TimerFormScreen_UpdateTimerMutation>(updateTimerMutation);
 
   const [attributes, setAttributes] = useState<TimerFormAttributes>();
   const [displaySeconds, setDisplaySeconds] = useState<number>(
@@ -190,7 +187,7 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
   }
 
   const afterSave = (viewingDate: DateString) => {
-    setAppState((s) => ({ ...s, viewingDate, tag: "viewingTimers" }));
+    setAppState((s) => ({ ...s, viewingDate, tag: "timers" }));
   };
 
   const handleCreate = () => {
@@ -198,8 +195,19 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
       throw new Error("TimerForm: Tried to create a timer that alreadt exists");
     }
 
-    if (!attributes.date || !attributes.projectId) {
-      // TODO: snack error
+    if (!attributes.date) {
+      snacks.alert({
+        title: "Please add a date",
+        severity: "warning",
+      });
+      return;
+    }
+
+    if (!attributes.projectId) {
+      snacks.alert({
+        title: "Please select a project",
+        severity: "warning",
+      });
       return;
     }
 
@@ -243,20 +251,21 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
       return;
     }
 
-    const optimisticResponse: TimerForm_UpdateTimerMutation["response"] = {
-      updateTimer: {
-        timer: {
-          id: defaultValues.timerId,
-          date: attributes.date,
-          seconds: displaySeconds,
-          notes: attributes.notes ?? "",
-          updatedAt: moment().toISOString(),
-          project: {
-            id: attributes.projectId,
+    const optimisticResponse: TimerFormScreen_UpdateTimerMutation["response"] =
+      {
+        updateTimer: {
+          timer: {
+            id: defaultValues.timerId,
+            date: attributes.date,
+            seconds: displaySeconds,
+            notes: attributes.notes ?? "",
+            updatedAt: moment().toISOString(),
+            project: {
+              id: attributes.projectId,
+            },
           },
         },
-      },
-    };
+      };
 
     updateTimer({
       variables: {
@@ -289,27 +298,7 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
   };
 
   return (
-    <Column fullHeight backgroundColor="white">
-      <Layout.TopBarRight>
-        <Row paddingHorizontal="tiny">
-          <IconButton
-            onClick={() => {
-              setAppState((s) => ({ ...s, tag: "viewingTimers" }));
-            }}
-          >
-            <Tooltip
-              placement="right"
-              key="Close"
-              title={defaultValues.timerId ? "Cancel edit" : "Cancel create"}
-            >
-              <Row>
-                <CrossIcon height={20} fill={colors.white} />
-              </Row>
-            </Tooltip>
-          </IconButton>
-        </Row>
-      </Layout.TopBarRight>
-
+    <Column fullHeight style={{ background: "white" }}>
       <Column fullHeight justifyContent="space-around" padding="small">
         <Text fontSize="large" strong>
           {defaultValues.timerId ? "Edit" : "Add"} timer
@@ -381,7 +370,7 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
         <Button
           variant="text"
           onClick={() => {
-            setAppState((s) => ({ ...s, tag: "viewingTimers" }));
+            setAppState((s) => ({ ...s, tag: "timers" }));
           }}
           size="small"
           disabled={createTimerInFlight || updateTimerInFlight}
@@ -389,10 +378,16 @@ export const TimerForm = ({ defaultValues }: TimerFormProps) => {
           Cancel
         </Button>
         <Button
-          variant="outlined"
+          variant="contained"
           loading={createTimerInFlight || updateTimerInFlight}
           disableElevation
-          startIcon={<SaveIcon width={12} height={12} fill={colors.primary} />}
+          startIcon={
+            <SaveIcon
+              width={12}
+              height={12}
+              fill={theme.palette.common.white}
+            />
+          }
           size="small"
           color="primary"
           onClick={defaultValues.timerId ? handleUpdate : handleCreate}
@@ -419,6 +414,7 @@ const TimeInput = (props: {
   const hourOptions = buildTimeOptions(24);
   const minuteOptions = buildTimeOptions(60);
   const clock = secondsToClock(props.value);
+  const theme = useTheme();
 
   return (
     <Row
@@ -439,7 +435,11 @@ const TimeInput = (props: {
           props.onChange(seconds);
         }}
       >
-        <MinusCircled width={30} height={30} fill={colors.primary} />
+        <MinusCircled
+          width={30}
+          height={30}
+          fill={theme.palette.primary.main}
+        />
       </Button>
       <FormControl fullWidth>
         <InputLabel>Hrs</InputLabel>
@@ -494,21 +494,21 @@ const TimeInput = (props: {
           props.onChange(seconds);
         }}
       >
-        <PlusCircled width={30} height={30} fill={colors.primary} />
+        <PlusCircled width={30} height={30} fill={theme.palette.primary.main} />
       </Button>
     </Row>
   );
 };
 
-export const EditTimerForm = ({
+export const EditTimerFormScreen = ({
   timerId,
   ...props
 }: Omit<TimerFormProps, "defaultValues"> & {
   timerId: ID;
 }) => {
-  const data = useLazyLoadQuery<TimerForm_Query>(
+  const data = useLazyLoadQuery<TimerFormScreen_Query>(
     graphql`
-      query TimerForm_Query($timerId: ID!) {
+      query TimerFormScreen_Query($timerId: ID!) {
         node(id: $timerId) {
           __typename
           ... on Timer {
@@ -535,7 +535,7 @@ export const EditTimerForm = ({
   }
 
   return (
-    <TimerForm
+    <TimerFormScreen
       {...props}
       defaultValues={{
         timerId: data.node.id,

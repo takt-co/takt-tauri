@@ -4,6 +4,7 @@ import { DateString } from "../CustomTypes";
 import { Row } from "./Flex";
 import { Arrow } from "./Icons";
 import { Text } from "./Typography";
+import { grey } from "@mui/material/colors";
 
 export const DateBar = (props: {
   date: DateString;
@@ -14,8 +15,7 @@ export const DateBar = (props: {
     alignItems="center"
     justifyContent="space-between"
     padding="smaller"
-    backgroundColor="offWhite"
-    style={{ height: 46 }}
+    style={{ height: 46, backgroundColor: grey[200] }}
   >
     <Arrow
       width={20}

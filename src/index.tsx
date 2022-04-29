@@ -11,13 +11,13 @@ import { LoadingScreen } from "./components/LoadingScreen";
 import { Unauthenticated as UnauthenticatedScreen } from "./Unauthenticated";
 import { App } from "./App";
 import { Column, Row } from "./components/Flex";
-import { TopBar } from "./components/TopBar";
 import ErrorBoundary from "./ErrorBoundry";
 import { Layout } from "./components/Layout";
 import LogoSrc from "./assets/logo.png";
 import * as Sentry from "@sentry/react";
 import { BrowserTracing } from "@sentry/tracing";
 import { SnackbarProvider } from "./providers/Snacks";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 Sentry.init({
   dsn: "https://cc6d1d6a31e84f499878486d74402a85@o284609.ingest.sentry.io/6356892",
@@ -46,11 +46,11 @@ const Takt = () => {
 
 const Loading = () => (
   <Layout>
-    <Layout.TopBarLeft>
+    <Layout.TopBar>
       <Row padding="smaller">
         <img alt="Takt" src={LogoSrc} height={20} />
       </Row>
-    </Layout.TopBarLeft>
+    </Layout.TopBar>
     <LoadingScreen message="Fetching user..." />
   </Layout>
 );
@@ -75,19 +75,16 @@ const AuthenticatedScreen = () => {
               borderRadius: 5,
             }}
           >
-            <TopBar />
-            <LoadingScreen message="Loading user" />
+            <LoadingScreen message="Loading..." />
           </Column>
         }
       >
-        <SnackbarProvider>
-          <App
-            clearCache={() => {
-              // Incrementing this key will force the environment to be recreated
-              setEnvironmentKey((key) => key + 1);
-            }}
-          />
-        </SnackbarProvider>
+        <App
+          clearCache={() => {
+            // Incrementing this key will force the environment to be recreated
+            setEnvironmentKey((key) => key + 1);
+          }}
+        />
       </Suspense>
     </RelayEnvironmentProvider>
   );
@@ -95,11 +92,15 @@ const AuthenticatedScreen = () => {
 
 ReactDOM.render(
   <React.StrictMode>
-    <ErrorBoundary>
-      <AuthenticationProvider>
-        <Takt />
-      </AuthenticationProvider>
-    </ErrorBoundary>
+    <ThemeProvider>
+      <SnackbarProvider>
+        <ErrorBoundary>
+          <AuthenticationProvider>
+            <Takt />
+          </AuthenticationProvider>
+        </ErrorBoundary>
+      </SnackbarProvider>
+    </ThemeProvider>
   </React.StrictMode>,
   document.getElementById("root")
 );

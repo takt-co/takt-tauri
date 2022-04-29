@@ -7,7 +7,7 @@ import {
 import { ReactNode, useMemo } from "react";
 import { Text } from "../components/Typography";
 import { Button } from "../components/Button";
-import { Row } from "../components/Flex";
+import { Column, Row } from "../components/Flex";
 import { Spacer } from "../components/Spacer";
 
 export function SnackbarProvider(props: { children: ReactNode }) {
@@ -35,46 +35,71 @@ export function useSnacks() {
           label: string;
           onClick: () => void;
         }>;
-        severity?: AlertProps["severity"]
+        severity?: AlertProps["severity"];
       }): void {
         snackbar.enqueueSnackbar(args.title, {
           content(key, message) {
             return (
-              <Alert
-                severity={args.severity}
-                variant="filled"
-                onClose={() => {
+              <Column
+                justifyContent="flex-end"
+                style={{
+                  width: "100%",
+                  height: "100vh",
+                  paddingBottom: 3,
+                }}
+                onClick={() => {
                   snackbar.closeSnackbar();
                 }}
               >
-                <Text strong>{message}</Text>
-                <Spacer size="tiny" />
-                {args.body && (
-                  <Text fontSize="detail">{args.body}</Text>
-                )}
-                {args.actions && args.actions.length > 0 && (
-                  <>
-                    <Spacer size="small" />
-                    <Row gap="small">
-                      {(args.actions ?? []).map(({ onClick, label }) => (
-                        <Button
-                          key={label}
-                          onClick={onClick}
-                          size="small"
-                          variant="outlined"
-                          color="white"
-                        >
-                          {label}
-                        </Button>
-                      ))}
-                    </Row>
-                  </>
-                )}
-              </Alert>
+                <Alert
+                  onClick={(ev) => {
+                    ev.stopPropagation();
+                  }}
+                  severity={args.severity}
+                  variant="filled"
+                  onClose={() => {
+                    snackbar.closeSnackbar();
+                  }}
+                  sx={{ mb: 0 }}
+                >
+                  <Text strong fontSize="detail">
+                    {message}
+                  </Text>
+                  {args.body && (
+                    <>
+                      <Spacer size="tiny" />
+                      <Text fontSize="detail">{args.body}</Text>
+                    </>
+                  )}
+                  {args.actions && args.actions.length > 0 && (
+                    <>
+                      <Spacer size="small" />
+                      <Row gap="small">
+                        {(args.actions ?? []).map(({ onClick, label }) => (
+                          <Button
+                            key={label}
+                            onClick={onClick}
+                            size="small"
+                            variant="outlined"
+                            sx={{
+                              borderColor: "white",
+                              color: "white",
+                              ":hover": { borderColor: "white" },
+                            }}
+                          >
+                            {label}
+                          </Button>
+                        ))}
+                      </Row>
+                    </>
+                  )}
+                </Alert>
+              </Column>
             );
           },
         });
       },
+      close: snackbar.closeSnackbar,
     }),
     [snackbar]
   );
