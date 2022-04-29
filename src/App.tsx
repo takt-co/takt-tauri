@@ -25,6 +25,10 @@ import {
   TimerIcon,
 } from "./components/Icons";
 import { ReportingScreen } from "./screens/ReportingScreen";
+import {
+  EditProjectFormScreen,
+  ProjectFormScreen,
+} from "./screens/ProjectFormScreen";
 
 type AppProps = { clearCache: () => void };
 
@@ -122,16 +126,31 @@ export const App = (props: AppProps) => {
           <Suspense fallback={<LoadingScreen />}>
             <EditTimerFormScreen timerId={appState.timer.id} />
           </Suspense>
-        ) : appState.tag === "settings" ? (
-          <SettingsScreen clearCache={props.clearCache} />
         ) : appState.tag === "projects" ? (
           <ProjectsScreen />
+        ) : appState.tag === "addingProject" ? (
+          <ProjectFormScreen
+            defaultValues={{
+              name: "",
+            }}
+          />
+        ) : appState.tag === "editingProject" ? (
+          <Suspense fallback={<LoadingScreen />}>
+            <EditProjectFormScreen projectId={appState.project.id} />
+          </Suspense>
+        ) : appState.tag === "settings" ? (
+          <SettingsScreen clearCache={props.clearCache} />
         ) : appState.tag === "reporting" ? (
           <ReportingScreen />
         ) : (
           // Unexpected state
           // TODO: error reporting
-          <Column fullHeight alignItems="center" justifyContent="center">
+          <Column
+            fullHeight
+            alignItems="center"
+            justifyContent="center"
+            style={{ background: "white" }}
+          >
             <Text>Error: Unexpected app state</Text>
           </Column>
         )}

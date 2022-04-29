@@ -9,11 +9,21 @@ export type AppState = {
   }>;
 } & (
   | {
-      tag: "timers" | "addingTimer" | "projects" | "reporting" | "settings";
+      tag:
+        | "timers"
+        | "addingTimer"
+        | "projects"
+        | "addingProject"
+        | "reporting"
+        | "settings";
     }
   | {
       tag: "editingTimer";
       timer: { id: ID };
+    }
+  | {
+      tag: "editingProject";
+      project: { id: ID };
     }
 );
 
